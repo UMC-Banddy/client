@@ -1,0 +1,123 @@
+/* Helvetica */
+@font-face {
+  font-family: "Helvetica";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Helvetica"), url("Helvetica.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Helvetica Oblique";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Helvetica Oblique"), url("Helvetica-Oblique.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Helvetica Compressed";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Helvetica Compressed"),
+    url("helvetica-compressed-5871d14b6903a.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Helvetica Rounded Bold";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Helvetica Rounded Bold"),
+    url("helvetica-rounded-bold-5871d05ead8de.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Helvetica";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Helvetica"), url("Helvetica-Bold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Helvetica Bold Oblique";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Helvetica Bold Oblique"),
+    url("Helvetica-BoldOblique.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Helvetica Light";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Helvetica Light"),
+    url("helvetica-light-587ebe5a59211.woff") format("woff");
+}
+
+/* 학교안심 바른돋움 Regular */
+@font-face {
+  font-family: "Hakgyoansim Bareondotum";
+  src: url("/fonts/HakgyoansimBareondotumR.woff2") format("woff2"),
+    url("/fonts/HakgyoansimBareondotumR.otf") format("opentype"),
+    url("/fonts/HakgyoansimBareondotumR.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* 학교안심 바른돋움 Bold */
+@font-face {
+  font-family: "Hakgyoansim Bareondotum";
+  src: url("/fonts/HakgyoansimBareondotumB.woff2") format("woff2"),
+    url("/fonts/HakgyoansimBareondotumB.otf") format("opentype"),
+    url("/fonts/HakgyoansimBareondotumB.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* wanted sans */
+@font-face {
+  font-family: "Wanted Sans";
+  src: url("/fonts/WantedSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Wanted Sans";
+  src: url("/fonts/WantedSans-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Wanted Sans";
+  src: url("/fonts/WantedSans-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Wanted Sans";
+  src: url("/fonts/WantedSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Wanted Sans";
+  src: url("/fonts/WantedSans-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Wanted Sans";
+  src: url("/fonts/WantedSans-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Wanted Sans";
+  src: url("/fonts/WantedSans-ExtraBlack.ttf") format("truetype");
+  font-weight: 950;
+  font-style: normal;
+}
