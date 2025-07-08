@@ -17,7 +17,7 @@ const BottomBar = () => {
   const navigate = useNavigate();
   return (
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 bg-white shadow-[0_-2px_16px_0_rgba(0,0,0,0.12)] rounded-t-2xl flex gap-2 md:gap-4 justify-between items-center px-4 py-2 md:px-8 md:py-4"
+      className="fixed bottom-[0px] left-1/2 -translate-x-1/2 w-full max-w-md z-50 bg-white shadow-[0_-2px_16px_0_rgba(0,0,0,0.12)] rounded-t-2xl flex gap-2 md:gap-4 justify-between items-center px-4 py-2 md:px-8 md:py-4"
       aria-label="하단 내비게이션 바"
     >
       {navs.map((nav) => {
@@ -26,7 +26,7 @@ const BottomBar = () => {
           <button
             key={nav.path}
             onClick={() => navigate(nav.path)}
-            className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-xl transition text-xs md:text-sm font-['IBM Plex Sans'] outline-none focus:ring-2 focus:ring-[#FF3B30] ${
+            className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-xl transition text-xs md:text-sm font-['IBM Plex Sans'] outline-none focus:ring-2 focus:ring-[#FF3B30] whitespace-nowrap ${
               active ? "text-[#FF3B30]" : "text-[#8E8E93]"
             }`}
             aria-label={nav.label}
