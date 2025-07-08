@@ -24,22 +24,22 @@ const albums = [
 
 const HomePage = () => {
   return (
-    <div className="min-h-screen max-w-md mx-auto flex flex-col bg-gradient-to-b from-[#1C1C1E] to-black overflow-hidden relative">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#1C1C1E] to-black max-w-[430px] mx-auto overflow-x-hidden">
       {/* 상단: 로고+태그 */}
-      <header className="flex items-end h-[56px] md:h-[72px] px-4 md:px-6 pt-safe-top gap-2">
+      <header className="w-full flex items-end h-14 px-6 pt-[env(safe-area-inset-top)] gap-2">
         <img
           src="src/assets/logos/Banddy.svg"
           alt="Banddy 로고"
           aria-label="Banddy 로고"
           tabIndex={0}
-          className="w-28 md:w-36 object-left"
+          className="w-32 object-left"
           style={{ marginLeft: 0 }}
         />
-        <div className="flex flex-nowrap gap-2 ml-2 overflow-x-auto items-end h-8 md:h-10">
+        <div className="flex flex-nowrap gap-2 ml-2 overflow-x-auto items-end h-8">
           {tags.map((tag, i) => (
             <span
               key={i}
-              className={`px-3 py-1 rounded-full text-xs md:text-sm font-['Wanted Sans'] whitespace-nowrap ${
+              className={`px-3 py-1 rounded-full text-xs font-['Wanted Sans'] whitespace-nowrap ${
                 tag.active
                   ? "bg-[#FF3B30] text-white"
                   : "bg-[#232323] text-[#8E8E93]"
@@ -53,7 +53,7 @@ const HomePage = () => {
         </div>
       </header>
       {/* 메인 컨텐츠 */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 md:px-6 pb-[120px] md:pb-[140px] min-h-[calc(100vh-56px-64px)]">
+      <main className="w-full flex-1 min-h-0 flex flex-col items-center justify-center px-6 pt-0 pb-[140px]">
         <AlbumCarousel albums={albums} />
       </main>
       {/* 하단 바 */}
