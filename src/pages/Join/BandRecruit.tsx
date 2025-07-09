@@ -6,9 +6,12 @@ import guitar from "@/assets/icons/join/ic_guitar_brighter.svg";
 import RecruitChat from "./_components/band_recruit/RecruitChat";
 import { useState } from "react";
 import BandMenuContentBtn from "./_components/band_recruit/BandMenuContentBtn";
+import Dialog from "@mui/material/Dialog";
 
 const BandRecruit = () => {
   const [openMenu, setOpenMenu] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
   return (
     <main className="relative min-h-screen w-[393px] mx-auto bg-[#121212]/90">
       <section
@@ -38,13 +41,56 @@ const BandRecruit = () => {
               </BandMenuContentBtn>
               <BandMenuContentBtn
                 radius="bottom"
-                onClick={() => setOpenMenu(false)}
+                onClick={() => {
+                  setOpenDeleteDialog(true);
+                  setOpenMenu(false);
+                }}
               >
                 밴드 모집방 삭제
               </BandMenuContentBtn>
             </div>
           )}
         </div>
+
+        {/* 방 삭제 dialog */}
+        <Dialog
+          onClose={() => setOpenDeleteDialog(false)}
+          open={openDeleteDialog}
+          sx={{
+            "& .MuiDialog-paper": {
+              borderRadius: "14px",
+            },
+          }}
+        >
+          <div className="flex flex-col items-center pt-[62px] pb-[28px] px-[26px] w-[336px] h-[332px] bg-[#E9E9E9] text-center">
+            <p className="text-hakgyo-b-24">
+              정말
+              <br />
+              'Shinseikamattechan'을
+              <br />
+              삭제하시겠습니까?
+            </p>
+            <p className="mt-[16px] w-[240px] text-hakgyo-r-14 text-[#555]">
+              삭제 시 되돌릴 수 없으며 지원자들의 채팅방에서 모두 나가기 처리가
+              됩니다. 또한 밴드 모집방과 관련된 모든 데이터가 삭제되며 확인할 수
+              없게 됩니다.{" "}
+            </p>
+            <div className="flex gap-[16px] mt-[24px]">
+              <button
+                className="w-[105px] h-[41px] border-none rounded-[50px] bg-[#CACACA] text-ibm-sb-16 text-[#B42127] whitespace-nowrap cursor-pointer"
+                onClick={() => setOpenDeleteDialog(false)}
+              >
+                아니오
+              </button>
+              <button
+                className="w-[105px] h-[41px] border-none rounded-[50px] bg-[#B42127] text-ibm-sb-16 text-[#fff] whitespace-nowrap cursor-pointer"
+                onClick={() => setOpenDeleteDialog(false)}
+              >
+                예
+              </button>
+            </div>
+          </div>
+        </Dialog>
 
         <div className="flex flex-col gap-[8px] mb-[20px]">
           <p className="text-hakgyo-b-24 text-[#fff]">Shinsei Kamattechan</p>
