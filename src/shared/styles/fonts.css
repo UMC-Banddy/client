@@ -93,3 +93,11 @@
   font-weight: 600;
   line-height: normal;
 }
+
+.text-ibm-sb-16 {
+  font-family: "IBM";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+}

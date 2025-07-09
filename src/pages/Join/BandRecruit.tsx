@@ -2,15 +2,34 @@ import back from "@/assets/icons/join/ic_back.svg";
 import dotsVertical from "@/assets/icons/join/ic_dots_vertical.svg";
 import bandRecruit from "@/assets/icons/join/band_recruit.png";
 import mic from "@/assets/icons/join/ic_mic.svg";
+import micRed from "@/assets/icons/join/ic_mic_red.svg";
 import guitar from "@/assets/icons/join/ic_guitar_brighter.svg";
 import RecruitChat from "./_components/band_recruit/RecruitChat";
 import { useState } from "react";
 import BandMenuContentBtn from "./_components/band_recruit/BandMenuContentBtn";
 import Dialog from "@mui/material/Dialog";
+import CheckBox from "./_components/band_recruit/CheckBox";
+
+const dummyData = [
+  {
+    id: 0,
+  },
+  {
+    id: 1,
+  },
+  {
+    id: 2,
+  },
+];
 
 const BandRecruit = () => {
   const [openMenu, setOpenMenu] = useState(false);
+
+  const [checkEnabled, setCheckEnabled] = useState(false);
+  const [checkedId, setCheckedId] = useState<number[]>([]);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openPassDialog, setOpenPassDialog] = useState(false);
+  const [isPassDialog, setIsPassDialog] = useState(false);
 
   return (
     <main className="relative min-h-screen w-[393px] mx-auto bg-[#121212]/90">
@@ -32,7 +51,10 @@ const BandRecruit = () => {
             <div className="flex flex-col absolute top-[0] right-[12px] translate-y-[33.3%]">
               <BandMenuContentBtn
                 radius="top"
-                onClick={() => setOpenMenu(false)}
+                onClick={() => {
+                  setCheckEnabled(true);
+                  setOpenMenu(false);
+                }}
               >
                 합격 / 불합격 관리
               </BandMenuContentBtn>
@@ -109,12 +131,118 @@ const BandRecruit = () => {
           </div>
         </div>
       </section>
-
       <section className="flex flex-col gap-[20px] px-[16px] pt-[32px] w-full">
-        <RecruitChat />
-        <RecruitChat />
-        <RecruitChat />
+        {dummyData.map((item) => {
+          const isChecked = checkedId.includes(item.id);
+          return (
+            <RecruitChat
+              key={item.id}
+              enableCheck={checkEnabled}
+              checked={isChecked}
+              onCheck={() => {
+                if (isChecked) {
+                  // 선택 해제
+                  setCheckedId((prev) => prev.filter((i) => i !== item.id));
+                } else {
+                  setCheckedId((prev) => [...prev, item.id]);
+                }
+              }}
+            />
+          );
+        })}
       </section>
+
+      {checkEnabled && (
+        <section className="flex justify-between items-center fixed bottom-[66px] px-[20px] w-full h-[69px] rounded-t-[12px] bg-[#292929]">
+          <div className="flex items-center gap-[8px] ">
+            <CheckBox
+              checked={checkedId.length === dummyData.length}
+              onClick={() => {
+                if (checkedId.length === dummyData.length) {
+                  setCheckedId([]);
+                } else {
+                  setCheckedId(dummyData.map((item) => item.id));
+                }
+              }}
+              checkboxColor="#959595"
+            />
+            <p className="wanted-sb-13 text-[#959595]">전체 선택</p>
+          </div>
+
+          <div className="flex gap-[8px]">
+            <button
+              className="w-[108px] h-[33px] border-none rounded-[100px] bg-[#555] text-ibm-sb-16 text-[#fff] whitespace-nowrap cursor-pointer"
+              onClick={() => {
+                setIsPassDialog(false);
+                setOpenPassDialog(true);
+              }}
+            >
+              불합격 처리
+            </button>
+            <button
+              className="w-[108px] h-[33px] border-none rounded-[100px] bg-[#555] text-ibm-sb-16 text-[#fff] whitespace-nowrap cursor-pointer"
+              onClick={() => {
+                setIsPassDialog(true);
+                setOpenPassDialog(true);
+              }}
+            >
+              합격 처리
+            </button>
+          </div>
+
+          {/* 합격/불합격 처리 dialog */}
+          <Dialog
+            onClose={() => setOpenPassDialog(false)}
+            open={openPassDialog}
+            sx={{
+              "& .MuiDialog-paper": {
+                borderRadius: "14px",
+              },
+            }}
+          >
+            <div className="flex flex-col items-center pt-[48px] pb-[27px] px-[40px] w-[334px] bg-[#E9E9E9] text-center">
+              <p className="mb-[12px] text-hakgyo-b-24">
+                일괄 {isPassDialog ? "합격" : "불합격"}
+              </p>
+              <p className="mb-[20px] text-wanted-sb-15">
+                다음 지원자를 모두 {isPassDialog ? "합격" : "불합격"} 처리
+                <br />
+                하시겠습니까?
+              </p>
+              <p className="text-hakgyo-r-14 text-[#555] text-start">
+                예를 누르시면 즉시 {isPassDialog ? "합격" : "불합격"} 통보가
+                전송되며, 취소할 수 없습니다. 또한 친구 신청이 자동으로
+                발송됩니다.
+              </p>
+
+              <section className="mt-[28px] w-full">
+                <div className="flex justify-between items-center w-full">
+                  <p>noko</p>
+                  <div className="flex items-center gap-[4px]">
+                    <img src={micRed} alt="mic" />
+                    <p className="text-wanted-sb-13 text-[#B42127]">보컬</p>
+                  </div>
+                </div>
+              </section>
+
+              <div className="flex gap-[16px] mt-[39px]">
+                <button
+                  className="w-[105px] h-[41px] border-none rounded-[50px] bg-[#CACACA] text-ibm-sb-16 text-[#B42127] whitespace-nowrap cursor-pointer"
+                  onClick={() => setOpenPassDialog(false)}
+                >
+                  아니오
+                </button>
+                <button
+                  className="w-[105px] h-[41px] border-none rounded-[50px] bg-[#B42127] text-ibm-sb-16 text-[#fff] whitespace-nowrap cursor-pointer"
+                  onClick={() => setOpenPassDialog(false)}
+                >
+                  예
+                </button>
+              </div>
+            </div>
+          </Dialog>
+        </section>
+      )}
     </main>
   );
 };

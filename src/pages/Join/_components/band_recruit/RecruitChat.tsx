@@ -1,4 +1,16 @@
-const RecruitChat = () => {
+import CheckBox from "./CheckBox";
+
+interface RecruitChatProps {
+  enableCheck?: boolean;
+  checked?: boolean;
+  onCheck?: () => void;
+}
+
+const RecruitChat = ({
+  enableCheck = false,
+  checked = false,
+  onCheck,
+}: RecruitChatProps) => {
   return (
     <div className="flex items-center w-full">
       <div className="flex justify-between w-full">
@@ -12,7 +24,11 @@ const RecruitChat = () => {
           </div>
         </div>
 
-        <p className="text-hakgyo-r-14 text-[#959595]">16:39</p>
+        {enableCheck ? (
+          <CheckBox checked={checked} onClick={onCheck!} />
+        ) : (
+          <p className="text-hakgyo-r-14 text-[#959595]">16:39</p>
+        )}
       </div>
     </div>
   );
