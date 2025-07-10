@@ -1,10 +1,18 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter, useRoutes } from "react-router-dom";
+import "./index.css";
+import routes from "@/app/router"; // 라우트 배열 import
+import "@/shared/styles/fonts.css";
 
-createRoot(document.getElementById('root')!).render(
+function MainRoutes() {
+  return useRoutes(routes);
+}
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
-)
+    <BrowserRouter>
+      <MainRoutes />
+    </BrowserRouter>
+  </StrictMode>
+);
