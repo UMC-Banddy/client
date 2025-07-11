@@ -7,8 +7,9 @@ import guitar from "@/assets/icons/join/ic_guitar_brighter.svg";
 import RecruitChat from "./_components/band_recruit/RecruitChat";
 import { useState } from "react";
 import BandMenuContentBtn from "./_components/band_recruit/BandMenuContentBtn";
-import Dialog from "@mui/material/Dialog";
 import CheckBox from "./_components/band_recruit/CheckBox";
+import MuiDialog from "@/shared/components/MuiDialog";
+import CommonBtn from "@/shared/components/CommonBtn";
 
 const dummyData = [
   {
@@ -75,15 +76,7 @@ const BandRecruit = () => {
         </div>
 
         {/* 방 삭제 dialog */}
-        <Dialog
-          onClose={() => setOpenDeleteDialog(false)}
-          open={openDeleteDialog}
-          sx={{
-            "& .MuiDialog-paper": {
-              borderRadius: "14px",
-            },
-          }}
-        >
+        <MuiDialog open={openDeleteDialog} setOpen={setOpenDeleteDialog}>
           <div className="flex flex-col items-center pt-[62px] pb-[28px] px-[26px] w-[336px] h-[332px] bg-[#E9E9E9] text-center">
             <p className="text-hakgyo-b-24">
               정말
@@ -98,21 +91,18 @@ const BandRecruit = () => {
               없게 됩니다.{" "}
             </p>
             <div className="flex gap-[16px] mt-[24px]">
-              <button
-                className="w-[105px] h-[41px] border-none rounded-[50px] bg-[#CACACA] text-ibm-sb-16 text-[#B42127] whitespace-nowrap cursor-pointer"
+              <CommonBtn
+                color="gray"
                 onClick={() => setOpenDeleteDialog(false)}
               >
                 아니오
-              </button>
-              <button
-                className="w-[105px] h-[41px] border-none rounded-[50px] bg-[#B42127] text-ibm-sb-16 text-[#fff] whitespace-nowrap cursor-pointer"
-                onClick={() => setOpenDeleteDialog(false)}
-              >
+              </CommonBtn>
+              <CommonBtn color="red" onClick={() => setOpenDeleteDialog(false)}>
                 예
-              </button>
+              </CommonBtn>
             </div>
           </div>
-        </Dialog>
+        </MuiDialog>
 
         <div className="flex flex-col gap-[8px] mb-[20px]">
           <p className="text-hakgyo-b-24 text-[#fff]">Shinsei Kamattechan</p>
@@ -191,15 +181,7 @@ const BandRecruit = () => {
           </div>
 
           {/* 합격/불합격 처리 dialog */}
-          <Dialog
-            onClose={() => setOpenPassDialog(false)}
-            open={openPassDialog}
-            sx={{
-              "& .MuiDialog-paper": {
-                borderRadius: "14px",
-              },
-            }}
-          >
+          <MuiDialog open={openPassDialog} setOpen={setOpenPassDialog}>
             <div className="flex flex-col items-center pt-[48px] pb-[27px] px-[40px] w-[334px] bg-[#E9E9E9] text-center">
               <p className="mb-[12px] text-hakgyo-b-24">
                 일괄 {isPassDialog ? "합격" : "불합격"}
@@ -226,21 +208,18 @@ const BandRecruit = () => {
               </section>
 
               <div className="flex gap-[16px] mt-[39px]">
-                <button
-                  className="w-[105px] h-[41px] border-none rounded-[50px] bg-[#CACACA] text-ibm-sb-16 text-[#B42127] whitespace-nowrap cursor-pointer"
+                <CommonBtn
+                  color="gray"
                   onClick={() => setOpenPassDialog(false)}
                 >
                   아니오
-                </button>
-                <button
-                  className="w-[105px] h-[41px] border-none rounded-[50px] bg-[#B42127] text-ibm-sb-16 text-[#fff] whitespace-nowrap cursor-pointer"
-                  onClick={() => setOpenPassDialog(false)}
-                >
+                </CommonBtn>
+                <CommonBtn color="red" onClick={() => setOpenPassDialog(false)}>
                   예
-                </button>
+                </CommonBtn>
               </div>
             </div>
-          </Dialog>
+          </MuiDialog>
         </section>
       )}
     </main>
