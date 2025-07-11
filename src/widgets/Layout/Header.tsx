@@ -1,21 +1,21 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import whiteStar from "@/assets/logos/white-star.svg";
-import backIcon from "@/assets/icons/back.svg";
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import whiteStar from '@/assets/logos/white-star.svg';
+import backIcon from '@/assets/icons/back.svg';
 
 const routeNameMap: Record<string, string> = {
-  "/": "Home",
-  "/search": "Search",
-  "/band": "Band",
-  "/my": "My",
+  '/': 'Home',
+  '/search': 'Search',
+  '/band': 'Band',
+  '/my': 'My',
   // 필요시 추가
 };
 
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const routeName = routeNameMap[location.pathname] || "";
-  const depth = location.pathname.split("/").filter(Boolean).length;
+  const routeName = routeNameMap[location.pathname] || '';
+  const depth = location.pathname.split('/').filter(Boolean).length;
 
   return (
     <header className="w-full h-14 flex items-center px-4 bg-transparent">
@@ -31,7 +31,7 @@ const Header = () => {
           <img src={whiteStar} alt="Banddy Logo" className="w-8 h-8" />
           <span
             className="ml-4 text-white text-xl font-bold italic"
-            style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+            style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}
           >
             {routeName}
           </span>

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface CustomButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -14,13 +14,13 @@ interface CustomButtonProps
 
 const CustomButton = ({
   children,
-  className = "",
-  bgColor = "bg-[#DF0001]",
-  textColor = "text-white",
-  fontSize = "text-base md:text-lg",
-  fontWeight = "font-bold",
-  rounded = "rounded-full",
-  padding = "px-6 py-2",
+  className = '',
+  bgColor = 'bg-[#DF0001]',
+  textColor = 'text-white',
+  fontSize = 'text-base md:text-lg',
+  fontWeight = 'font-bold',
+  rounded = 'rounded-full',
+  padding = 'px-6 py-2',
   ...props
 }: CustomButtonProps) => {
   return (

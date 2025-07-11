@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
-import HomeTagSection from "./_components/HomeTagSection";
-import BandCarousel from "./_components/BandCarousel";
+import React, { useEffect, useState } from 'react';
+import HomeTagSection from './_components/HomeTagSection';
+import BandCarousel from './_components/BandCarousel';
 
 const bandData = [
   {
     id: 1,
-    title: "Flying Bobs",
-    description: "난 그저 열일곱을 살던 중이었어요...",
-    image: "src/assets/images/home-album1.svg",
+    title: 'Flying Bobs',
+    description: '난 그저 열일곱을 살던 중이었어요...',
+    image: 'src/assets/images/home-album1.svg',
   },
   {
     id: 2,
-    title: "냥커버!!",
-    description: "베이스만 넷이에요 살려주세요",
-    image: "src/assets/images/home-album2.svg",
+    title: '냥커버!!',
+    description: '베이스만 넷이에요 살려주세요',
+    image: 'src/assets/images/home-album2.svg',
   },
 ];
 

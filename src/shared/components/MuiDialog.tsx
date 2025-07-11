@@ -1,4 +1,4 @@
-import { Dialog } from "@mui/material";
+import { Dialog } from '@mui/material';
 
 interface ModalProps {
   children: React.ReactNode;
@@ -12,8 +12,8 @@ const Modal = ({ children, open, setOpen }: ModalProps) => {
       onClose={() => setOpen(false)}
       open={open}
       sx={{
-        "& .MuiDialog-paper": {
-          borderRadius: "14px",
+        '& .MuiDialog-paper': {
+          borderRadius: '14px',
         },
       }}
     >

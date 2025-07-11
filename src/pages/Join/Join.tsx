@@ -1,17 +1,17 @@
-import downArrow from "@/assets/icons/join/ic_down_arrow.svg";
-import guitar from "@/assets/icons/join/ic_guitar.svg";
-import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
-import NormalChat from "./_components/chat/NormalChat";
-import BandChat from "./_components/chat/BandChat";
-import { useState } from "react";
-import CategoryContentBtn from "./_components/chat/CategoryContentBtn";
-import chatPlus from "@/assets/icons/join/ic_chat_plus.svg";
-import handRock from "@/assets/icons/join/ic_hand_rock.svg";
-import plus from "@/assets/icons/join/ic_plus.svg";
+import downArrow from '@/assets/icons/join/ic_down_arrow.svg';
+import guitar from '@/assets/icons/join/ic_guitar.svg';
+import moodHeart from '@/assets/icons/join/ic_mood_heart.svg';
+import NormalChat from './_components/chat/NormalChat';
+import BandChat from './_components/chat/BandChat';
+import { useState } from 'react';
+import CategoryContentBtn from './_components/chat/CategoryContentBtn';
+import chatPlus from '@/assets/icons/join/ic_chat_plus.svg';
+import handRock from '@/assets/icons/join/ic_hand_rock.svg';
+import plus from '@/assets/icons/join/ic_plus.svg';
 
 const Join = () => {
   const [openChatCategory, setOpenChatCategory] = useState(false);
-  const [category, setCategory] = useState("전체 채팅방");
+  const [category, setCategory] = useState('전체 채팅방');
   const [openFloatingBtn, setOpenFloatingBtn] = useState(false);
 
   return (
@@ -28,7 +28,7 @@ const Join = () => {
           <div className="flex flex-col absolute top-[5.5px] translate-y-[33.3%] border-[1.5px] border-[#E9E9E9] rounded-[5px] bg-[#292929]">
             <CategoryContentBtn
               onClick={() => {
-                setCategory("전체 채팅방");
+                setCategory('전체 채팅방');
                 setOpenChatCategory(!openChatCategory);
               }}
             >
@@ -36,7 +36,7 @@ const Join = () => {
             </CategoryContentBtn>
             <CategoryContentBtn
               onClick={() => {
-                setCategory("일반 채팅방");
+                setCategory('일반 채팅방');
                 setOpenChatCategory(!openChatCategory);
               }}
             >
@@ -44,7 +44,7 @@ const Join = () => {
             </CategoryContentBtn>
             <CategoryContentBtn
               onClick={() => {
-                setCategory("밴드 채팅방");
+                setCategory('밴드 채팅방');
                 setOpenChatCategory(!openChatCategory);
               }}
             >

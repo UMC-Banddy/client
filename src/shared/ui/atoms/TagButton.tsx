@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface TagButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   active?: boolean;
@@ -8,7 +8,7 @@ interface TagButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const TagButton = ({
   active,
-  className = "",
+  className = '',
   children,
   ...props
 }: TagButtonProps) => (
@@ -16,11 +16,11 @@ const TagButton = ({
     {...props}
     className={`px-4 py-2 rounded-full min-w-max font-wantedsans font-semibold text-[15px] transition-colors duration-150 ${
       active
-        ? "bg-[#DF0001] text-white"
-        : "bg-black/80 text-white hover:bg-black/60"
+        ? 'bg-[#DF0001] text-white'
+        : 'bg-black/80 text-white hover:bg-black/60'
     } ${className}`}
     aria-pressed={active}
-    aria-label={typeof children === "string" ? children : undefined}
+    aria-label={typeof children === 'string' ? children : undefined}
   >
     {children}
   </button>

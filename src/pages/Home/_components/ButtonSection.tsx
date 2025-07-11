@@ -1,7 +1,7 @@
-import React from "react";
-import whiteStar from "@/assets/logos/white-star.svg";
-import muteIcon from "@/assets/icons/no-sound.svg";
-import starIcon from "@/assets/icons/like-star.svg";
+import React from 'react';
+import whiteStar from '@/assets/logos/white-star.svg';
+import muteIcon from '@/assets/icons/no-sound.svg';
+import starIcon from '@/assets/icons/like-star.svg';
 
 const ButtonSection = () => {
   return (

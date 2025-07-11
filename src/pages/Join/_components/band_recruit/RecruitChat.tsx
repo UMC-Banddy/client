@@ -1,4 +1,4 @@
-import CheckBox from "./CheckBox";
+import CheckBox from './CheckBox';
 
 interface RecruitChatProps {
   enableCheck?: boolean;

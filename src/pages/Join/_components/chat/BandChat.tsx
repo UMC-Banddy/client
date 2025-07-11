@@ -1,4 +1,4 @@
-import host from "@/assets/icons/join/ic_host.svg";
+import host from '@/assets/icons/join/ic_host.svg';
 
 interface BandChatProps {
   isHost?: boolean;
