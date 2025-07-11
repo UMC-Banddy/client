@@ -1,5 +1,6 @@
 import React from "react";
 import CustomButton from "@/shared/ui/atoms/CustomButton";
+import micIcon from "@/assets/icons/mic.svg";
 
 const TagList: React.FC<{ tags: string[] }> = ({ tags }) => {
   return (
@@ -24,6 +25,13 @@ const TagList: React.FC<{ tags: string[] }> = ({ tags }) => {
               textOverflow: "unset",
             }}
           >
+            {idx === 0 && (
+              <img
+                src={micIcon}
+                alt="mic"
+                className="w-4 h-4 mr-2 inline-block align-middle"
+              />
+            )}
             {tag}
           </CustomButton>
         );
