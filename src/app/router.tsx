@@ -19,12 +19,20 @@ import SettingsPage from "@/pages/Settings/SettingsPage";
 import NotFoundPage from "@/pages/NotFound/NotFoundPage";
 import Join from "@/pages/Join/Join";
 import BandRecruit from "@/pages/Join/BandRecruit";
+import PeoplePage from "@/pages/Home/BandDetailPage/PeoplePage";
+import PlaylistPage from "@/pages/Home/BandDetailPage/PlaylistPage";
+import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
 
 const routes = [
   {
     element: <Layout />,
     children: [
+      //Home 관련 페이지
       { path: "/", element: <HomePage /> },
+      { path: "/home/people", element: <PeoplePage /> },
+      { path: "/home/playlist", element: <PlaylistPage /> },
+      { path: "/home/prefer", element: <PreferPage /> },
+
       { path: "/login", element: <LoginPage /> },
       { path: "/signup", element: <SignupPage /> },
       { path: "/signup/verify", element: <SignupVerifyPage /> },
