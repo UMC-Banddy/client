@@ -2,7 +2,7 @@ import TagList from "@/shared/ui/atoms/Tag";
 
 const BandInfoSection = () => {
   return (
-    <div className="space-y-2 text-sm text-gray-200 px-4">
+    <div className="text-sm text-gray-200 px-4">
       {/* pill + 일반 텍스트 + 작은 해시태그 */}
       <div className="flex items-center gap-2 mb-1">
         <TagList tags={[{ label: "평균 연령대" }]} className="mb-0" />
