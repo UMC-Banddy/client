@@ -13,10 +13,11 @@ const TagList: React.FC<{ tags: string[] }> = ({ tags }) => {
         } else {
           colorClass = "!bg-black !text-white !border !border-white";
         }
+        //  api 태그 상태들에 따라 수정 필요 현재는 피그마 디자인에 맞춰서 수정
         return (
           <CustomButton
             key={idx}
-            className={`!rounded-full !px-4 !py-1 !text-sm !font-medium !shadow-none !w-auto !max-w-none !min-w-0 !h-auto ${colorClass}`}
+            className={`inline-flex shrink-0 !rounded-full !px-4 !py-1 !text-sm !font-medium !shadow-none !w-auto !max-w-none !min-w-0 !h-auto ${colorClass}`}
             style={{
               whiteSpace: "nowrap",
               overflow: "visible",

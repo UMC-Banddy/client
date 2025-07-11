@@ -26,7 +26,7 @@ const CustomButton = ({
   return (
     <button
       {...props}
-      className={`w-full max-w-xs md:max-w-sm ${padding} ${rounded} ${bgColor} ${textColor} ${fontWeight} ${fontSize} shadow-md hover:bg-red-700 transition-colors duration-200 disabled:bg-gray-300 disabled:text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis min-w-0 ${className}`}
+      className={`w-auto min-w-0 max-w-none ${padding} ${rounded} ${bgColor} ${textColor} ${fontWeight} ${fontSize} shadow-md hover:bg-red-700 transition-colors duration-200 disabled:bg-gray-300 disabled:text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis ${className}`}
     >
       {children}
     </button>
