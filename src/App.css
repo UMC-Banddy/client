@@ -33,3 +33,13 @@
 .read-the-docs {
   color: #888;
 }
+
+.custom-bottom-gradient {
+  background: linear-gradient(
+    to top,
+    #1C1C1E 0%,
+    #1C1C1E 70%,
+    rgba(28,28,30,0.7) 85%,
+    transparent 100%
+  );
+}
