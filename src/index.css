@@ -1,1 +1,160 @@
 @import "tailwindcss";
+@import "tailwind-scrollbar-hide/v4";
+
+/* === Font Face: IBM Plex Sans KR === */
+@font-face {
+  font-family: "IBMPlexSansKR";
+  src: url("/fonts/IBMPlexSansKR-Thin.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBMPlexSansKR";
+  src: url("/fonts/IBMPlexSansKR-ExtraLight.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBMPlexSansKR";
+  src: url("/fonts/IBMPlexSansKR-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBMPlexSansKR";
+  src: url("/fonts/IBMPlexSansKR-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBMPlexSansKR";
+  src: url("/fonts/IBMPlexSansKR-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBMPlexSansKR";
+  src: url("/fonts/IBMPlexSansKR-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBMPlexSansKR";
+  src: url("/fonts/IBMPlexSansKR-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* === Font Face: Helvetica === */
+@font-face {
+  font-family: "Helvetica";
+  src: url("/fonts/Helvetica.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica";
+  src: url("/fonts/Helvetica-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica";
+  src: url("/fonts/Helvetica-Oblique.woff") format("woff");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Helvetica";
+  src: url("/fonts/Helvetica-BoldOblique.woff") format("woff");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* === Font Face: Hakgyo === */
+@font-face {
+  font-family: "Hakgyo";
+  src: url("/fonts/HakgyoansimBareondotumR.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Hakgyo";
+  src: url("/fonts/HakgyoansimBareondotumB.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* === Font Face: WantedSans === */
+@font-face {
+  font-family: "WantedSans";
+  src: url("/fonts/WantedSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "WantedSans";
+  src: url("/fonts/WantedSans-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "WantedSans";
+  src: url("/fonts/WantedSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  div,
+  a,
+  li,
+  input,
+  button,
+  label,
+  textarea,
+  hr {
+    /* margin: 0; */
+  }
+
+  html,
+  body,
+  #root {
+    @apply w-full h-full min-h-screen;
+  }
+
+  body {
+    /* margin: 0; */
+    overflow-x: hidden;
+  }
+
+  *,
+  *::before,
+  *::after {
+    /* box-sizing: border-box; */
+  }
+}
