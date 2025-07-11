@@ -19,6 +19,7 @@ import SettingsPage from "@/pages/Settings/SettingsPage";
 import NotFoundPage from "@/pages/NotFound/NotFoundPage";
 import Join from "@/pages/Join/Join";
 import BandRecruit from "@/pages/Join/BandRecruit";
+import MyPage from "@/pages/My/MyPage";
 
 const routes = [
   {
@@ -41,6 +42,7 @@ const routes = [
       { path: "/bands/:id/chat", element: <BandChatPage /> },
       { path: "/manual", element: <ManualPage /> },
       { path: "/settings", element: <SettingsPage /> },
+      { path: "/my", element: <MyPage /> },
       { path: "*", element: <NotFoundPage /> },
 
       { path: "/join", element: <Join /> },

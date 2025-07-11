@@ -15,7 +15,7 @@ export default function Layout() {
 
   return (
     <div className="relative min-h-screen min-h-[100dvh] flex flex-col bg-gray-50 overflow-hidden w-full">
-      <main className="flex-1 flex flex-col items-center justify-center pb-[120px] w-full max-w-md mx-auto">
+      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-md mx-auto">
         <Outlet />
       </main>
       {!hideBottomBar && <BottomBar />}
