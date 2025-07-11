@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const NotFoundPage = () => (
   <div className="min-h-screen flex items-center justify-center bg-black text-white text-2xl font-bold">

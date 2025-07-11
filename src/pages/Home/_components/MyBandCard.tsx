@@ -1,5 +1,5 @@
-import React from 'react';
-import ButtonSection from './ButtonSection';
+import React from "react";
+import ButtonSection from "./ButtonSection";
 
 interface Band {
   title: string;

@@ -1,8 +1,8 @@
-import clsx from 'clsx';
-import type { ButtonHTMLAttributes } from 'react';
+import clsx from "clsx";
+import type { ButtonHTMLAttributes } from "react";
 
 interface CommonBtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  color?: 'red' | 'gray';
+  color?: "red" | "gray";
 }
 
 /**
@@ -14,11 +14,11 @@ const CommonBtn = ({ color, className, ...props }: CommonBtnProps) => {
   return (
     <button
       className={clsx(
-        'w-[105px] h-[41px] border-none rounded-[50px] text-ibm-sb-16 whitespace-nowrap cursor-pointer',
+        "w-[105px] h-[41px] border-none rounded-[50px] text-ibm-sb-16 whitespace-nowrap cursor-pointer",
         className,
         {
-          'bg-[#B42127] text-[#fff]': color === 'red',
-          'bg-[#CACACA] text-[#B42127]': color === 'gray',
+          "bg-[#B42127] text-[#fff]": color === "red",
+          "bg-[#CACACA] text-[#B42127]": color === "gray",
         }
       )}
       {...props}

@@ -1,4 +1,4 @@
-import splashImg from '@/assets/splash-main.png';
+import splashImg from "@/assets/splash-main.png";
 
 export default function SplashScreen() {
   return (

@@ -1,15 +1,15 @@
-import back from '@/assets/icons/join/ic_back.svg';
-import dotsVertical from '@/assets/icons/join/ic_dots_vertical.svg';
-import bandRecruit from '@/assets/icons/join/band_recruit.png';
-import mic from '@/assets/icons/join/ic_mic.svg';
-import micRed from '@/assets/icons/join/ic_mic_red.svg';
-import guitar from '@/assets/icons/join/ic_guitar_brighter.svg';
-import RecruitChat from './_components/band_recruit/RecruitChat';
-import { useState } from 'react';
-import BandMenuContentBtn from './_components/band_recruit/BandMenuContentBtn';
-import CheckBox from './_components/band_recruit/CheckBox';
-import MuiDialog from '@/shared/components/MuiDialog';
-import CommonBtn from '@/shared/components/CommonBtn';
+import back from "@/assets/icons/join/ic_back.svg";
+import dotsVertical from "@/assets/icons/join/ic_dots_vertical.svg";
+import bandRecruit from "@/assets/icons/join/band_recruit.png";
+import mic from "@/assets/icons/join/ic_mic.svg";
+import micRed from "@/assets/icons/join/ic_mic_red.svg";
+import guitar from "@/assets/icons/join/ic_guitar_brighter.svg";
+import RecruitChat from "./_components/band_recruit/RecruitChat";
+import { useState } from "react";
+import BandMenuContentBtn from "./_components/band_recruit/BandMenuContentBtn";
+import CheckBox from "./_components/band_recruit/CheckBox";
+import MuiDialog from "@/shared/components/MuiDialog";
+import CommonBtn from "@/shared/components/CommonBtn";
 
 const dummyData = [
   {
@@ -88,7 +88,7 @@ const BandRecruit = () => {
             <p className="mt-[16px] w-[240px] text-hakgyo-r-14 text-[#555]">
               삭제 시 되돌릴 수 없으며 지원자들의 채팅방에서 모두 나가기 처리가
               됩니다. 또한 밴드 모집방과 관련된 모든 데이터가 삭제되며 확인할 수
-              없게 됩니다.{' '}
+              없게 됩니다.{" "}
             </p>
             <div className="flex gap-[16px] mt-[24px]">
               <CommonBtn
@@ -184,15 +184,15 @@ const BandRecruit = () => {
           <MuiDialog open={openPassDialog} setOpen={setOpenPassDialog}>
             <div className="flex flex-col items-center pt-[48px] pb-[27px] px-[40px] w-[334px] bg-[#E9E9E9] text-center">
               <p className="mb-[12px] text-hakgyo-b-24">
-                일괄 {isPassDialog ? '합격' : '불합격'}
+                일괄 {isPassDialog ? "합격" : "불합격"}
               </p>
               <p className="mb-[20px] text-wanted-sb-15">
-                다음 지원자를 모두 {isPassDialog ? '합격' : '불합격'} 처리
+                다음 지원자를 모두 {isPassDialog ? "합격" : "불합격"} 처리
                 <br />
                 하시겠습니까?
               </p>
               <p className="text-hakgyo-r-14 text-[#555] text-start">
-                예를 누르시면 즉시 {isPassDialog ? '합격' : '불합격'} 통보가
+                예를 누르시면 즉시 {isPassDialog ? "합격" : "불합격"} 통보가
                 전송되며, 취소할 수 없습니다. 또한 친구 신청이 자동으로
                 발송됩니다.
               </p>

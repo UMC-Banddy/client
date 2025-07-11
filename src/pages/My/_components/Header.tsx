@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 interface HeaderProps {
   title: string;
@@ -15,7 +15,7 @@ export default function Header({
   leftLink,
   rightIcon,
   rightLink,
-  className = '',
+  className = "",
 }: HeaderProps) {
   return (
     <header

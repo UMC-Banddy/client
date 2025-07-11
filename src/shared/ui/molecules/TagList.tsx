@@ -1,5 +1,5 @@
-import React from 'react';
-import TagButton from '@/shared/ui/atoms/TagButton';
+import React from "react";
+import TagButton from "@/shared/ui/atoms/TagButton";
 
 interface Tag {
   label: string;
@@ -12,7 +12,7 @@ interface TagListProps {
   className?: string;
 }
 
-const TagList = ({ tags, className = '' }: TagListProps) => (
+const TagList = ({ tags, className = "" }: TagListProps) => (
   <div
     className={`flex flex-nowrap gap-2 overflow-x-auto scrollbar-hide w-full ${className}`}
     aria-label="태그 리스트"

@@ -25,7 +25,7 @@ module.exports = [
     },
     rules: {
       semi: ["error", "always"],
-      quotes: ["error", "single"],
+      quotes: ["error", "double", { avoidEscape: true }],
       // 여기에 원하는 룰을 계속 추가 가능
     },
   },

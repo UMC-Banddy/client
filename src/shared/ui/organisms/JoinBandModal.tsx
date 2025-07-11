@@ -1,5 +1,5 @@
-import CustomButton from '@/shared/ui/atoms/CustomButton';
-import star2 from '@/assets/logos/Star 2.svg';
+import CustomButton from "@/shared/ui/atoms/CustomButton";
+import star2 from "@/assets/logos/Star 2.svg";
 
 interface JoinBandModalProps {
   open: boolean;

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import arrowPrev from '@/assets/icons/home/arrowprev.svg';
-import arrowNext from '@/assets/icons/home/arrownext.svg';
-import ButtonSection from './ButtonSection';
+import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import arrowPrev from "@/assets/icons/home/arrowprev.svg";
+import arrowNext from "@/assets/icons/home/arrownext.svg";
+import ButtonSection from "./ButtonSection";
 
 interface Band {
   id: number;
@@ -13,12 +13,12 @@ interface Band {
 
 const BandCarousel: React.FC<{ bands: Band[] }> = ({ bands }) => {
   const [index, setIndex] = useState(0);
-  const [direction, setDirection] = useState<'left' | 'right'>('right');
+  const [direction, setDirection] = useState<"left" | "right">("right");
 
-  const paginate = (dir: 'left' | 'right') => {
+  const paginate = (dir: "left" | "right") => {
     setDirection(dir);
     setIndex((prev) =>
-      dir === 'left'
+      dir === "left"
         ? prev === 0
           ? bands.length - 1
           : prev - 1
@@ -33,7 +33,7 @@ const BandCarousel: React.FC<{ bands: Band[] }> = ({ bands }) => {
       <div className="flex flex-row items-center justify-center w-full min-h-[320px] relative">
         {/* 왼쪽 버튼 */}
         <button
-          onClick={() => paginate('left')}
+          onClick={() => paginate("left")}
           className="z-10 w-14 h-14 flex items-center justify-center focus:outline-none bg-transparent p-0 border-none"
           aria-label="이전 밴드"
         >
@@ -44,9 +44,9 @@ const BandCarousel: React.FC<{ bands: Band[] }> = ({ bands }) => {
             key={bands[index].id}
             className="flex items-center justify-center"
             custom={direction}
-            initial={{ x: direction === 'left' ? -300 : 300, opacity: 0 }}
+            initial={{ x: direction === "left" ? -300 : 300, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction === 'left' ? 300 : -300, opacity: 0 }}
+            exit={{ x: direction === "left" ? 300 : -300, opacity: 0 }}
             transition={{ duration: 0.4 }}
           >
             <img
@@ -58,7 +58,7 @@ const BandCarousel: React.FC<{ bands: Band[] }> = ({ bands }) => {
         </AnimatePresence>
         {/* 오른쪽 버튼 */}
         <button
-          onClick={() => paginate('right')}
+          onClick={() => paginate("right")}
           className="z-10 w-14 h-14 flex items-center justify-center focus:outline-none bg-transparent p-0 border-none"
           aria-label="다음 밴드"
         >

@@ -1,4 +1,4 @@
-import check from '@/assets/icons/join/ic_check.svg';
+import check from "@/assets/icons/join/ic_check.svg";
 
 interface CheckBoxProps {
   checked: boolean;
@@ -9,7 +9,7 @@ interface CheckBoxProps {
 const CheckBox = ({
   checked,
   onClick,
-  checkboxColor = '#E9E9E9',
+  checkboxColor = "#E9E9E9",
 }: CheckBoxProps) => {
   return checked ? (
     <button

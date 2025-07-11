@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface HashtagListProps {
   tags: string[];
@@ -8,7 +8,7 @@ interface HashtagListProps {
 const HashtagList: React.FC<HashtagListProps> = ({ tags, className }) => {
   if (!tags || tags.length === 0) return null;
   return (
-    <div className={`flex flex-wrap px-[6vw] gap-x-[1vw] gap-y-[1vh] mb-[2vh] w-full max-w-xs mx-auto mt-[3vh] ${className || ''}`}>
+    <div className={`flex flex-wrap px-[6vw] gap-x-[1vw] gap-y-[1vh] mb-[2vh] w-full max-w-xs mx-auto mt-[3vh] ${className || ""}`}>
       {tags.map((tag, i) => (
         <span
           key={i}

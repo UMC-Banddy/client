@@ -1,13 +1,13 @@
-import React from 'react';
-import TagList from './TagList';
+import React from "react";
+import TagList from "./TagList";
 
 // mockdata로 태그 분리
 const tagMockData = [
-  '보컬 모집',
-  'Sheena Ringo',
-  'いらないもの',
-  'Betcover',
-  'aiko',
+  "보컬 모집",
+  "Sheena Ringo",
+  "いらないもの",
+  "Betcover",
+  "aiko",
 ];
 
 const HomeTagSection = () => {
