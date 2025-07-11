@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import MyBandCard from "./MyBandCard";
 import arrowPrev from "@/assets/icons/arrowprev.svg";
 import arrowNext from "@/assets/icons/arrownext.svg";
 import ButtonSection from "./ButtonSection";
