@@ -47,6 +47,7 @@ const routes = [
       { path: "/settings", element: <SettingsPage /> },
       { path: "/my", element: <MyPage /> },
       { path: "*", element: <NotFoundPage /> },
+
       //Home 관련 페이지
       { path: "/", element: <HomePage /> },
       { path: "/home/people", element: <PeoplePage /> },
