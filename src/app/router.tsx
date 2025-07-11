@@ -20,6 +20,7 @@ import NotFoundPage from "@/pages/NotFound/NotFoundPage";
 import Join from "@/pages/Join/Join";
 import BandRecruit from "@/pages/Join/BandRecruit";
 import CreateChat from "@/pages/Join/CreateChat";
+import CreateChat2 from "@/pages/Join/CreateChat2";
 
 const routes = [
   {
@@ -47,6 +48,7 @@ const routes = [
       { path: "/join", element: <Join /> },
       { path: "/join/band-recruit", element: <BandRecruit /> },
       { path: "/join/create-chat", element: <CreateChat /> },
+      { path: "/join/create-chat/2", element: <CreateChat2 /> },
     ],
   },
 ];
