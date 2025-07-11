@@ -37,8 +37,8 @@
 .custom-bottom-gradient {
   background: linear-gradient(
     to top,
-    #000000 0%,
-    #000000 60%,
+    #1c1c1e 0%,
+    #1c1c1e 70%,
     rgba(28, 28, 30, 0.7) 85%,
     transparent 100%
   );

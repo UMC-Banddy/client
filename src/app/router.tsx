@@ -24,6 +24,7 @@ import MyPage from "@/pages/My/MyPage";
 import PeoplePage from "@/pages/Home/BandDetailPage/PeoplePage";
 import PlaylistPage from "@/pages/Home/BandDetailPage/PlaylistPage";
 import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
+import CreateChat from "@/pages/Join/CreateChat";
 
 const routes = [
   {
@@ -33,7 +34,10 @@ const routes = [
       { path: "/login", element: <LoginPage /> },
       { path: "/signup/email", element: <SignupPage /> },
       { path: "/signup/verify", element: <SignupVerifyPage /> },
-      { path: "/signup/password-confirm", element: <SignupPasswordConfirmStep /> },
+      {
+        path: "/signup/password-confirm",
+        element: <SignupPasswordConfirmStep />,
+      },
       { path: "/signup/password", element: <SignupPasswordPage /> },
       { path: "/signup/nickname", element: <SignupNicknamePage /> },
       { path: "/signup/profile", element: <SignupProfilePage /> },
@@ -75,6 +79,7 @@ const routes = [
 
       { path: "/join", element: <Join /> },
       { path: "/join/band-recruit", element: <BandRecruit /> },
+      { path: "/join/create-chat", element: <CreateChat /> },
     ],
   },
 ];
