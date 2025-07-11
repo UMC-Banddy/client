@@ -7,6 +7,7 @@ module.exports = {
         hakgyo: ["Hakgyo", "sans-serif"],
         wantedsans: ["WantedSans", "sans-serif"],
         ibm: ["IBM", "sans-serif"],
+        hakgyoansim: ['"Hakgyoansim Bareondotum"', "sans-serif"],
       },
     },
   },
