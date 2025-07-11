@@ -12,7 +12,7 @@ const TagList = ({ tags, className = "" }: TagListProps) => (
     {tags.map((tag, idx) => (
       <span
         key={tag.label + idx}
-        className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap border
+        className={`px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap border
           ${
             tag.color === "red"
               ? "bg-[#DF0001] text-white border-[#DF0001]"
