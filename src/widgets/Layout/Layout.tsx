@@ -1,17 +1,17 @@
-import { Outlet, useLocation } from "react-router-dom";
-import BottomBar from "@/widgets/Layout/BottomBar";
-import Header from "./Header";
+import { Outlet, useLocation } from 'react-router-dom';
+import BottomBar from '@/widgets/Layout/BottomBar';
+import Header from './Header';
 
 export default function Layout() {
   const location = useLocation();
   const hideBottomBar = [
-    "/login",
-    "/signup",
-    "/signup/verify",
-    "/signup/password",
-    "/signup/nickname",
-    "/signup/profile",
-    "/signup/complete",
+    '/login',
+    '/signup',
+    '/signup/verify',
+    '/signup/password',
+    '/signup/nickname',
+    '/signup/profile',
+    '/signup/complete',
   ].some((path) => location.pathname.startsWith(path));
 
   return (

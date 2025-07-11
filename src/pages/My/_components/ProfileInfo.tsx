@@ -1,4 +1,4 @@
-import { User, Pencil, Share } from "lucide-react";
+import { User, Pencil, Share } from 'lucide-react';
 
 interface ProfileInfoProps {
   avatarUrl?: string;
@@ -39,7 +39,7 @@ export default function ProfileInfo({
             <button
               className="flex items-center justify-center text-[#FFFFFF] hover:bg-[#FFFFFF]/10 transition"
               onClick={onShare}
-              style={{ border: "none", background: "none", padding: 0, borderRadius: 0 }}
+              style={{ border: 'none', background: 'none', padding: 0, borderRadius: 0 }}
               aria-label="공유"
             >
               <Share size={24} />

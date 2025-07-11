@@ -1,4 +1,4 @@
-import no_sound from "@/assets/icons/home/no-sound.svg";
+import no_sound from '@/assets/icons/home/no-sound.svg';
 
 interface ArchiveItemProps {
   coverUrl?: string;
