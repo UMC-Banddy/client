@@ -25,14 +25,14 @@ const HomePage = () => {
   }, []);
 
   return (
-    <main className="relative min-h-screen w-full flex flex-col items-center bg-gradient-to-b from-[#2B2521] to-[#1D1B19] px-6 py-8">
-      <div className="w-full max-w-[420px] mx-auto flex flex-col items-center">
-        {/* 태그 바 - 한 줄 슬라이딩, gap-x-3, no-wrap, overflow-x-auto */}
-        <div className="w-full mb-8">
+    <main className="min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-center bg-gradient-to-b from-[#2B2521] to-[#1D1B19] overflow-hidden">
+      <div className="w-full max-w-[420px] mx-auto flex flex-col items-center mb-10">
+        {/* 태그 바 */}
+        <div className="w-full">
           <HomeTagSection />
         </div>
         {/* 캐러셀 */}
-        <div className="w-full mb-8">
+        <div className="w-full">
           {myBands.length > 0 && <BandCarousel bands={myBands} />}
         </div>
       </div>

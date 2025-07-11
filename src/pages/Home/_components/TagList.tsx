@@ -17,6 +17,11 @@ const TagList: React.FC<{ tags: string[] }> = ({ tags }) => {
           <CustomButton
             key={idx}
             className={`!rounded-full !px-4 !py-1 !text-sm !font-medium !shadow-none !w-auto !max-w-none !min-w-0 !h-auto ${colorClass}`}
+            style={{
+              whiteSpace: "nowrap",
+              overflow: "visible",
+              textOverflow: "unset",
+            }}
           >
             {tag}
           </CustomButton>

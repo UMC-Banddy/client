@@ -12,7 +12,7 @@ const tagMockData = [
 
 const HomeTagSection = () => {
   return (
-    <div className="flex flex-nowrap overflow-x-auto gap-x-3 w-full max-w-full px-1 py-2 mb-0 scrollbar-hide">
+    <div className="flex flex-nowrap overflow-x-auto gap-x-3 w-full max-w-full px-1 py-2 mb-0 scrollbar-hide ml-6">
       <TagList tags={tagMockData} />
     </div>
   );
