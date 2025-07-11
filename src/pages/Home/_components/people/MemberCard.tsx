@@ -3,7 +3,7 @@ import homeAlbum1 from "@/assets/images/home-album1.svg";
 
 const MemberCard = () => {
   return (
-    <div className="w-full max-w-xl px-6 ml-8 mr-8">
+    <div className="w-full max-w-xl px-6 ">
       <div className="flex items-center gap-6 py-4">
         <img
           src={homeAlbum1}
