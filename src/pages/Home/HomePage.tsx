@@ -25,7 +25,7 @@ const HomePage = () => {
   }, []);
 
   return (
-    <main className="min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-center bg-gradient-to-b from-[#2B2521] to-[#1D1B19] overflow-hidden">
+    <main className="min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-center bg-[#121212]/90 overflow-hidden">
       <div className="w-full max-w-[420px] mx-auto flex flex-col items-center mb-10">
         {/* 태그 바 */}
         <div className="w-full">
