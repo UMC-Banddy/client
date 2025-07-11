@@ -4,17 +4,29 @@ interface CustomButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   className?: string;
+  bgColor?: string; // 배경색 커스텀
+  textColor?: string; // 글자색 커스텀
+  fontSize?: string; // 폰트 크기 커스텀
+  fontWeight?: string; // 폰트 굵기 커스텀
+  rounded?: string; // 라운드 커스텀
+  padding?: string; // 패딩 커스텀
 }
 
 const CustomButton = ({
   children,
   className = "",
+  bgColor = "bg-[#DF0001]",
+  textColor = "text-white",
+  fontSize = "text-base md:text-lg",
+  fontWeight = "font-bold",
+  rounded = "rounded-full",
+  padding = "px-6 py-2",
   ...props
 }: CustomButtonProps) => {
   return (
     <button
       {...props}
-      className={`w-full max-w-xs md:max-w-sm px-6 py-2 rounded-full bg-[#DF0001] text-white font-bold text-base md:text-lg shadow-md hover:bg-red-700 transition-colors duration-200 disabled:bg-gray-300 disabled:text-gray-500 ${className}`}
+      className={`w-full max-w-xs md:max-w-sm ${padding} ${rounded} ${bgColor} ${textColor} ${fontWeight} ${fontSize} shadow-md hover:bg-red-700 transition-colors duration-200 disabled:bg-gray-300 disabled:text-gray-500 whitespace-nowrap overflow-hidden text-ellipsis min-w-0 ${className}`}
     >
       {children}
     </button>
