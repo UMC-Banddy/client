@@ -1,13 +1,13 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
-import Header from './_components/Header';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import Header from "./_components/Header";
 import bell from "@/assets/icons/my/bell.svg";
 import no_bell from "@/assets/icons/my/no-bell.svg";
-import ProfileInfo from './_components/ProfileInfo';
-import SectionDivider from './_components/SectionDivider';
-import HashtagList from './_components/HashTagList';
-import ArchiveSection from './_components/Archive/ArchiveSection';
-import ArchiveItem from './_components/Archive/ArchiveItem';
+import ProfileInfo from "./_components/ProfileInfo";
+import SectionDivider from "./_components/SectionDivider";
+import HashtagList from "./_components/HashTagList";
+import ArchiveSection from "./_components/Archive/ArchiveSection";
+import ArchiveItem from "./_components/Archive/ArchiveItem";
 
 const MyPage = () => {
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ const MyPage = () => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MyPage
+export default MyPage;

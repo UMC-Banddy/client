@@ -1,10 +1,3 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  /* padding: 2rem; */
-  text-align: center;
-}
-
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -46,7 +39,7 @@
     to top,
     #000000 0%,
     #000000 60%,
-    rgba(28,28,30,0.7) 85%,
+    rgba(28, 28, 30, 0.7) 85%,
     transparent 100%
   );
 }
