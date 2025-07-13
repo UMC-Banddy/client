@@ -24,6 +24,8 @@ import MyPage from "@/pages/My/MyPage";
 import PeoplePage from "@/pages/Home/BandDetailPage/PeoplePage";
 import PlaylistPage from "@/pages/Home/BandDetailPage/PlaylistPage";
 import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
+import NotificationPage from "@/pages/Notification/NotificationPage";
+import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
 
 const routes = [
   {
@@ -48,6 +50,8 @@ const routes = [
       { path: "/manual", element: <ManualPage /> },
       { path: "/settings", element: <SettingsPage /> },
       { path: "/my", element: <MyPage /> },
+      { path: "/my/notifications", element: <NotificationPage /> },
+      { path: "/my/notifications/:id", element: <NotificationDetailPage /> },
       { path: "*", element: <NotFoundPage /> },
       //Home 관련 페이지
       { path: "/", element: <HomePage /> },
