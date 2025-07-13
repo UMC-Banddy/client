@@ -4,6 +4,7 @@ import LoginPage from "@/pages/Login/LoginPage";
 import SignupPage from "@/pages/Signup/SignupPage";
 import SignupVerifyPage from "@/pages/Signup/SignupVerifyPage";
 import SignupPasswordPage from "@/pages/Signup/SignupPasswordPage";
+import SignupPasswordConfirmStep from "@/pages/Signup/SignupPasswordConfirmStep";
 import SignupNicknamePage from "@/pages/Signup/SignupNicknamePage";
 import SignupProfilePage from "@/pages/Signup/SignupProfilePage";
 import SignupCompletePage from "@/pages/Signup/SignupCompletePage";
@@ -30,8 +31,9 @@ const routes = [
     children: [
       { path: "/", element: <HomePage /> },
       { path: "/login", element: <LoginPage /> },
-      { path: "/signup", element: <SignupPage /> },
+      { path: "/signup/email", element: <SignupPage /> },
       { path: "/signup/verify", element: <SignupVerifyPage /> },
+      { path: "/signup/password-confirm", element: <SignupPasswordConfirmStep /> },
       { path: "/signup/password", element: <SignupPasswordPage /> },
       { path: "/signup/nickname", element: <SignupNicknamePage /> },
       { path: "/signup/profile", element: <SignupProfilePage /> },
