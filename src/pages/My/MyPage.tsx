@@ -38,7 +38,7 @@ const MyPage = () => {
       <Header
         title="MY"
         rightIcon={<img src={hasNotification ? bell : no_bell} alt="bell" className="text-[#FFFFFF] mb" />}
-        rightLink={"/notifications"}
+        rightLink={"/my/notifications"}
       />
       <div className="mt-[15vh]"></div>
       <ProfileInfo

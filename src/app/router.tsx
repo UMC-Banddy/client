@@ -4,6 +4,7 @@ import LoginPage from "@/pages/Login/LoginPage";
 import SignupPage from "@/pages/Signup/SignupPage";
 import SignupVerifyPage from "@/pages/Signup/SignupVerifyPage";
 import SignupPasswordPage from "@/pages/Signup/SignupPasswordPage";
+import SignupPasswordConfirmStep from "@/pages/Signup/SignupPasswordConfirmStep";
 import SignupNicknamePage from "@/pages/Signup/SignupNicknamePage";
 import SignupProfilePage from "@/pages/Signup/SignupProfilePage";
 import SignupCompletePage from "@/pages/Signup/SignupCompletePage";
@@ -23,6 +24,8 @@ import MyPage from "@/pages/My/MyPage";
 import PeoplePage from "@/pages/Home/BandDetailPage/PeoplePage";
 import PlaylistPage from "@/pages/Home/BandDetailPage/PlaylistPage";
 import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
+import NotificationPage from "@/pages/Notification/NotificationPage";
+import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
 
 const routes = [
   {
@@ -30,8 +33,9 @@ const routes = [
     children: [
       { path: "/", element: <HomePage /> },
       { path: "/login", element: <LoginPage /> },
-      { path: "/signup", element: <SignupPage /> },
+      { path: "/signup/email", element: <SignupPage /> },
       { path: "/signup/verify", element: <SignupVerifyPage /> },
+      { path: "/signup/password-confirm", element: <SignupPasswordConfirmStep /> },
       { path: "/signup/password", element: <SignupPasswordPage /> },
       { path: "/signup/nickname", element: <SignupNicknamePage /> },
       { path: "/signup/profile", element: <SignupProfilePage /> },
@@ -46,6 +50,8 @@ const routes = [
       { path: "/manual", element: <ManualPage /> },
       { path: "/settings", element: <SettingsPage /> },
       { path: "/my", element: <MyPage /> },
+      { path: "/my/notifications", element: <NotificationPage /> },
+      { path: "/my/notifications/:id", element: <NotificationDetailPage /> },
       { path: "*", element: <NotFoundPage /> },
 
       //Home 관련 페이지

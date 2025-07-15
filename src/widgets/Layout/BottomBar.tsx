@@ -25,7 +25,14 @@ const BottomBar = () => {
       aria-label="하단 내비게이션 바"
     >
       {navs.map((nav) => {
-        const active = location.pathname === nav.path;
+        let active = false;
+        if (nav.path === "/") {
+          active = location.pathname === "/";
+        } else if (nav.path === "/my") {
+          active = location.pathname.startsWith("/my") || location.pathname.startsWith("/profile-other/");
+        } else {
+          active = location.pathname.startsWith(nav.path);
+        }
         return (
           <Link
             key={nav.path}
