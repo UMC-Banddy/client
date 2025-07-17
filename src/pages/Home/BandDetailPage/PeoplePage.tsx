@@ -3,6 +3,11 @@ import MemberCard from "@/pages/Home/_components/people/MemberCard";
 import BandInfoSection from "@/pages/Home/_components/people/BandInfoSection";
 import RoleIconList from "@/pages/Home/_components/people/RoleIconList";
 import BandProfileHeader from "@/pages/Home/_components/people/BandProfileHeader";
+import MicImg from "@/shared/components/images/MicImg";
+import GuitarImg from "@/shared/components/images/GuitarImg";
+import ElectricGuitarImg from "@/shared/components/images/ElectricGuitarImg";
+import BassImg from "@/shared/components/images/BassImg";
+import RecruitBadge from "@/pages/Home/_components/people/RecruitBadge";
 
 export default function PeoplePage() {
   return (
@@ -30,8 +35,21 @@ export default function PeoplePage() {
       </div>
 
       {/* 역할 아이콘 리스트 */}
-      <div className="w-full mt-0 mb-4 px-0">
-        <RoleIconList />
+      <div className="w-full mt-0 mb-4 px-5 flex gap-4 justify-start">
+        {/* 모집중: Mic */}
+        <div className="relative">
+          <RecruitBadge />
+          <MicImg size={68} color="gray-200" />
+        </div>
+        {/* 모집중: Guitar */}
+        <div className="relative">
+          <RecruitBadge />
+          <GuitarImg size={68} color="gray-200" />
+        </div>
+        {/* 모집 완료: ElectricGuitar */}
+        <ElectricGuitarImg size={68} color="red" />
+        {/* 모집 완료: Bass */}
+        <BassImg size={68} color="red" />
       </div>
     </main>
   );
