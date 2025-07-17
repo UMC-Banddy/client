@@ -1,4 +1,3 @@
-import React from "react";
 import ImgCircle from "./ImgCircle";
 import type { ImgLinksProps } from "./types/imgSrc";
 

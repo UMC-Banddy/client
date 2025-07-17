@@ -1,7 +1,6 @@
 import homeAlbum2 from "@/assets/images/home-album2.svg";
 import MemberCard from "@/pages/Home/_components/people/MemberCard";
 import BandInfoSection from "@/pages/Home/_components/people/BandInfoSection";
-import RoleIconList from "@/pages/Home/_components/people/RoleIconList";
 import BandProfileHeader from "@/pages/Home/_components/people/BandProfileHeader";
 import MicImg from "@/shared/components/images/MicImg";
 import GuitarImg from "@/shared/components/images/GuitarImg";
@@ -16,7 +15,8 @@ export default function PeoplePage() {
       <div className="w-full flex flex-col items-center mb-0 py-2">
         <BandProfileHeader
           imageSrc={homeAlbum2}
-          title="냥커버!!의 인원 구성 정보"
+          bandName="냥커버!!"
+          description="인원 구성 정보"
         />
       </div>
 

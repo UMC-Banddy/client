@@ -2,10 +2,15 @@ import React from "react";
 
 interface BandProfileHeaderProps {
   imageSrc: string;
-  title: string;
+  bandName: string;
+  description: string;
 }
 
-const BandProfileHeader = ({ imageSrc, title }: BandProfileHeaderProps) => (
+const BandProfileHeader = ({
+  imageSrc,
+  bandName,
+  description,
+}: BandProfileHeaderProps) => (
   <div className="flex flex-col items-center mb-4">
     <img
       src={imageSrc}
@@ -13,7 +18,7 @@ const BandProfileHeader = ({ imageSrc, title }: BandProfileHeaderProps) => (
       className="w-64 h-64 object-cover mb-6"
     />
     <h2 className="text-xl font-bold text-[#E9E9E9] font-hakgyoansim">
-      냥커버!!의 인원 구성 정보
+      {bandName}의 {description}
     </h2>
   </div>
 );
