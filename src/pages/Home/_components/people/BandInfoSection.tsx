@@ -15,8 +15,6 @@ const BandInfoSection = () => {
         <TagList tags={[{ label: "성비" }]} className="mb-0" />
         <span className="text-base font-medium">남1 · 여2</span>
       </div>
-      {/* 모집중 pill */}
-      <TagList tags={[{ label: "모집중!", color: "red" }]} />
     </div>
   );
 };
