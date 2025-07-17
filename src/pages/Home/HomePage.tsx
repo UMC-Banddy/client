@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import HomeTagSection from "./_components/HomeTagSection";
 import BandCarousel from "./_components/BandCarousel";
 import MuiDialog from "@/shared/components/MuiDialog";
@@ -49,7 +49,9 @@ const HomePage = () => {
           subtitle="베이스만 넷이에요 살려주세요"
           onClose={() => setOpen(false)}
           tags={["20대 이상", "성별 무관", "서울 홍대", "부산 진구"]}
-          description={"!!아마추어 밴드!!\n프로지향 X\n\n안녕하세요 냥커버입니당 저희는 그냥 즐겁게 할 사람 찾고 있어요 아무나 지원하셈 목적은 올해말 공연임 유튜브 있긴 한데 영상 촬영 필수 아님\n주 1회 평일 합주 선호함"}
+          description={
+            "!!아마추어 밴드!!\n프로지향 X\n\n안녕하세요 냥커버입니당 저희는 그냥 즐겁게 할 사람 찾고 있어요 아무나 지원하셈 목적은 올해말 공연임 유튜브 있긴 한데 영상 촬영 필수 아님\n주 1회 평일 합주 선호함"
+          }
           deadline="25.07.08"
         />
       </MuiDialog>
