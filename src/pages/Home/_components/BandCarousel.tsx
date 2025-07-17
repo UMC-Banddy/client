@@ -11,7 +11,10 @@ interface Band {
   image: string;
 }
 
-const BandCarousel: React.FC<{ bands: Band[] }> = ({ bands }) => {
+const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
+  bands,
+  onJoinClick,
+}) => {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("right");
 
@@ -72,7 +75,7 @@ const BandCarousel: React.FC<{ bands: Band[] }> = ({ bands }) => {
         </h2>
         <p className="text-gray-400 text-sm mb-6">{bands[index].description}</p>
         <div className="mt-2">
-          <ButtonSection />
+          <ButtonSection onJoinClick={onJoinClick} />
         </div>
       </div>
     </div>
