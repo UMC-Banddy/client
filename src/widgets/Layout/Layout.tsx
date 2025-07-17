@@ -13,7 +13,9 @@ export default function Layout() {
     "/signup/profile",
     "/signup/complete",
   ].some((path) => location.pathname.startsWith(path));
-  const hideHeader = ["/my/notifications/"].some((path) => location.pathname.startsWith(path));
+  const hideHeader = ["/my/notifications/"].some((path) =>
+    location.pathname.startsWith(path)
+  );
 
   return (
     <div className="relative min-h-screen min-h-[100dvh] flex flex-col bg-[#121212] overflow-hidden w-full">
