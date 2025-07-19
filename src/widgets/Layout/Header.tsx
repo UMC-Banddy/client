@@ -21,7 +21,7 @@ const Header = () => {
   if (depth >= 2 && !routeName) {
     // 뒤로가기 버튼만
     return (
-      <header className="w-full h-14 flex items-center px-4 bg-transparent">
+      <header className="w-full h-14 flex items-center px-4 bg-[#141414]">
         <button
           onClick={() => navigate(-1)}
           className="w-8 h-8 flex items-center justify-center focus:outline-none"
@@ -33,7 +33,7 @@ const Header = () => {
   } else if (depth >= 2 && routeName) {
     // 뒤로가기 버튼 + routeName
     return (
-      <header className="w-full h-14 flex items-center px-4 bg-transparent">
+      <header className="w-full h-14 flex items-center px-4 bg-[#141414]">
         <button
           onClick={() => navigate(-1)}
           className="w-8 h-8 flex items-center justify-center focus:outline-none"
@@ -51,7 +51,7 @@ const Header = () => {
   } else {
     // (depth < 2) 로고 + routeName
     return (
-      <header className="w-full h-14 flex items-center px-4 bg-transparent">
+      <header className="w-full h-14 flex items-center px-4 bg-[#141414]">
         <img src={whiteStar} alt="Banddy Logo" className="w-8 h-8" />
         <span
           className="ml-4 text-white text-xl font-bold italic"
