@@ -72,7 +72,7 @@ const BottomBar = () => {
                   src={active ? nav.activeIcon : nav.inactiveIcon}
                   alt={nav.label + " 아이콘"}
                   className="
-                    w-[8vw] h-[8vw] min-w-6 min-h-6
+                    w-[10vw] h-[10vw] min-w-6 min-h-6
                     md:w-12 md:h-12
                     transition-opacity
                   "
