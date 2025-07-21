@@ -12,11 +12,6 @@ interface Band {
   tags: string[];
 }
 
-// ButtonSection props 타입 정의 추가
-interface ButtonSectionProps {
-  setToast: (v: boolean) => void;
-}
-
 const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
   bands,
   onJoinClick,
@@ -29,17 +24,11 @@ const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
 
   // 토스트 상태를 여기서 관리
   const [toast, setToast] = useState(false);
-  const [toastVisible, setToastVisible] = useState(false);
 
   useEffect(() => {
     if (toast) {
-      setToastVisible(true);
-      const timer1 = setTimeout(() => setToastVisible(false), 1600);
-      const timer2 = setTimeout(() => setToast(false), 2000);
-      return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-      };
+      const timer = setTimeout(() => setToast(false), 2000);
+      return () => clearTimeout(timer);
     }
   }, [toast]);
 
@@ -65,7 +54,7 @@ const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
     if (index === extendedBands.length - 1) {
       // 마지막 → 첫 번째로 순간 점프
       container.style.transition = "none";
-      container.style.transform = `translateX(-100%)`;
+      container.style.transform = "translateX(-100%)";
 
       // 다음 프레임에 다시 transition 켜기
       requestAnimationFrame(() => {
@@ -146,7 +135,9 @@ const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
       {/* 토스트 메시지 */}
       {toast && (
         <div
-          className={`fixed left-1/2 bottom-26 z-50 px-8 py-3 bg-black text-white rounded-full text-xl font-hakgyoansim -translate-x-1/2 transition-all duration-400 animate-toast-updown`}
+          className={
+            "fixed left-1/2 bottom-26 z-50 px-8 py-3 bg-black text-white rounded-full text-xl font-hakgyoansim -translate-x-1/2 transition-all duration-400 animate-toast-updown"
+          }
           style={{
             minWidth: 220,
             maxWidth: "90vw",

@@ -32,18 +32,22 @@ const ImgCircle = ({
     >
       {React.Children.map(props.children, (child) =>
         React.isValidElement(child)
-          ? React.cloneElement(child as any, {
-              style: {
-                width: "70%",
-                height: "70%",
-                maxWidth: "70%",
-                maxHeight: "70%",
-                display: "block",
-                margin: "auto",
-                aspectRatio: "1/1",
-                ...((child as any).props.style || {}),
-              },
-            })
+          ? React.cloneElement(
+              child as React.ReactElement<{ style?: React.CSSProperties }>,
+              {
+                style: {
+                  width: "70%",
+                  height: "70%",
+                  maxWidth: "70%",
+                  maxHeight: "70%",
+                  display: "block",
+                  margin: "auto",
+                  aspectRatio: "1/1",
+                  ...((child.props as { style?: React.CSSProperties }).style ||
+                    {}),
+                },
+              }
+            )
           : child
       )}
     </div>
