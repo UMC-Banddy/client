@@ -121,6 +121,25 @@
   font-display: swap;
 }
 
+@keyframes toast-updown {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  10%,
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+}
+.animate-toast-updown {
+  animation: toast-updown 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 @layer base {
   h1,
   h2,

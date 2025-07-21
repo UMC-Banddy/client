@@ -12,25 +12,19 @@ const ButtonSection = ({}: { onJoinClick?: () => void }) => {
   const [starOn, setStarOn] = useState(false);
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState(false);
-  const [toastVisible, setToastVisible] = useState(false);
+  const toastTimeout = React.useRef<NodeJS.Timeout | null>(null);
+
+  const showToast = () => {
+    if (toast) return; // 이미 토스트가 떠 있으면 무시
+    setToast(true);
+  };
 
   // 토스트 자동 닫기
   React.useEffect(() => {
     if (toast) {
-      const timer = setTimeout(() => setToast(false), 1800);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
-
-  // 토스트 애니메이션: 위에서 아래로 fade-in, 아래로 fade-out
-  React.useEffect(() => {
-    if (toast) {
-      setToastVisible(true);
-      const timer = setTimeout(() => setToastVisible(false), 1600); // fade-out 시작
-      const timer2 = setTimeout(() => setToast(false), 2000); // 완전 제거
+      toastTimeout.current = setTimeout(() => setToast(false), 2000);
       return () => {
-        clearTimeout(timer);
-        clearTimeout(timer2);
+        if (toastTimeout.current) clearTimeout(toastTimeout.current);
       };
     }
   }, [toast]);
@@ -59,7 +53,7 @@ const ButtonSection = ({}: { onJoinClick?: () => void }) => {
           className="opacity-50 p-2 hover:opacity-80 transition"
           onClick={() => {
             setStarOn((prev) => {
-              if (!prev) setToast(true); // scrab-star가 되는 순간만 토스트
+              if (!prev) showToast(); // scrab-star가 되는 순간만 토스트
               return !prev;
             });
           }}
@@ -98,21 +92,22 @@ const ButtonSection = ({}: { onJoinClick?: () => void }) => {
       </MuiDialog>
       {toast && (
         <div
-          className={`fixed left-1/2 bottom-26 z-50 px-8 py-3 bg-black text-white rounded-full text-xl font-hakgyoansim -translate-x-1/2 transition-all duration-400
-            ${
-              toastVisible ? "animate-toast-slidein" : "animate-toast-slideout"
-            }`}
-          style={{
-            minWidth: 220,
-            maxWidth: "90vw",
-            textAlign: "center",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            userSelect: "none",
-          }}
+          className="fixed bottom-26 z-50 w-full flex justify-center pointer-events-none"
+          style={{ left: 0, right: 0 }}
         >
-          밴드가 저장 되었습니다.
+          <div
+            className="px-4 py-2 bg-black text-white rounded-full text-base font-hakgyoansim transition-all duration-400 animate-toast-updown"
+            style={{
+              maxWidth: "calc(100vw - 32px)",
+              textAlign: "center",
+              whiteSpace: "normal",
+              userSelect: "none",
+              display: "inline-block",
+              wordBreak: "break-all",
+            }}
+          >
+            밴드가 저장 되었습니다.
+          </div>
         </div>
       )}
     </>
