@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import HomeTagSection from "./_components/HomeTagSection";
 import BandCarousel from "./_components/BandCarousel";
 import MuiDialog from "@/shared/components/MuiDialog";
 import BandInfoModal from "./_components/BandInfoModal";
@@ -36,12 +35,12 @@ const HomePage = () => {
     setMyBands(bandData); // 추후 API 연결로 대체
   }, []);
 
-  const allTags = Array.from(new Set(myBands.flatMap((band) => band.tags)));
+  // const allTags = Array.from(new Set(myBands.flatMap((band) => band.tags)));
 
   return (
     <>
-      <main className="min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-center bg-[#121212]/90 overflow-hidden">
-        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center mb-10">
+      <main className="min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-start bg-[#121212]/90 overflow-hidden">
+        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center py-10">
           {/* 캐러셀 */}
           <div className="w-full">
             {myBands.length > 0 && (

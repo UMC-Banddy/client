@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
 import arrowPrev from "@/assets/icons/home/arrowprev.svg";
 import arrowNext from "@/assets/icons/home/arrownext.svg";
 import ButtonSection from "./ButtonSection";
@@ -13,92 +12,154 @@ interface Band {
   tags: string[];
 }
 
+// ButtonSection props 타입 정의 추가
+interface ButtonSectionProps {
+  setToast: (v: boolean) => void;
+}
+
 const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
   bands,
   onJoinClick,
 }) => {
-  const [index, setIndex] = useState(0);
-  const [direction, setDirection] = useState<"left" | "right">("right");
+  const extendedBands = [bands[bands.length - 1], ...bands, bands[0]];
 
-  const paginate = (dir: "left" | "right") => {
-    setDirection(dir);
-    setIndex((prev) =>
-      dir === "left"
-        ? prev === 0
-          ? bands.length - 1
-          : prev - 1
-        : prev === bands.length - 1
-        ? 0
-        : prev + 1
-    );
+  const [index, setIndex] = useState(1); // 처음은 진짜 첫 번째 밴드 (복제 앞에 있음)
+  const [isAnimating, setIsAnimating] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // 토스트 상태를 여기서 관리
+  const [toast, setToast] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+
+  useEffect(() => {
+    if (toast) {
+      setToastVisible(true);
+      const timer1 = setTimeout(() => setToastVisible(false), 1600);
+      const timer2 = setTimeout(() => setToast(false), 2000);
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+      };
+    }
+  }, [toast]);
+
+  const handleNext = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setIndex((prev) => prev + 1);
   };
 
+  const handlePrev = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setIndex((prev) => prev - 1);
+  };
+
+  const handleTransitionEnd = () => {
+    setIsAnimating(false);
+
+    if (!containerRef.current) return;
+
+    const container = containerRef.current;
+
+    if (index === extendedBands.length - 1) {
+      // 마지막 → 첫 번째로 순간 점프
+      container.style.transition = "none";
+      container.style.transform = `translateX(-100%)`;
+
+      // 다음 프레임에 다시 transition 켜기
+      requestAnimationFrame(() => {
+        setIndex(1);
+        requestAnimationFrame(() => {
+          container.style.transition = "transform 0.5s ease";
+        });
+      });
+    }
+
+    if (index === 0) {
+      // 첫 번째 복제 → 마지막으로 점프
+      container.style.transition = "none";
+      container.style.transform = `translateX(-${bands.length * 100}%)`;
+
+      requestAnimationFrame(() => {
+        setIndex(bands.length);
+        requestAnimationFrame(() => {
+          container.style.transition = "transform 0.5s ease";
+        });
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.style.transform = `translateX(-${index * 100}%)`;
+    }
+  }, [index]);
+
   return (
-    <div className="relative w-full max-w-[420px] flex flex-col items-center">
-      <HomeTagSection tags={bands[index].tags} />{" "}
-      <div className="flex flex-row items-center justify-center w-full min-h-[320px] relative">
-        {/* 왼쪽 버튼 */}
+    <div className="relative w-full max-w-[420px] ">
+      {/* 슬라이드 전체 줄 */}
+      <div className="relative">
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          ref={containerRef}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {extendedBands.map((band, i) => (
+            <div
+              key={i}
+              className="min-w-full px-4 py-6 flex flex-col items-center text-center"
+            >
+              {/* 태그도 함께 슬라이딩 */}
+              <div className="w-full mb-4">
+                <HomeTagSection tags={band.tags} />
+              </div>
+
+              <img
+                src={band.image}
+                alt={band.title}
+                className="w-72 h-72 rounded-xl object-cover mb-4"
+                onClick={onJoinClick}
+              />
+              <h2 className="text-white font-bold text-xl mb-2">
+                {band.title}
+              </h2>
+              <p className="text-gray-400 text-sm mb-4">{band.description}</p>
+              <ButtonSection setToast={setToast} />
+            </div>
+          ))}
+        </div>
+        {/* 버튼들 */}
         <button
-          onClick={() => paginate("left")}
-          className="z-10 w-14 h-14 flex items-center justify-center focus:outline-none bg-transparent p-0 border-none"
-          aria-label="이전 밴드"
+          onClick={handlePrev}
+          className="absolute left-0 top-[42%] -translate-y-1/2 z-30 bg-transparent rounded-full w-12 h-12 flex items-center justify-center p-0 border-none"
         >
           <img src={arrowPrev} alt="Prev" className="w-12 h-12" />
         </button>
-        <AnimatePresence initial={false} custom={direction}>
-          <motion.div
-            key={bands[index].id}
-            className="flex items-center justify-center w-72 h-72"
-            custom={direction}
-            initial={{
-              opacity: 0,
-              rotateY: direction === "left" ? -90 : 90,
-              translateZ: -100,
-            }}
-            animate={{
-              opacity: 1,
-              rotateY: 0,
-              translateZ: 0,
-            }}
-            exit={{
-              opacity: 0,
-              rotateY: direction === "left" ? 90 : -90,
-              translateZ: -100,
-            }}
-            transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-            style={{
-              perspective: 800,
-              transformStyle: "preserve-3d",
-            }}
-          >
-            <img
-              src={bands[index].image}
-              alt={bands[index].title}
-              className="w-full h-full rounded-xl object-cover cursor-pointer"
-              onClick={onJoinClick}
-              style={{ backfaceVisibility: "hidden" }}
-            />
-          </motion.div>
-        </AnimatePresence>
-        {/* 오른쪽 버튼 */}
         <button
-          onClick={() => paginate("right")}
-          className="z-10 w-14 h-14 flex items-center justify-center focus:outline-none bg-transparent p-0 border-none"
-          aria-label="다음 밴드"
+          onClick={handleNext}
+          className="absolute right-0 top-[42%] -translate-y-1/2 z-30 bg-transparent rounded-full w-12 h-12 flex items-center justify-center p-0 border-none"
         >
           <img src={arrowNext} alt="Next" className="w-12 h-12" />
         </button>
       </div>
-      {/* 이미지 아래 텍스트/설명/버튼 */}
-      <div className="flex flex-col items-center text-center pt-4 pb-8 px-10 w-full">
-        <h2 className="text-white font-bold text-xl mb-2">
-          {bands[index].title}
-        </h2>
-        <p className="text-gray-400 text-sm mb-6">{bands[index].description}</p>
-        <div className="mt-2">
-          <ButtonSection />
+      {/* 토스트 메시지 */}
+      {toast && (
+        <div
+          className={`fixed left-1/2 bottom-26 z-50 px-8 py-3 bg-black text-white rounded-full text-xl font-hakgyoansim -translate-x-1/2 transition-all duration-400 animate-toast-updown`}
+          style={{
+            minWidth: 220,
+            maxWidth: "90vw",
+            textAlign: "center",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            userSelect: "none",
+          }}
+        >
+          밴드가 저장 되었습니다.
         </div>
-      </div>
+      )}
     </div>
   );
 };

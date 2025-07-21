@@ -1,4 +1,3 @@
-import React from "react";
 import TagList from "./TagList";
 
 interface HomeTagSectionProps {

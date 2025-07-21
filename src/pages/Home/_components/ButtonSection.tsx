@@ -7,27 +7,10 @@ import starIcon from "@/assets/icons/home/like-star.svg";
 import scrabStarIcon from "@/assets/icons/home/scrab-star.svg";
 import MuiDialog from "@/shared/components/MuiDialog";
 
-const ButtonSection = ({}: { onJoinClick?: () => void }) => {
+const ButtonSection = ({ setToast }: { setToast: (v: boolean) => void }) => {
   const [soundOn, setSoundOn] = useState(false);
   const [starOn, setStarOn] = useState(false);
   const [open, setOpen] = useState(false);
-  const [toast, setToast] = useState(false);
-  const toastTimeout = React.useRef<NodeJS.Timeout | null>(null);
-
-  const showToast = () => {
-    if (toast) return; // 이미 토스트가 떠 있으면 무시
-    setToast(true);
-  };
-
-  // 토스트 자동 닫기
-  React.useEffect(() => {
-    if (toast) {
-      toastTimeout.current = setTimeout(() => setToast(false), 2000);
-      return () => {
-        if (toastTimeout.current) clearTimeout(toastTimeout.current);
-      };
-    }
-  }, [toast]);
 
   return (
     <>
@@ -53,7 +36,7 @@ const ButtonSection = ({}: { onJoinClick?: () => void }) => {
           className="opacity-50 p-2 hover:opacity-80 transition"
           onClick={() => {
             setStarOn((prev) => {
-              if (!prev) showToast(); // scrab-star가 되는 순간만 토스트
+              if (!prev) setToast(true); // scrab-star가 되는 순간만 토스트
               return !prev;
             });
           }}
@@ -90,26 +73,6 @@ const ButtonSection = ({}: { onJoinClick?: () => void }) => {
           </div>
         </div>
       </MuiDialog>
-      {toast && (
-        <div
-          className="fixed bottom-26 z-50 w-full flex justify-center pointer-events-none"
-          style={{ left: 0, right: 0 }}
-        >
-          <div
-            className="px-4 py-2 bg-black text-white rounded-full text-base font-hakgyoansim transition-all duration-400 animate-toast-updown"
-            style={{
-              maxWidth: "calc(100vw - 32px)",
-              textAlign: "center",
-              whiteSpace: "normal",
-              userSelect: "none",
-              display: "inline-block",
-              wordBreak: "break-all",
-            }}
-          >
-            밴드가 저장 되었습니다.
-          </div>
-        </div>
-      )}
     </>
   );
 };
