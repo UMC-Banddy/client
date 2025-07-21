@@ -39,7 +39,7 @@ const HomePage = () => {
 
   return (
     <>
-      <main className="min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-start bg-[#121212]/90 overflow-hidden">
+      <main className="min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-start  overflow-hidden">
         <div className="w-full max-w-[420px] mx-auto flex flex-col items-center py-10">
           {/* 캐러셀 */}
           <div className="w-full">
