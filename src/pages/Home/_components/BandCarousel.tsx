@@ -3,12 +3,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import arrowPrev from "@/assets/icons/home/arrowprev.svg";
 import arrowNext from "@/assets/icons/home/arrownext.svg";
 import ButtonSection from "./ButtonSection";
+import HomeTagSection from "./HomeTagSection";
 
 interface Band {
   id: number;
   title: string;
   description: string;
   image: string;
+  tags: string[];
 }
 
 const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
@@ -33,6 +35,7 @@ const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
 
   return (
     <div className="relative w-full max-w-[420px] flex flex-col items-center">
+      <HomeTagSection tags={bands[index].tags} />{" "}
       <div className="flex flex-row items-center justify-center w-full min-h-[320px] relative">
         {/* 왼쪽 버튼 */}
         <button
