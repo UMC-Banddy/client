@@ -1,5 +1,3 @@
-import React from "react";
-
 interface ChatMessageItemProps {
   type: "me" | "other";
   name: string;

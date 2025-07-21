@@ -14,7 +14,7 @@ export default function Layout() {
     "/signup/complete",
     "/home/chat",
   ].some((path) => location.pathname.startsWith(path));
-  const hideHeader = ["/my/notifications/"].some((path) =>
+  const hideHeader = ["/my/notifications/", "/home/chat"].some((path) =>
     location.pathname.startsWith(path)
   );
 
