@@ -13,15 +13,18 @@ export default function Layout() {
     "/signup/profile",
     "/signup/complete",
     "/home/chat",
+    "/profile-detail",
   ].some((path) => location.pathname.startsWith(path));
-  const hideHeader = ["/my/notifications/", "/home/chat"].some((path) =>
-    location.pathname.startsWith(path)
-  );
+  const hideHeader =
+    ["/my/notifications/", "/profile-detail"].some((path) =>
+      location.pathname.startsWith(path)
+    ) || location.pathname === "/my";
 
   return (
-    <div className="relative min-h-screen min-h-[100dvh] flex flex-col bg-[#121212] overflow-hidden w-full">
+    <div className="relative min-h-[100dvh] flex flex-col overflow-hidden w-full bg-[radial-gradient(ellipse_at_center,_#2a2a2a_20%,_#1c1c1c_80%)]">
       {!hideHeader && <Header />}
       <main className="flex-1 flex flex-col items-center justify-center  w-full max-w-md mx-auto gap-y-8 pb-[64px]">
+        // 페이지마다 다를 것 같지만 추후 협의 필요한 지점
         <Outlet />
       </main>
       {!hideBottomBar && <BottomBar />}
