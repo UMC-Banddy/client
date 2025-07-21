@@ -21,7 +21,7 @@ export default function Layout() {
   return (
     <div className="relative min-h-screen min-h-[100dvh] flex flex-col bg-[#121212] overflow-hidden w-full">
       {!hideHeader && <Header />}
-      <main className="flex-1 flex flex-col items-center justify-center  w-full max-w-md mx-auto gap-y-8">
+      <main className="flex-1 flex flex-col items-center justify-center  w-full max-w-md mx-auto gap-y-8 pb-[64px]">
         <Outlet />
       </main>
       {!hideBottomBar && <BottomBar />}
