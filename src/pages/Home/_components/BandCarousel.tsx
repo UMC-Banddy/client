@@ -45,18 +45,35 @@ const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={bands[index].id}
-            className="flex items-center justify-center"
+            className="flex items-center justify-center w-72 h-72"
             custom={direction}
-            initial={{ x: direction === "left" ? -300 : 300, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction === "left" ? 300 : -300, opacity: 0 }}
-            transition={{ duration: 0.4 }}
+            initial={{
+              opacity: 0,
+              rotateY: direction === "left" ? -90 : 90,
+              translateZ: -100,
+            }}
+            animate={{
+              opacity: 1,
+              rotateY: 0,
+              translateZ: 0,
+            }}
+            exit={{
+              opacity: 0,
+              rotateY: direction === "left" ? 90 : -90,
+              translateZ: -100,
+            }}
+            transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+            style={{
+              perspective: 800,
+              transformStyle: "preserve-3d",
+            }}
           >
             <img
               src={bands[index].image}
               alt={bands[index].title}
-              className="w-72 h-72 rounded-xl object-cover cursor-pointer"
+              className="w-full h-full rounded-xl object-cover cursor-pointer"
               onClick={onJoinClick}
+              style={{ backfaceVisibility: "hidden" }}
             />
           </motion.div>
         </AnimatePresence>

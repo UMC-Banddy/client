@@ -17,6 +17,12 @@ const bandData = [
     description: "베이스만 넷이에요 살려주세요",
     image: "src/assets/images/home-album2.svg",
   },
+  {
+    id: 3,
+    title: "그래요 저 왜색 짙어요",
+    description: "혼또니 아리가또 고자이마스",
+    image: "src/assets/images/home-album3.png",
+  },
 ];
 
 const HomePage = () => {
