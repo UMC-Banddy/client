@@ -1,16 +1,40 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import homeIcon from "@/assets/icons/bottom-home.svg";
-import searchIcon from "@/assets/icons/bottom-search.svg";
-import joinIcon from "@/assets/icons/bottom-join.svg";
-import profileIcon from "@/assets/icons/bottom-profile.svg";
+import homeIcon from "@/assets/icons/bottombar/home.svg";
+import noHomeIcon from "@/assets/icons/bottombar/no_home.svg";
+import searchIcon from "@/assets/icons/bottombar/search.svg";
+import noSearchIcon from "@/assets/icons/bottombar/no_search.png";
+import chatIcon from "@/assets/icons/bottombar/chat.svg";
+import noChatIcon from "@/assets/icons/bottombar/no_chat.svg";
+import myIcon from "@/assets/icons/bottombar/my.svg";
+import noMyIcon from "@/assets/icons/bottombar/no_my.svg";
 import "@/App.css";
 
 const navs = [
-  { label: "홈", icon: homeIcon, path: "/" },
-  { label: "탐색", icon: searchIcon, path: "/explore" },
-  { label: "밴드생성", icon: joinIcon, path: "/band/create" },
-  { label: "마이", icon: profileIcon, path: "/my" },
+  { 
+    label: "홈", 
+    activeIcon: homeIcon, 
+    inactiveIcon: noHomeIcon, 
+    path: "/" 
+  },
+  { 
+    label: "탐색", 
+    activeIcon: searchIcon, 
+    inactiveIcon: noSearchIcon, 
+    path: "/explore" 
+  },
+  { 
+    label: "밴드생성", 
+    activeIcon: chatIcon, 
+    inactiveIcon: noChatIcon, 
+    path: "/band/create" 
+  },
+  { 
+    label: "마이", 
+    activeIcon: myIcon, 
+    inactiveIcon: noMyIcon, 
+    path: "/my" 
+  },
 ];
 
 const BottomBar = () => {
@@ -42,13 +66,12 @@ const BottomBar = () => {
               aria-label={nav.label}
             >
               <img
-                src={nav.icon}
+                src={active ? nav.activeIcon : nav.inactiveIcon}
                 alt={nav.label + " 아이콘"}
-                className={`
-                  w-[12.2vw] h-[12.2vw] max-w-12 max-h-12 min-w-8 min-h-8
+                className="
+                  w-[12.2vw] h-[12.2vw]
                   transition-opacity
-                  ${active ? "opacity-100" : "opacity-50"}
-                `}
+                "
               />
               <span
                 className={`

@@ -12,8 +12,11 @@ export default function Layout() {
     "/signup/nickname",
     "/signup/profile",
     "/signup/complete",
+    "/profile-detail",
   ].some((path) => location.pathname.startsWith(path));
-  const hideHeader = ["/my/notifications/"].some((path) => location.pathname.startsWith(path));
+  const hideHeader =
+    ["/my/notifications/", "/profile-detail"].some((path) => location.pathname.startsWith(path)) ||
+    location.pathname === "/my";
 
   return (
     <div className="relative min-h-[100dvh] flex flex-col overflow-hidden w-full bg-[radial-gradient(ellipse_at_center,_#2a2a2a_20%,_#1c1c1c_80%)]">
