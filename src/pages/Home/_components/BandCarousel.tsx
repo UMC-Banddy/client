@@ -55,7 +55,8 @@ const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
             <img
               src={bands[index].image}
               alt={bands[index].title}
-              className="w-72 h-72 rounded-xl object-cover"
+              className="w-72 h-72 rounded-xl object-cover cursor-pointer"
+              onClick={onJoinClick}
             />
           </motion.div>
         </AnimatePresence>
@@ -75,7 +76,7 @@ const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
         </h2>
         <p className="text-gray-400 text-sm mb-6">{bands[index].description}</p>
         <div className="mt-2">
-          <ButtonSection onJoinClick={onJoinClick} />
+          <ButtonSection />
         </div>
       </div>
     </div>
