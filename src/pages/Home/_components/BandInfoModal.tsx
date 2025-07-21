@@ -1,5 +1,6 @@
 import React from "react";
 import { IoClose } from "react-icons/io5";
+import { Link } from "react-router-dom";
 import Instagram from "@/shared/components/images/Instagram";
 import People from "@/shared/components/images/People";
 import Playlist from "@/shared/components/images/Playlist";
@@ -45,14 +46,18 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
       {/* 아이콘 리스트 */}
       <div className="flex justify-center gap-4 mb-6">
         {[
-          { Comp: Playlist, color: "red-400" },
-          { Comp: Prefer, color: "red-400" },
-          { Comp: People, color: "red-400" },
+          { Comp: Prefer, color: "red-400", link: "/home/prefer" },
+          { Comp: Playlist, color: "red-400", link: "/home/playlist" },
+          { Comp: People, color: "red-400", link: "/home/people" },
           { Comp: Youtube, color: "gray-700", link: "https://youtube.com" },
           { Comp: Instagram, color: "gray-700", link: "https://instagram.com" },
           { Comp: Tictok, color: "gray-700", link: "https://tiktok.com" },
         ].map(({ Comp, color, link }, idx) =>
-          link ? (
+          link && link.startsWith("/") ? (
+            <Link key={idx} to={link} style={{ display: "inline-block" }}>
+              <Comp size={36} color={color as "red-400" | "gray-700"} />
+            </Link>
+          ) : link ? (
             <a
               key={idx}
               href={link}
