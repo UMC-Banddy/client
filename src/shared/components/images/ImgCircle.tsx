@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import type { PropsWithChildren } from "react";
+import React from "react";
 
 interface ImgCircleProps {
   size?: number;
@@ -23,10 +24,29 @@ const ImgCircle = ({
 
   return (
     <div
-      className={clsx("flex items-center justify-center rounded-full")}
+      className={clsx(
+        "flex items-center justify-center rounded-full relative overflow-hidden"
+      )}
       style={{ width: size, height: size, backgroundColor: bgColor }}
       {...props}
-    ></div>
+    >
+      {React.Children.map(props.children, (child) =>
+        React.isValidElement(child)
+          ? React.cloneElement(child as any, {
+              style: {
+                width: "70%",
+                height: "70%",
+                maxWidth: "70%",
+                maxHeight: "70%",
+                display: "block",
+                margin: "auto",
+                aspectRatio: "1/1",
+                ...((child as any).props.style || {}),
+              },
+            })
+          : child
+      )}
+    </div>
   );
 };
 

@@ -2,7 +2,7 @@ import React from "react";
 import { IoClose } from "react-icons/io5";
 import Instagram from "@/shared/components/images/Instagram";
 import People from "@/shared/components/images/People";
-// import Playlist from "@/shared/components/images/Playlist";
+import Playlist from "@/shared/components/images/Playlist";
 import Prefer from "@/shared/components/images/Prefer";
 import Tictok from "@/shared/components/images/Tictok";
 import Youtube from "@/shared/components/images/Youtube";
@@ -31,7 +31,7 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
     >
       {/* 닫기 버튼 */}
       <button
-        className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors z-10"
+        className="absolute top-6 right-6 w-6 h-6 flex items-center justify-center rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors z-10"
         onClick={onClose}
         aria-label="닫기"
       >
@@ -44,13 +44,28 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
       </div>
       {/* 아이콘 리스트 */}
       <div className="flex justify-center gap-4 mb-6">
-        {/* <Playlist size={40} color="red-400" /> */}
-        <Prefer size={40} color="red-400" />
-        <People size={40} color="red-400" />
-
-        <Youtube size={40} color="gray-700" />
-        <Instagram size={40} color="gray-700" />
-        <Tictok size={40} color="gray-700" />
+        {[
+          { Comp: Playlist, color: "red-400" },
+          { Comp: Prefer, color: "red-400" },
+          { Comp: People, color: "red-400" },
+          { Comp: Youtube, color: "gray-700", link: "https://youtube.com" },
+          { Comp: Instagram, color: "gray-700", link: "https://instagram.com" },
+          { Comp: Tictok, color: "gray-700", link: "https://tiktok.com" },
+        ].map(({ Comp, color, link }, idx) =>
+          link ? (
+            <a
+              key={idx}
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "inline-block" }}
+            >
+              <Comp size={36} color={color as "red-400" | "gray-700"} />
+            </a>
+          ) : (
+            <Comp key={idx} size={36} color={color as "red-400" | "gray-700"} />
+          )
+        )}
       </div>
       {/* 태그/정보 + 세로 구분선 */}
       <div
