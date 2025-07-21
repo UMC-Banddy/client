@@ -97,7 +97,7 @@ const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
           {extendedBands.map((band, i) => (
             <div
               key={i}
-              className="min-w-full px-4 py-6 flex flex-col items-center text-center"
+              className="min-w-full px-4 py-4 flex flex-col items-center text-center"
             >
               {/* 태그도 함께 슬라이딩 */}
               <div className="w-full mb-4">

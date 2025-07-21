@@ -39,10 +39,10 @@ const HomePage = () => {
 
   return (
     <>
-      <main className="min-h-[calc(100vh-56px)] w-full flex flex-col items-center justify-start  overflow-hidden">
-        <div className="w-full max-w-[420px] mx-auto flex flex-col items-center py-10">
+      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-[420px] mx-auto">
+        <div className="w-full flex flex-col items-center overflow-hidden">
           {/* 캐러셀 */}
-          <div className="w-full">
+          <div className="w-full overflow-hidden">
             {myBands.length > 0 && (
               <BandCarousel bands={myBands} onJoinClick={() => setOpen(true)} />
             )}
