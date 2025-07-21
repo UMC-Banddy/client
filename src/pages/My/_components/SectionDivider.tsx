@@ -1,3 +1,3 @@
 export default function SectionDivider() {
-  return <hr className="w-[93vw] border-t-[1px] border-[#FFFFFF]/20 mt-[3vh] mb-[5vh] mx-auto" />;
+  return <hr className="w-[87vw] border-t-[1px] border-[#FFFFFF]/20 mt-[3vh] mb-[4.5vh] mx-auto" />;
 }
