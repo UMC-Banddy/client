@@ -20,9 +20,9 @@ const MicImg = ({ size = 68, color }: MicImgProps) => {
           stroke={
             color === "gray" || color === "gray-200" ? "#555555" : "#ffffff"
           }
-          stroke-width="3.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
       </svg>
     </ImgCircle>
