@@ -26,6 +26,7 @@ import PlaylistPage from "@/pages/Home/BandDetailPage/PlaylistPage";
 import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
 import NotificationPage from "@/pages/Notification/NotificationPage";
 import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
+import ChatPage from "@/pages/chat/ChatPage";
 
 const routes = [
   {
@@ -35,7 +36,10 @@ const routes = [
       { path: "/login", element: <LoginPage /> },
       { path: "/signup/email", element: <SignupPage /> },
       { path: "/signup/verify", element: <SignupVerifyPage /> },
-      { path: "/signup/password-confirm", element: <SignupPasswordConfirmStep /> },
+      {
+        path: "/signup/password-confirm",
+        element: <SignupPasswordConfirmStep />,
+      },
       { path: "/signup/password", element: <SignupPasswordPage /> },
       { path: "/signup/nickname", element: <SignupNicknamePage /> },
       { path: "/signup/profile", element: <SignupProfilePage /> },
@@ -53,11 +57,13 @@ const routes = [
       { path: "/my/notifications", element: <NotificationPage /> },
       { path: "/my/notifications/:id", element: <NotificationDetailPage /> },
       { path: "*", element: <NotFoundPage /> },
+
       //Home 관련 페이지
       { path: "/", element: <HomePage /> },
       { path: "/home/people", element: <PeoplePage /> },
       { path: "/home/playlist", element: <PlaylistPage /> },
       { path: "/home/prefer", element: <PreferPage /> },
+      { path: "/home/chat", element: <ChatPage /> },
 
       { path: "/login", element: <LoginPage /> },
       { path: "/signup", element: <SignupPage /> },

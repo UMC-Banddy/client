@@ -11,79 +11,84 @@ import noMyIcon from "@/assets/icons/bottombar/no_my.svg";
 import "@/App.css";
 
 const navs = [
-  { 
-    label: "홈", 
-    activeIcon: homeIcon, 
-    inactiveIcon: noHomeIcon, 
-    path: "/" 
+  {
+    label: "홈",
+    activeIcon: homeIcon,
+    inactiveIcon: noHomeIcon,
+    path: "/",
   },
-  { 
-    label: "탐색", 
-    activeIcon: searchIcon, 
-    inactiveIcon: noSearchIcon, 
-    path: "/explore" 
+  {
+    label: "탐색",
+    activeIcon: searchIcon,
+    inactiveIcon: noSearchIcon,
+    path: "/explore",
   },
-  { 
-    label: "밴드생성", 
-    activeIcon: chatIcon, 
-    inactiveIcon: noChatIcon, 
-    path: "/band/create" 
+  {
+    label: "밴드생성",
+    activeIcon: chatIcon,
+    inactiveIcon: noChatIcon,
+    path: "/band/create",
   },
-  { 
-    label: "마이", 
-    activeIcon: myIcon, 
-    inactiveIcon: noMyIcon, 
-    path: "/my" 
+  {
+    label: "마이",
+    activeIcon: myIcon,
+    inactiveIcon: noMyIcon,
+    path: "/my",
   },
 ];
 
 const BottomBar = () => {
   const location = useLocation();
   return (
-    <div className="mb-[12vh]">
+    <div className="w-full">
       <nav
         className="
-          fixed bottom-[0vh] left-1/2 -translate-x-1/2 w-full z-50
-          flex justify-around items-center h-[12.2vh]
+          fixed bottom-0 left-0 w-full z-50
           custom-bottom-gradient rounded-t-2xl
+          h-[12.2vh] flex items-center
         "
         aria-label="하단 내비게이션 바"
       >
-        {navs.map((nav) => {
-          let active = false;
-          if (nav.path === "/") {
-            active = location.pathname === "/";
-          } else if (nav.path === "/my") {
-            active = location.pathname.startsWith("/my") || location.pathname.startsWith("/profile-other/");
-          } else {
-            active = location.pathname.startsWith(nav.path);
-          }
-          return (
-            <Link
-              key={nav.path}
-              to={nav.path}
-              className="flex flex-col items-center justify-center flex-1 py-2"
-              aria-label={nav.label}
-            >
-              <img
-                src={active ? nav.activeIcon : nav.inactiveIcon}
-                alt={nav.label + " 아이콘"}
-                className="
-                  w-[12.2vw] h-[12.2vw]
-                  transition-opacity
-                "
-              />
-              <span
-                className={`
-                  w-[1.53vw] h-[1.53vw] rounded-full bg-white mt-1 transition-all
-                  ${active ? "opacity-100" : "opacity-0"}
-                `}
-              />
-            </Link>
-          );
-        })}
+        <div className="w-full max-w-md mx-auto flex justify-around items-center h-full">
+          {navs.map((nav) => {
+            let active = false;
+            if (nav.path === "/") {
+              active = location.pathname === "/";
+            } else if (nav.path === "/my") {
+              active =
+                location.pathname.startsWith("/my") ||
+                location.pathname.startsWith("/profile-other/");
+            } else {
+              active = location.pathname.startsWith(nav.path);
+            }
+            return (
+              <Link
+                key={nav.path}
+                to={nav.path}
+                className="flex flex-col items-center justify-center flex-1 py-2"
+                aria-label={nav.label}
+              >
+                <img
+                  src={active ? nav.activeIcon : nav.inactiveIcon}
+                  alt={nav.label + " 아이콘"}
+                  className="
+                    w-[10vw] h-[10vw] min-w-6 min-h-6
+                    md:w-12 md:h-12
+                    transition-opacity
+                  "
+                />
+                <span
+                  className={`
+                    w-3 h-3 rounded-full bg-white mt-1 transition-all
+                    ${active ? "opacity-100" : "opacity-0"}
+                  `}
+                />
+              </Link>
+            );
+          })}
+        </div>
       </nav>
-      </div>
+    </div>
   );
 };
 
