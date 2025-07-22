@@ -1,15 +1,15 @@
-interface ArchiveItemProps {
+interface MyArchiveItemProps {
   coverUrl?: string;
   title: string;
 }
 
-export default function ArchiveItem({
+export default function MyArchiveItem({
   coverUrl,
   title,
-}: ArchiveItemProps) {
+}: MyArchiveItemProps) {
   return (
     <div className="flex flex-col items-start">
-      <div className="relative w-[29vw] h-[29vw] overflow-hidden flex items-center justify-center">
+      <div className="relative w-[26vw] h-[26vw] overflow-hidden flex items-center justify-center">
         {coverUrl ? (
           <img
             src={coverUrl}
