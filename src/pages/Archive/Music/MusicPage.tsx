@@ -25,6 +25,11 @@ const musicGridData = [
     title: "The wall",
     subtitle: "Pink Floyd",
   },
+  {
+    image: "https://upload.wikimedia.org/wikipedia/ko/0/01/%ED%95%91%ED%81%AC_%ED%94%8C%EB%A1%9C%EC%9D%B4%EB%93%9C_-_Wish_You_Were_Here.png",
+    title: "The wall",
+    subtitle: "Pink Floyd",
+  },
 ];
 
 const musicListData = [
