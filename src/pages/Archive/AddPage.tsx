@@ -68,7 +68,7 @@ export default function AddPage({
         setToast({ message: "아카이브에 추가되었습니다!", visible: true, type: "add", songTitle: title });
       }
       if (toastTimeout.current) clearTimeout(toastTimeout.current);
-      toastTimeout.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 2000);
+      toastTimeout.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 200000);
       // 실제 추가/제거
       return isAdded ? prev.filter(t => t !== title) : [...prev, title];
     });
@@ -110,7 +110,7 @@ export default function AddPage({
         )}
         <SongList songs={showSongs} added={added} onToggle={handleToggle} />
       {toast.visible && (
-        <div className="fixed bottom-[14vh] left-1/2 -translate-x-1/2 bg-[#121212] text-[#FFFFFF] rounded-[10px] px-[4vw] py-[2.2vh] flex items-center gap-3 z-50 w-[91.8vw] h-[5.6vh]">
+        <div className="fixed bottom-[14vh] left-1/2 -translate-x-1/2 bg-[#121212] text-[#FFFFFF] rounded-[10px] px-[4vw] flex items-center z-50 w-[91.8vw] h-[6.5vh]">
           <span className="flex-1 text-left">{toast.message}</span>
           <div className="w-[18vw] h-[4vh] flex items-center justify-center">
             {toast.type === "add" && (
