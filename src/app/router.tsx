@@ -27,6 +27,7 @@ import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
 import NotificationPage from "@/pages/Notification/NotificationPage";
 import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
 import ChatPage from "@/pages/chat/ChatPage";
+import PretestPage from "@/pages/pretest/PretestPage";
 
 const routes = [
   {
@@ -85,6 +86,7 @@ const routes = [
 
       { path: "/join", element: <Join /> },
       { path: "/join/band-recruit", element: <BandRecruit /> },
+      { path: "/pre-test", element: <PretestPage /> },
     ],
   },
 ];
