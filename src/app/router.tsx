@@ -24,7 +24,7 @@ import MyPage from "@/pages/My/MyPage";
 import PeoplePage from "@/pages/Home/BandDetailPage/PeoplePage";
 import PlaylistPage from "@/pages/Home/BandDetailPage/PlaylistPage";
 import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
-import CreateBand from "@/pages/Join/CreateBand";
+import CreateBand from "@/pages/Join/create_band/CreateBand";
 import CreateChat from "@/pages/Join/CreateChat";
 import CreateChat2 from "@/pages/Join/CreateChat2";
 
@@ -82,6 +82,7 @@ const routes = [
       { path: "/join", element: <Join /> },
       { path: "/join/band-recruit", element: <BandRecruit /> },
       { path: "/join/create-band", element: <CreateBand /> },
+      { path: "/join/create-band/song", element: <CreateBand /> },
       { path: "/join/create-chat", element: <CreateChat /> },
       { path: "/join/create-chat/2", element: <CreateChat2 /> },
     ],

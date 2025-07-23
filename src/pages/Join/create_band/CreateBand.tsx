@@ -16,17 +16,17 @@ import { useRef, useState } from "react";
 import happy from "@/assets/icons/join/ic_mood_happy.svg";
 import cameraBtn from "@/assets/icons/join/ic_camera_btn.svg";
 import music from "@/assets/icons/join/ic_music.svg";
-import DateSelect from "./_components/create_band/DateSelect";
+import DateSelect from "../_components/create_band/DateSelect";
 import clsx from "clsx";
-import SelectWithArrow from "./_components/create_band/SelectWithArrow";
-import JobInfoBtn from "./_components/create_band/JobInfoBtn";
+import SelectWithArrow from "../_components/create_band/SelectWithArrow";
+import JobInfoBtn from "../_components/create_band/JobInfoBtn";
 import plusIcon from "@/assets/icons/join/ic_plus_gray.svg";
-import regions from "./_constants/regions";
-import JoinInputField from "./_components/JoinInputField";
+import regions from "../_constants/regions";
+import JoinInputField from "../_components/JoinInputField";
 import youtubeIcon from "@/assets/icons/join/ic_youtube.svg";
 import instagramIcon from "@/assets/icons/join/ic_instagram.svg";
 import tiktokIcon from "@/assets/icons/join/ic_tiktok.svg";
-import SnsInputField from "./_components/SnsInputField";
+import SnsInputField from "../_components/SnsInputField";
 
 const sessionList = [
   { key: "mic", Icon: MicImg },
