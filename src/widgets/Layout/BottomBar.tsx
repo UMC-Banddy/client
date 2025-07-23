@@ -73,7 +73,7 @@ const BottomBar = () => {
                   alt={nav.label + " 아이콘"}
                   // className="w-[12vw] h-[12vw] min-w-6 min-h-6 transition-opacity"
                   className="
-                    w-[10vw] h-[10vw] min-w-6 min-h-6
+                    w-[12vw] h-[12vw] min-w-6 min-h-6
                     md:w-12 md:h-12
                     transition-opacity
                   "
