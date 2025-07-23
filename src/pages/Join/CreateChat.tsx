@@ -1,8 +1,8 @@
 import back from "@/assets/icons/join/ic_back.svg";
-import search from "@/assets/icons/join/ic_search.svg";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import RecruitChat from "./_components/band_recruit/RecruitChat";
+import SearchField from "./_components/SearchField";
 
 const dummyData = [
   {
@@ -74,19 +74,13 @@ const CreateChat = () => {
         </section>
       )}
 
-      <div
+      <SearchField
         className={clsx(
-          "flex items-center gap-[10px] mb-[36px] px-[16px] w-full h-[42px] rounded-[10px] bg-[#E9E9E9]",
+          "mb-[36px]",
           checkedList.length > 0 ? "mt-[27px]" : "mt-[36px]"
         )}
-      >
-        <img className="size-[24px]" src={search} alt="search" />
-        <input
-          type="text"
-          placeholder="친구를 검색하세요."
-          className="w-full h-full bg-transparent border-none text-hakgyo-r-14 focus:outline-none"
-        />
-      </div>
+        placeholder="친구를 검색하세요."
+      />
 
       <section className="flex flex-col gap-[20px]">
         {dummyData.map((item) => (
