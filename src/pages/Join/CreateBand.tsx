@@ -1,0 +1,755 @@
+import {
+  ElectricGuitarImg,
+  MicImg,
+  GuitarImg,
+  BassImg,
+  DrumImg,
+  PianoImg,
+  ViolinImg,
+  TrumpetImg,
+} from "@/shared/components/images";
+import { Dialog, Slide, styled } from "@mui/material";
+import Switch, { type SwitchProps } from "@mui/material/Switch";
+import MuiDialog from "@/shared/components/MuiDialog";
+import CommonBtn from "@/shared/components/CommonBtn";
+import { useRef, useState } from "react";
+import happy from "@/assets/icons/join/ic_mood_happy.svg";
+import cameraBtn from "@/assets/icons/join/ic_camera_btn.svg";
+import music from "@/assets/icons/join/ic_music.svg";
+import DateSelect from "./_components/create_band/DateSelect";
+import clsx from "clsx";
+import SelectWithArrow from "./_components/create_band/SelectWithArrow";
+import JobInfoBtn from "./_components/create_band/JobInfoBtn";
+import plusIcon from "@/assets/icons/join/ic_plus_gray.svg";
+import regions from "./_constants/regions";
+import JoinInputField from "./_components/JoinInputField";
+import youtubeIcon from "@/assets/icons/join/ic_youtube.svg";
+import instagramIcon from "@/assets/icons/join/ic_instagram.svg";
+import tiktokIcon from "@/assets/icons/join/ic_tiktok.svg";
+import SnsInputField from "./_components/SnsInputField";
+
+const sessionList = [
+  { key: "mic", Icon: MicImg },
+  { key: "electricGuitar", Icon: ElectricGuitarImg },
+  { key: "guitar", Icon: GuitarImg },
+  { key: "bass", Icon: BassImg },
+  { key: "drum", Icon: DrumImg },
+  { key: "piano", Icon: PianoImg },
+  { key: "violin", Icon: ViolinImg },
+  { key: "trumpet", Icon: TrumpetImg },
+] as const;
+
+type SessionKey = (typeof sessionList)[number]["key"];
+type SessionState = Record<SessionKey, boolean>;
+
+type age = "10대" | "20대" | "30대" | "40대" | "50대" | "60대" | "무관";
+type gender = "남녀무관" | "남자 선호" | "여자 선호";
+type sido = "서울" | "경기" | "인천";
+
+type WannaBuddy = {
+  startAge: age;
+  endAge: age;
+  gender: gender;
+  location: {
+    sido: sido;
+    sigungu: string;
+  };
+};
+
+const ages = ["10대", "20대", "30대", "40대", "50대", "60대", "무관"];
+const genders = ["남녀무관", "남자 선호", "여자 선호"];
+const sidoList = ["서울", "경기", "인천"];
+
+interface ExistMember {
+  averageAge: age;
+  job: {
+    colleague: boolean;
+    worker: boolean;
+    freelancer: boolean;
+  };
+  genderRatio: {
+    male: string;
+    female: string;
+  };
+  existSession: SessionState;
+}
+
+const CreateBand = () => {
+  const [name, setName] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [automaticClosing, setAutomaticClosing] = useState(false);
+  const [bandIntro, setBandIntro] = useState("");
+  const [recruitSession, setRecruitSession] = useState<SessionState>(
+    sessionList.reduce(
+      (acc, { key }) => ({ ...acc, [key]: false }),
+      {} as SessionState
+    )
+  );
+  const [wannaBuddy, setWannaBuddy] = useState<WannaBuddy>({
+    startAge: "무관",
+    endAge: "무관",
+    gender: "남녀무관",
+    location: {
+      sido: "서울",
+      sigungu: "",
+    },
+  });
+  const [existMember, setExistMember] = useState<ExistMember>({
+    averageAge: "20대",
+    job: {
+      colleague: false,
+      worker: false,
+      freelancer: false,
+    },
+    genderRatio: {
+      male: "",
+      female: "",
+    },
+    existSession: sessionList.reduce(
+      (acc, { key }) => ({ ...acc, [key]: false }),
+      {} as SessionState
+    ),
+  });
+  const [snsLink, setSnsLink] = useState({
+    youtube: "",
+    instagram: "",
+    tiktok: "",
+  });
+
+  const [openSelectExistingSessions, setOpenSelectExistingSessions] =
+    useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImgSrc(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const openFileSelector = () => {
+    fileInputRef.current?.click();
+  };
+
+  // MUI Switch component
+  const IOSSwitch = styled((props: SwitchProps) => (
+    <Switch
+      focusVisibleClassName=".Mui-focusVisible"
+      disableRipple
+      {...props}
+    />
+  ))(({ theme }) => ({
+    width: 91,
+    height: 40,
+    padding: 0,
+    "& .MuiSwitch-switchBase": {
+      padding: 0,
+      margin: 3.08, // 2 * (40/26) ≈ 3.08
+      transitionDuration: "300ms",
+      "&.Mui-checked": {
+        transform: "translateX(51px)", // 16 * (91/42) * (40/26) ≈ 51px
+        color: "#fff",
+        "& + .MuiSwitch-track": {
+          backgroundColor: "#D13D55",
+          opacity: 1,
+          border: 0,
+        },
+        "&.Mui-disabled + .MuiSwitch-track": {
+          opacity: 0.5,
+        },
+      },
+      "&.Mui-focusVisible .MuiSwitch-thumb": {
+        color: "#33cf4d",
+        border: "9.23px solid #fff", // 6 * (91/42) * (40/26) * 0.8 ≈ 9.23px (slightly reduced for better appearance)
+      },
+      "&.Mui-disabled .MuiSwitch-thumb": {
+        color: theme.palette.grey[100],
+      },
+      "&.Mui-disabled + .MuiSwitch-track": {
+        opacity: 0.7,
+      },
+    },
+    "& .MuiSwitch-thumb": {
+      boxSizing: "border-box",
+      width: 26, // 22 * (91/42) * (40/26) * 0.85 ≈ 34px (slightly reduced for better appearance)
+      height: 26, // Same as width to maintain aspect ratio
+      transform: "translateY(4px)",
+    },
+    "& .MuiSwitch-track": {
+      position: "relative",
+      borderRadius: 20,
+      backgroundColor: "#555",
+      opacity: 1,
+
+      // before = 모집완료, after = 모집중
+      "&:before, &:after": {
+        position: "absolute",
+        top: "50%",
+        transform: "translateY(-50%)",
+        fontFamily: "Wanted Sans",
+        fontSize: 13,
+        fontWeight: 600,
+        color: "#fff",
+        whiteSpace: "nowrap",
+        transition: "opacity 300ms ease-in-out",
+      },
+
+      // OFF 상태 (초기)
+      "&:before": {
+        content: '"모집완료"',
+        right: 10,
+        opacity: 1,
+      },
+      "&:after": {
+        content: '"모집중"',
+        left: 14,
+        opacity: 0,
+      },
+    },
+
+    // 체크되면 순서대로 cross-fade
+    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track:before": {
+      opacity: 0,
+    },
+    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track:after": {
+      opacity: 1,
+    },
+  }));
+
+  const toggleJobInfoBtn = (key: keyof typeof existMember.job) => () =>
+    setExistMember((prev) => ({
+      ...prev,
+      job: {
+        ...prev.job,
+        [key]: !prev.job[key],
+      },
+    }));
+
+  return (
+    <main className="relative min-h-screen w-[393px] mx-auto bg-[#121212]/90 pb-[200px]">
+      <div className="flex flex-col gap-[48px] px-[24px] pt-[8px]">
+        <section>
+          <IOSSwitch defaultChecked />
+
+          <div className="flex justify-center">
+            <div className="relative mt-[30px] size-[162px] rounded-[10px] bg-[#CACACA] flex items-center justify-center">
+              <img
+                src={imgSrc || happy}
+                alt="happy mood"
+                className="size-[112px]"
+              />
+              <button
+                className="absolute right-[0] bottom-[0] p-[0] size-[39px] bg-transparent border-none cursor-pointer"
+                onClick={() => setOpenDialog(true)}
+              >
+                <img className="size-full" src={cameraBtn} alt="camera" />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-[32px]">
+          <div className="flex justify-between w-full">
+            <div className="flex gap-[8px]">
+              <img src={music} alt="music" />
+              <p className="text-hakgyo-b-17 text-[#959595] whitespace-nowrap">
+                노래를 추가하세요.
+              </p>
+            </div>
+            <button className="text-ibm-sb-16 text-[#D13D55]">추가</button>
+          </div>
+
+          <JoinInputField
+            type="text"
+            placeholder="밴드 이름을 입력하세요."
+            className="w-full h-full bg-transparent border-none text-hakgyo-r-16 text-[#959595] focus:outline-none"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </section>
+
+        <section className="flex flex-col gap-[20px]">
+          <p className="text-hakgyo-b-17 text-[#E9E9E9]">모집 마감일</p>
+          <div className="flex w-full">
+            <DateSelect />
+          </div>
+          <div className="flex items-center gap-[8px]">
+            <button
+              className={clsx(
+                "flex justify-center items-center size-[22px] rounded-full cursor-pointer",
+                automaticClosing ? "bg-[#E9E9E9]" : "bg-[#959595] "
+              )}
+              onClick={() => setAutomaticClosing(!automaticClosing)}
+            >
+              {automaticClosing && (
+                <div className="size-[12px] rounded-full bg-[#D13D55]"></div>
+              )}
+            </button>
+            <p
+              className={clsx(
+                "text-wanted-sb-13",
+                automaticClosing ? "text-[#E9E9E9]" : "text-[#959595]"
+              )}
+            >
+              지정한 날이 되면 자동으로 모집 마감
+            </p>
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-[20px] w-full">
+          <p className="text-hakgyo-b-17 text-[#E9E9E9]">밴드 소개글</p>
+          <JoinInputField
+            type="text"
+            placeholder="밴드 소개글을 입력하세요."
+            className="w-full h-full bg-transparent border-none text-hakgyo-r-16 text-[#959595] focus:outline-none"
+            value={bandIntro}
+            onChange={(e) => setBandIntro(e.target.value)}
+          />
+        </section>
+
+        <section>
+          <div className="flex mb-[20px]">
+            <p className="text-hakgyo-b-17 text-[#E9E9E9]">모집 세션</p>
+            &nbsp;
+            <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+          </div>
+
+          <div className="flex flex-col gap-[16px]">
+            {[sessionList.slice(0, 4), sessionList.slice(4, 8)].map(
+              (row, rowIndex) => (
+                <div key={rowIndex} className="flex gap-[16px]">
+                  {row.map(({ key, Icon }) => (
+                    <button
+                      onClick={() =>
+                        setRecruitSession((prev) => ({
+                          ...prev,
+                          [key]: !prev[key as SessionKey],
+                        }))
+                      }
+                      className="cursor-pointer"
+                    >
+                      <Icon
+                        color={
+                          recruitSession[key as SessionKey] ? "red" : "gray"
+                        }
+                      />
+                    </button>
+                  ))}
+                </div>
+              )
+            )}
+          </div>
+        </section>
+
+        <section className="flex justify-between mb-[20.5px] w-full">
+          <div className="flex">
+            <p className="text-hakgyo-b-17 text-[#E9E9E9]">추구하는 장르</p>
+            &nbsp;
+            <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+          </div>
+          <button className="text-ibm-sb-16 text-[#D13D55]">수정</button>
+        </section>
+
+        <section className="flex justify-between mb-[20.5px] w-full">
+          <div className="flex">
+            <p className="text-hakgyo-b-17 text-[#E9E9E9]">대표하는 아티스트</p>
+            &nbsp;
+            <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+          </div>
+          <button className="text-ibm-sb-16 text-[#D13D55]">수정</button>
+        </section>
+
+        <section className="flex justify-between mb-[20.5px] w-full">
+          <div className="flex">
+            <p className="text-hakgyo-b-17 text-[#E9E9E9]">목표하는 곡</p>
+            &nbsp;
+            <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+          </div>
+          <button className="text-ibm-sb-16 text-[#D13D55]">수정</button>
+        </section>
+
+        <section>
+          <div className="flex mb-[20px]">
+            <p className="text-hakgyo-b-17 text-[#E9E9E9]">
+              함께하고 싶은 밴드 버디
+            </p>
+            &nbsp;
+            <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+          </div>
+
+          <div className="flex flex-col gap-[24px]">
+            <div className="flex items-center">
+              <div className="flex items-center gap-[8px] mr-[16px]">
+                <p className="text-wanted-sb-13 text-[#CACACA] whitespace-nowrap">
+                  연령
+                </p>
+                <div className="w-[0.5px] h-[21px] bg-[#CACACA]"></div>
+              </div>
+              <div className="flex items-center gap-[12px]">
+                <SelectWithArrow
+                  value={wannaBuddy.startAge}
+                  onChange={(e) =>
+                    setWannaBuddy({
+                      ...wannaBuddy,
+                      startAge: e.target.value as age,
+                    })
+                  }
+                  options={ages}
+                />
+                <p className="text-wanted-sb-13 text-[#CACACA] whitespace-nowrap">
+                  부터
+                </p>
+                <SelectWithArrow
+                  value={wannaBuddy.endAge}
+                  onChange={(e) =>
+                    setWannaBuddy({
+                      ...wannaBuddy,
+                      endAge: e.target.value as age,
+                    })
+                  }
+                  options={ages}
+                />
+                <p className="text-wanted-sb-13 text-[#CACACA] whitespace-nowrap">
+                  까지
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="flex items-center gap-[8px] mr-[16px]">
+                <p className="text-wanted-sb-13 text-[#CACACA] whitespace-nowrap">
+                  성별
+                </p>
+                <div className="w-[0.5px] h-[21px] bg-[#CACACA]"></div>
+              </div>
+              <div className="flex items-center gap-[12px]">
+                <SelectWithArrow
+                  value={wannaBuddy.gender}
+                  onChange={(e) =>
+                    setWannaBuddy({
+                      ...wannaBuddy,
+                      gender: e.target.value as gender,
+                    })
+                  }
+                  options={genders}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="flex items-center gap-[8px] mr-[16px]">
+                <p className="text-wanted-sb-13 text-[#CACACA] whitespace-nowrap">
+                  지역
+                </p>
+                <div className="w-[0.5px] h-[21px] bg-[#CACACA]"></div>
+              </div>
+              <div className="flex items-center gap-[12px]">
+                <SelectWithArrow
+                  value={wannaBuddy.location.sido}
+                  onChange={(e) =>
+                    setWannaBuddy({
+                      ...wannaBuddy,
+                      location: {
+                        ...wannaBuddy.location,
+                        sido: e.target.value as sido,
+                      },
+                    })
+                  }
+                  options={sidoList}
+                />
+                <SelectWithArrow
+                  value={wannaBuddy.location.sigungu}
+                  onChange={(e) =>
+                    setWannaBuddy({
+                      ...wannaBuddy,
+                      location: {
+                        ...wannaBuddy.location,
+                        sigungu: e.target.value as sido,
+                      },
+                    })
+                  }
+                  options={regions[wannaBuddy.location.sido]}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div className="flex flex-col gap-[12px] mb-[20px]">
+            <p className="text-hakgyo-b-17 text-[#E9E9E9]">
+              기존의 밴드 구성원이 있나요?
+            </p>
+            <p className="text-hakgyo-r-14 text-[#959595]">
+              해당하는 정보를 입력해주세요.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-[32px]">
+            <div className="flex items-center">
+              <div className="flex items-center gap-[8px] mr-[16px]">
+                <p className="text-wanted-sb-13 text-[#CACACA] whitespace-nowrap">
+                  평균 연령대
+                </p>
+                <div className="w-[0.5px] h-[21px] bg-[#CACACA]"></div>
+              </div>
+              <div className="flex items-center gap-[12px]">
+                <SelectWithArrow
+                  value={existMember.averageAge}
+                  onChange={(e) =>
+                    setExistMember({
+                      ...existMember,
+                      averageAge: e.target.value as age,
+                    })
+                  }
+                  options={ages}
+                />
+              </div>
+            </div>
+            <div className="flex items-center">
+              <div className="flex items-center gap-[8px] mr-[16px]">
+                <p className="text-wanted-sb-13 text-[#CACACA] whitespace-nowrap">
+                  직업 정보
+                </p>
+                <div className="w-[0.5px] h-[21px] bg-[#CACACA]"></div>
+              </div>
+              <div className="flex items-center gap-[12px]">
+                <JobInfoBtn
+                  isActive={existMember.job.colleague}
+                  onClick={toggleJobInfoBtn("colleague")}
+                >
+                  대학생
+                </JobInfoBtn>
+                <JobInfoBtn
+                  isActive={existMember.job.worker}
+                  onClick={toggleJobInfoBtn("worker")}
+                >
+                  직장인
+                </JobInfoBtn>
+                <JobInfoBtn
+                  isActive={existMember.job.freelancer}
+                  onClick={toggleJobInfoBtn("freelancer")}
+                >
+                  프리랜서
+                </JobInfoBtn>
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="flex items-center gap-[8px] mr-[16px]">
+                <p className="text-wanted-sb-13 text-[#CACACA] whitespace-nowrap">
+                  성비
+                </p>
+                <div className="w-[0.5px] h-[21px] bg-[#CACACA]"></div>
+              </div>
+              <div className="flex items-center gap-[12px]">
+                <p className="text-hakgyo-r-16 text-[#ffffff]">남</p>
+                <div className="relative flex justify-between w-[29px] border-b-[0.75px] border-[#959595]">
+                  <input
+                    type="text"
+                    className="w-full h-full bg-transparent border-none text-hakgyo-r-16 text-[#ffffff] text-center focus:outline-none"
+                    value={existMember.genderRatio.male}
+                    onChange={(e) =>
+                      setExistMember({
+                        ...existMember,
+                        genderRatio: {
+                          ...existMember.genderRatio,
+                          male: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <p className="text-hakgyo-r-16 text-[#ffffff]">명,</p>
+                <p className="text-hakgyo-r-16 text-[#ffffff]">여</p>
+                <div className="relative flex justify-between w-[29px] border-b-[0.75px] border-[#959595]">
+                  <input
+                    type="text"
+                    className="w-full h-full bg-transparent border-none text-hakgyo-r-16 text-[#ffffff] text-center focus:outline-none"
+                    value={existMember.genderRatio.female}
+                    onChange={(e) =>
+                      setExistMember({
+                        ...existMember,
+                        genderRatio: {
+                          ...existMember.genderRatio,
+                          female: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <p className="text-hakgyo-r-16 text-[#ffffff]">명</p>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <div className="flex items-center gap-[8px] mr-[16px]">
+                <p className="text-wanted-sb-13 text-[#CACACA] whitespace-nowrap">
+                  기존 세션
+                </p>
+                <div className="w-[0.5px] h-[21px] bg-[#CACACA]"></div>
+              </div>
+
+              <div className="grid grid-cols-5 gap-4 place-items-center">
+                {sessionList.map(
+                  ({ key, Icon }) =>
+                    existMember.existSession[key as SessionKey] && (
+                      <Icon key={key} color="red" size={42} />
+                    )
+                )}
+                <button
+                  className={clsx(
+                    "flex items-center justify-center size-[42px] rounded-full bg-[#CACACA] cursor-pointer",
+                    Object.values(existMember.existSession).filter((v) => v)
+                      .length === 8 && "translate-x-1/2"
+                  )}
+                  onClick={() => setOpenSelectExistingSessions(true)}
+                >
+                  <img src={plusIcon} alt="+" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 기존 세션 Slide Dialog */}
+        <Dialog
+          open={openSelectExistingSessions}
+          onClose={() => setOpenSelectExistingSessions(false)}
+          slots={{
+            transition: Slide,
+          }}
+          slotProps={{
+            transition: {
+              direction: "up",
+              mountOnEnter: true,
+              unmountOnExit: true,
+            },
+          }}
+          PaperProps={{
+            sx: {
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              margin: "0",
+              padding: "36.5px 0",
+              paddingTop: "8px",
+              paddingBottom: "46px",
+              width: "100%",
+              backgroundColor: "#E9E9E9",
+              boxShadow: "0px -4px 4px rgba(0, 0, 0, 0.25)",
+              borderTopLeftRadius: "8px",
+              borderTopRightRadius: "8px",
+              zIndex: 1300,
+            },
+          }}
+        >
+          <div className="flex justify-center w-full">
+            <div className="w-[106px] h-[5px] rounded-[5px] bg-[#959595]"></div>
+          </div>
+          <div className="flex flex-col items-center justify-center gap-[8px] mt-[32px] h-full">
+            {[sessionList.slice(0, 4), sessionList.slice(4, 8)].map(
+              (row, rowIndex) => (
+                <div key={rowIndex} className="flex gap-[16px]">
+                  {row.map(({ key, Icon }) => (
+                    <button
+                      onClick={() =>
+                        setExistMember((prev) => ({
+                          ...prev,
+                          existSession: {
+                            ...prev.existSession,
+                            [key]: !prev.existSession[key],
+                          },
+                        }))
+                      }
+                      className="cursor-pointer"
+                    >
+                      <Icon
+                        color={
+                          existMember.existSession[key as SessionKey]
+                            ? "red"
+                            : "gray"
+                        }
+                        size={68}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )
+            )}
+          </div>
+        </Dialog>
+
+        <section className="flex flex-col gap-[19px]">
+          <p className="mb-[1px] text-hakgyo-b-17 text-[#E9E9E9]">
+            밴드의 SNS가 있다면 링크를 넣어주세요.
+          </p>
+          <SnsInputField
+            icon={youtubeIcon}
+            value={snsLink.youtube}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSnsLink({ ...snsLink, youtube: e.target.value })
+            }
+            onDelete={() => setSnsLink({ ...snsLink, youtube: "" })}
+          />
+          <SnsInputField
+            icon={instagramIcon}
+            value={snsLink.instagram}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSnsLink({ ...snsLink, instagram: e.target.value })
+            }
+            onDelete={() => setSnsLink({ ...snsLink, instagram: "" })}
+          />
+          <SnsInputField
+            icon={tiktokIcon}
+            value={snsLink.tiktok}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSnsLink({ ...snsLink, tiktok: e.target.value })
+            }
+            onDelete={() => setSnsLink({ ...snsLink, tiktok: "" })}
+          />
+        </section>
+
+        <MuiDialog open={openDialog} setOpen={setOpenDialog}>
+          <div className="flex flex-col items-center justify-between pt-[62px] pb-[28px] px-[26px] w-[336px] h-[229px]">
+            <div className="flex flex-col items-center gap-[12px]">
+              <p className="text-hakgyo-b-24">채팅방 사진 등록</p>
+              <p className="text-hakgyo-r-14 text-[#555]">
+                앨범에서 사진을 등록하시겠습니까?
+              </p>
+            </div>
+            <div className="flex gap-[8px]">
+              <CommonBtn color="gray" onClick={() => setOpenDialog(false)}>
+                아니오
+              </CommonBtn>
+              <CommonBtn
+                color="red"
+                onClick={() => {
+                  setOpenDialog(false);
+                  openFileSelector();
+                }}
+              >
+                예
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageSelect}
+                />
+              </CommonBtn>
+            </div>
+          </div>
+        </MuiDialog>
+      </div>
+    </main>
+  );
+};
+
+export default CreateBand;
