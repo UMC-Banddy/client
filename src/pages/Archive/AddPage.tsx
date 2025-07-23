@@ -68,7 +68,7 @@ export default function AddPage({
         setToast({ message: "아카이브에 추가되었습니다!", visible: true, type: "add", songTitle: title });
       }
       if (toastTimeout.current) clearTimeout(toastTimeout.current);
-      toastTimeout.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 200000);
+      toastTimeout.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 2000);
       // 실제 추가/제거
       return isAdded ? prev.filter(t => t !== title) : [...prev, title];
     });
