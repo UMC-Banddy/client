@@ -71,14 +71,16 @@ const BottomBar = () => {
                 <img
                   src={active ? nav.activeIcon : nav.inactiveIcon}
                   alt={nav.label + " 아이콘"}
+                  // className="w-[12vw] h-[12vw] min-w-6 min-h-6 transition-opacity"
                   className="
-                    w-[12vw] h-[12vw] min-w-6 min-h-6
+                    w-[10vw] h-[10vw] min-w-6 min-h-6
+                    md:w-12 md:h-12
                     transition-opacity
                   "
                 />
                 <span
                   className={`
-                    w-[1.5vw] h-[1.5vw] rounded-full bg-white mt-1 transition-all
+                    w-[6px] h-[6px] rounded-full bg-[#E9E9E9] mt-1 transition-all
                     ${active ? "opacity-100" : "opacity-0"}
                   `}
                 />
