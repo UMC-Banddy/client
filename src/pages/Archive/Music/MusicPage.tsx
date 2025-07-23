@@ -68,7 +68,7 @@ export default function Music() {
   return (
     <>
       <div className="flex items-center justify-end mt-[1.6vh] mb-[0.5vh]" onClick={() => navigate("/my/archive/add")}>
-        <img src={plus} alt="plus" className="w-[12vw] h-[12vw] cursor-pointer" />
+        <img src={plus} alt="plus" className="w-[12vw] h-[12vw] cursor-pointer mr-[3vw]" />
       </div>
         <span className="text-[#CACACA] text-hakgyo-b-17 flex">
           나와 비슷한 사용자가 많이 저장한 곡
