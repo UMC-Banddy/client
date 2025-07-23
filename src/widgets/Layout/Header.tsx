@@ -9,6 +9,8 @@ const routeNameMap: Record<string, string> = {
   "/band": "Band",
   "/my": "My",
   "/my/notifications": "Notifications",
+  "/my/archive": "Archive",
+  "/my/archive/add": "Archive",
   // 필요시 추가
 };
 

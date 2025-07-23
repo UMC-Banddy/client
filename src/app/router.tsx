@@ -27,6 +27,10 @@ import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
 import NotificationPage from "@/pages/Notification/NotificationPage";
 import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
 import ChatPage from "@/pages/chat/ChatPage";
+import ArchivePage from "@/pages/Archive/ArchivePage";
+import AddPage from "@/pages/Archive/AddPage";
+import ArtistPage from "@/pages/Archive/Artist/ArtistPage";
+import AlbumPage from "@/pages/Archive/Album/AlbumPage";
 
 const routes = [
   {
@@ -53,9 +57,14 @@ const routes = [
       { path: "/bands/:id/chat", element: <BandChatPage /> },
       { path: "/manual", element: <ManualPage /> },
       { path: "/settings", element: <SettingsPage /> },
+
       { path: "/my", element: <MyPage /> },
       { path: "/my/notifications", element: <NotificationPage /> },
       { path: "/my/notifications/:id", element: <NotificationDetailPage /> },
+      { path: "/my/archive", element: <ArchivePage /> },
+      { path: "/my/archive/add", element: <AddPage /> },
+      { path: "/my/archive/artist", element: <ArtistPage /> },
+      { path: "/my/archive/album", element: <AlbumPage /> }, 
       { path: "*", element: <NotFoundPage /> },
 
       //Home 관련 페이지
