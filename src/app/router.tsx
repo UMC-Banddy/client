@@ -10,9 +10,6 @@ import SignupProfilePage from "@/pages/Signup/SignupProfilePage";
 import SignupCompletePage from "@/pages/Signup/SignupCompletePage";
 import ArtistsPage from "@/pages/Artist/ArtistsPage";
 import ArtistDetailPage from "@/pages/Artist/ArtistDetailPage";
-import SessionsPage from "@/pages/Session/SessionsPage";
-import SessionDetailPage from "@/pages/Session/SessionDetailPage";
-import SessionSelectPage from "@/pages/Session/SessionSelectPage";
 import BandDetailPage from "@/pages/Band/BandDetailPage";
 import BandChatPage from "@/pages/Band/BandChatPage";
 import ManualPage from "@/pages/Manual/ManualPage";
@@ -48,9 +45,6 @@ const routes = [
       { path: "/signup/complete", element: <SignupCompletePage /> },
       { path: "/artists", element: <ArtistsPage /> },
       { path: "/artists/:id", element: <ArtistDetailPage /> },
-      { path: "/sessions", element: <SessionsPage /> },
-      { path: "/sessions/:id", element: <SessionDetailPage /> },
-      { path: "/sessions/select", element: <SessionSelectPage /> },
       { path: "/bands/:id", element: <BandDetailPage /> },
       { path: "/bands/:id/chat", element: <BandChatPage /> },
       { path: "/manual", element: <ManualPage /> },
@@ -76,9 +70,6 @@ const routes = [
       { path: "/signup/complete", element: <SignupCompletePage /> },
       { path: "/artists", element: <ArtistsPage /> },
       { path: "/artists/:id", element: <ArtistDetailPage /> },
-      { path: "/sessions", element: <SessionsPage /> },
-      { path: "/sessions/:id", element: <SessionDetailPage /> },
-      { path: "/sessions/select", element: <SessionSelectPage /> },
       { path: "/bands/:id", element: <BandDetailPage /> },
       { path: "/bands/:id/chat", element: <BandChatPage /> },
       { path: "/manual", element: <ManualPage /> },
