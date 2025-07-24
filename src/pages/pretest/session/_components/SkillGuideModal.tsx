@@ -1,6 +1,5 @@
 import React from "react";
 import MuiDialog from "@/shared/components/MuiDialog";
-import { SkillLevelIcon } from "@/shared/components/images";
 
 interface SkillGuideModalProps {
   open: boolean;
@@ -34,40 +33,20 @@ const SkillGuideModal: React.FC<SkillGuideModalProps> = ({ open, onClose }) => {
       <div className="w-[354px] h-[462px] bg-white rounded-2xl p-6 overflow-hidden flex flex-col justify-center">
         {/* 실력 레벨 목록 */}
         <div className="space-y-6">
-          {skillLevels.map((skill, index) => (
-            <div
-              key={skill.level}
-              className="flex items-center justify-center gap-4"
-            >
-              {/* 아이콘 */}
-              <div className="w-20 h-20 rounded-full flex items-center justify-center bg-gray-50 flex-shrink-0">
-                <SkillLevelIcon
-                  level={skill.level}
-                  size={40}
-                  className="text-gray-600"
-                />
+          {skillLevels.map((skill) => (
+            <div key={skill.level} className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <h4 className="text-lg font-medium text-gray-800">
+                  {skill.title}
+                </h4>
+                {skill.emoji && <span className="text-lg">{skill.emoji}</span>}
               </div>
-
-              {/* 텍스트 정보 */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {skill.title}
-                  </h3>
-                  {skill.emoji && (
-                    <span className="text-lg">{skill.emoji}</span>
-                  )}
-                </div>
-                <div className="mt-1">
-                  {skill.descriptions.map((description, descIndex) => (
-                    <p
-                      key={descIndex}
-                      className="text-sm text-gray-600 leading-relaxed"
-                    >
-                      {description}
-                    </p>
-                  ))}
-                </div>
+              <div className="space-y-1">
+                {skill.descriptions.map((description, descIndex) => (
+                  <p key={descIndex} className="text-sm text-gray-600">
+                    {description}
+                  </p>
+                ))}
               </div>
             </div>
           ))}

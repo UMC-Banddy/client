@@ -2,13 +2,11 @@ import React, { useState } from "react";
 
 interface IntroductionSectionProps {
   introduction: string;
-  onEdit?: () => void;
-  onIntroductionChange?: (text: string) => void;
+  onIntroductionChange?: (introduction: string) => void;
 }
 
 const IntroductionSection: React.FC<IntroductionSectionProps> = ({
   introduction,
-  onEdit,
   onIntroductionChange,
 }) => {
   const [isEditing, setIsEditing] = useState(false);

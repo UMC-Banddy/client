@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import backIcon from "@/assets/icons/back.svg";
 
 interface PretestHeaderProps {
-  title?: string;
   onSkip?: () => void;
   onNext?: () => void;
   showNext?: boolean;
@@ -12,11 +11,10 @@ interface PretestHeaderProps {
 }
 
 const PretestHeader: React.FC<PretestHeaderProps> = ({
-  title,
   onSkip,
   onNext,
   showNext = false,
-  nextDisabled = true,
+  nextDisabled = false,
   progress = 0,
 }) => {
   const navigate = useNavigate();

@@ -8,16 +8,12 @@ interface Keyword {
 
 interface KeywordSectionProps {
   keywords: Keyword[];
-  onAddKeyword?: () => void;
   onRemoveKeyword?: (keywordId: string) => void;
-  onEdit?: () => void;
 }
 
 const KeywordSection: React.FC<KeywordSectionProps> = ({
   keywords,
-  onAddKeyword,
   onRemoveKeyword,
-  onEdit,
 }) => {
   const [showKeywordModal, setShowKeywordModal] = useState(false);
   const [inputKeyword, setInputKeyword] = useState("");

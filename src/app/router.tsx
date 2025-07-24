@@ -28,6 +28,10 @@ import PretestArtistPage from "@/pages/pretest/artist/PretestArtistPage";
 import PretestSessionPage from "@/pages/pretest/session/PretestSessionPage";
 import PretestProfileCompletePage from "@/pages/pretest/profile/PretestProfileCompletePage";
 import PretestProfileEditPage from "@/pages/pretest/profile/PretestProfileEditPage";
+import ArchivePage from "@/pages/Archive/ArchivePage";
+import AddPage from "@/pages/Archive/AddPage";
+import ArtistPage from "@/pages/Archive/Artist/ArtistPage";
+import AlbumPage from "@/pages/Archive/Album/AlbumPage";
 
 const routes = [
   {
@@ -54,30 +58,14 @@ const routes = [
       { path: "/my", element: <MyPage /> },
       { path: "/my/notifications", element: <NotificationPage /> },
       { path: "/my/notifications/:id", element: <NotificationDetailPage /> },
-      { path: "*", element: <NotFoundPage /> },
-
-      //Home 관련 페이지
-      { path: "/", element: <HomePage /> },
+      { path: "/my/archive", element: <ArchivePage /> },
+      { path: "/my/archive/add", element: <AddPage /> },
+      { path: "/my/archive/artist", element: <ArtistPage /> },
+      { path: "/my/archive/album", element: <AlbumPage /> },
       { path: "/home/people", element: <PeoplePage /> },
       { path: "/home/playlist", element: <PlaylistPage /> },
       { path: "/home/prefer", element: <PreferPage /> },
       { path: "/home/chat", element: <ChatPage /> },
-
-      { path: "/login", element: <LoginPage /> },
-      { path: "/signup", element: <SignupPage /> },
-      { path: "/signup/verify", element: <SignupVerifyPage /> },
-      { path: "/signup/password", element: <SignupPasswordPage /> },
-      { path: "/signup/nickname", element: <SignupNicknamePage /> },
-      { path: "/signup/profile", element: <SignupProfilePage /> },
-      { path: "/signup/complete", element: <SignupCompletePage /> },
-      { path: "/artists", element: <ArtistsPage /> },
-      { path: "/artists/:id", element: <ArtistDetailPage /> },
-      { path: "/bands/:id", element: <BandDetailPage /> },
-      { path: "/bands/:id/chat", element: <BandChatPage /> },
-      { path: "/manual", element: <ManualPage /> },
-      { path: "/settings", element: <SettingsPage /> },
-      { path: "*", element: <NotFoundPage /> },
-
       { path: "/join", element: <Join /> },
       { path: "/join/band-recruit", element: <BandRecruit /> },
       { path: "/pre-test/artist", element: <PretestArtistPage /> },
@@ -87,6 +75,7 @@ const routes = [
         element: <PretestProfileCompletePage />,
       },
       { path: "/pre-test/profile/edit", element: <PretestProfileEditPage /> },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
 ];

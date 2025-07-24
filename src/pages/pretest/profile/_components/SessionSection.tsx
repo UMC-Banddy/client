@@ -25,13 +25,11 @@ interface Session {
 interface SessionSectionProps {
   sessions: Record<string, string>;
   onSessionChange?: (sessionId: string, levelId: string) => void;
-  onAddSession?: () => void;
 }
 
 const SessionSection: React.FC<SessionSectionProps> = ({
   sessions,
   onSessionChange,
-  onAddSession,
 }) => {
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [sessionList, setSessionList] = useState<Session[]>([

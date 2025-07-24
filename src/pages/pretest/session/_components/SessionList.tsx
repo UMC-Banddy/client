@@ -21,7 +21,10 @@ const SessionList: React.FC<SessionListProps> = ({
         <SessionCard
           key={session.id}
           session={session}
-          isSelected={selectedSessions.hasOwnProperty(session.id)}
+          isSelected={Object.prototype.hasOwnProperty.call(
+            selectedSessions,
+            session.id
+          )}
           selectedLevel={selectedSessions[session.id]}
           onSelect={onSessionSelect}
           onLevelSelect={onLevelSelect}
