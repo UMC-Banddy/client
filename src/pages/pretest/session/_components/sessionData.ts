@@ -5,20 +5,20 @@ const LEVELS = {
   beginner: {
     id: "beginner",
     name: "초보",
-    description: "코드를 간단히",
+    description: "코드를 간신히 잡아요. 처음해봐요.",
     icon: "😊",
   },
   intermediate: {
     id: "intermediate",
     name: "중수",
-    description: "어느정도 익숙해요 연습하면 할 수 있어요",
+    description: "어느정도 익숙해요. 연습하면 할 수 있어요.",
     icon: "😉",
   },
   expert: {
     id: "expert",
     name: "고수",
-    description: "위든 해요",
-    icon: "😎🔥",
+    description: "뭐든 해요.",
+    icon: "😎",
   },
 };
 
@@ -41,7 +41,7 @@ export const SESSIONS: Session[] = [
   },
   {
     id: "bass",
-    name: "🎶 베이스 🎶",
+    name: "🪕 베이스 🪕",
     levels: [LEVELS.beginner, LEVELS.intermediate, LEVELS.expert],
   },
   {

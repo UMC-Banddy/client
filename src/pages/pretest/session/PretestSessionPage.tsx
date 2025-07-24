@@ -14,11 +14,17 @@ const PretestSessionPage = () => {
 
   // 세션 선택 처리
   const handleSessionSelect = (sessionId: string) => {
-    // 이미 선택된 세션이면 제거
+    // 이미 선택된 세션이면 제거, 아니면 초보로 선택
     if (selectedSessions[sessionId]) {
       const newSelected = { ...selectedSessions };
       delete newSelected[sessionId];
       setSelectedSessions(newSelected);
+    } else {
+      // 새로운 세션 선택 시 초보로 기본 설정
+      setSelectedSessions((prev) => ({
+        ...prev,
+        [sessionId]: "beginner",
+      }));
     }
   };
 
