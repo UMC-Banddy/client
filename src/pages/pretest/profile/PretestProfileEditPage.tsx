@@ -74,17 +74,6 @@ const PretestProfileEditPage: React.FC = () => {
     }));
   };
 
-  const handleAddSession = () => {
-    // 세션 추가 로직 - 모달을 열거나 새 세션을 추가
-    console.log("세션 추가 모달 열기");
-    // 여기서는 간단히 새로운 세션을 추가하는 예시
-    const newSessionId = `session_${Date.now()}`;
-    setSelectedSessions((prev) => ({
-      ...prev,
-      [newSessionId]: "beginner", // 기본값으로 초보 설정
-    }));
-  };
-
   const handleEditGenre = () => {
     // 장르 수정 로직
     console.log("장르 수정");
@@ -103,11 +92,6 @@ const PretestProfileEditPage: React.FC = () => {
   const handleRemoveArtist = (artistId: string) => {
     // 아티스트 제거 로직
     console.log("아티스트 제거:", artistId);
-  };
-
-  const handleAddKeyword = () => {
-    // 키워드 추가 로직
-    console.log("키워드 추가");
   };
 
   const handleRemoveKeyword = (keywordId: string) => {
@@ -153,7 +137,6 @@ const PretestProfileEditPage: React.FC = () => {
           <SessionSection
             sessions={selectedSessions}
             onSessionChange={handleSessionChange}
-            onAddSession={handleAddSession}
           />
 
           {/* 관심 장르 */}
@@ -173,7 +156,6 @@ const PretestProfileEditPage: React.FC = () => {
           {/* 키워드 */}
           <KeywordSection
             keywords={keywords}
-            onAddKeyword={handleAddKeyword}
             onRemoveKeyword={handleRemoveKeyword}
           />
 
