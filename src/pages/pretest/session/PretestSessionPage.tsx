@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PretestHeader from "../artist/_components/PretestHeader";
 import SessionList from "./_components/SessionList";
+import SkillGuideModal from "./_components/SkillGuideModal";
 import { SESSIONS } from "./_components/sessionData";
 
 const PretestSessionPage = () => {
@@ -72,9 +73,8 @@ const PretestSessionPage = () => {
                 className="text-[#B71C1C] cursor-pointer hover:underline"
                 onClick={handleSkillGuideClick}
               >
-                여기
+                여기를 눌러주세요.
               </span>
-              를 눌러주세요.
             </p>
             <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl text-gray-200">
               복수 응답
@@ -94,37 +94,10 @@ const PretestSessionPage = () => {
       </div>
 
       {/* 실력 기준 모달 */}
-      {showSkillModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              실력 기준 안내
-            </h3>
-            <div className="space-y-4 text-gray-600">
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">초보</h4>
-                <p className="text-sm">기본적인 코드나 리듬을 알고 있는 수준</p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">중수</h4>
-                <p className="text-sm">
-                  어느정도 익숙하고 연습하면 할 수 있는 수준
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">고수</h4>
-                <p className="text-sm">자유롭게 연주할 수 있는 수준</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowSkillModal(false)}
-              className="mt-6 w-full bg-[#7ED957] text-white py-3 rounded-lg font-semibold hover:bg-[#6bc84a] transition-colors"
-            >
-              확인
-            </button>
-          </div>
-        </div>
-      )}
+      <SkillGuideModal
+        open={showSkillModal}
+        onClose={() => setShowSkillModal(false)}
+      />
     </div>
   );
 };
