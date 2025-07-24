@@ -58,7 +58,7 @@ export default function ChatInputBar({
     <div className="fixed left-0 right-0 bottom-0 z-30">
       <div
         className={`transition-transform duration-300 ease-in-out ${
-          showActions ? "translate-y-0" : "translate-y-[calc(100%-80px)]"
+          showActions ? "translate-y-0" : "translate-y-0"
         }`}
       >
         <div className="bg-[#E9E9E9] px-4 pt-4 pb-6 flex flex-col items-center rounded-t-3xl shadow-lg">

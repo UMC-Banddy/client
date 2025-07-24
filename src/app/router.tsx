@@ -24,6 +24,7 @@ import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
 import NotificationPage from "@/pages/Notification/NotificationPage";
 import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
 import ChatPage from "@/pages/chat/ChatPage";
+import ChatDemoPage from "@/pages/chat/ChatDemoPage";
 import PretestArtistPage from "@/pages/pretest/artist/PretestArtistPage";
 import PretestSessionPage from "@/pages/pretest/session/PretestSessionPage";
 import PretestProfileCompletePage from "@/pages/pretest/profile/PretestProfileCompletePage";
@@ -66,6 +67,7 @@ const routes = [
       { path: "/home/playlist", element: <PlaylistPage /> },
       { path: "/home/prefer", element: <PreferPage /> },
       { path: "/home/chat", element: <ChatPage /> },
+      { path: "/chat-demo", element: <ChatDemoPage /> },
       { path: "/join", element: <Join /> },
       { path: "/join/band-recruit", element: <BandRecruit /> },
       { path: "/pre-test/artist", element: <PretestArtistPage /> },

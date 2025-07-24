@@ -53,6 +53,23 @@ export default function ChatDemoPage() {
         time: "AM 12:52",
         unreadCount: 1,
       },
+      {
+        id: "5",
+        type: "other",
+        name: "I'll kill you",
+        avatar: "/src/assets/images/pierrot.png",
+        text: "그럼 이제 우리 밴드에 들어오실래요? 정말 실력이 좋으시네요!",
+        time: "AM 12:53",
+      },
+      {
+        id: "6",
+        type: "me",
+        name: "Beck",
+        avatar: "/src/assets/images/profile1.png",
+        text: "고민해보겠습니다. 언제까지 답변하면 되나요?",
+        time: "AM 12:54",
+        unreadCount: 2,
+      },
     ];
 
     setMessages(sampleMessages);
@@ -90,6 +107,9 @@ export default function ChatDemoPage() {
         "흥미롭습니다!",
         "더 자세히 들려주세요.",
         "완전 동감해요!",
+        "그럼 언제 연락드릴까요?",
+        "밴드 연습은 매주 토요일 저녁에 해요.",
+        "정말 기대되네요!",
       ];
       const randomResponse =
         responses[Math.floor(Math.random() * responses.length)];
@@ -118,7 +138,7 @@ export default function ChatDemoPage() {
       name: "Beck",
       avatar: "/src/assets/images/profile1.png",
       audio: {
-        duration: 30,
+        duration: Math.floor(Math.random() * 60) + 10, // 10-70초 랜덤
         isPlaying: false,
         onPlay: () => console.log("Play my audio message"),
       },
@@ -130,14 +150,63 @@ export default function ChatDemoPage() {
     };
 
     setMessages((prev) => [...prev, newMessage]);
-    alert("음성 메시지가 전송되었습니다!");
+
+    // Simulate audio response
+    setTimeout(() => {
+      const responseMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: "other",
+        name: "I'll kill you",
+        avatar: "/src/assets/images/pierrot.png",
+        audio: {
+          duration: Math.floor(Math.random() * 60) + 10,
+          isPlaying: false,
+          onPlay: () => console.log("Play response audio"),
+        },
+        time: new Date().toLocaleTimeString("ko-KR", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      };
+
+      setMessages((prev) => [...prev, responseMessage]);
+    }, 2000 + Math.random() * 1000);
   }, []);
 
   const handleSendImage = useCallback((imageFile: File) => {
-    alert(`이미지 파일 "${imageFile.name}"이 선택되었습니다!`);
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "Beck",
+      avatar: "/src/assets/images/profile1.png",
+      text: `📷 ${imageFile.name}`,
+      time: new Date().toLocaleTimeString("ko-KR", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }),
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    alert(`이미지 파일 "${imageFile.name}"이 전송되었습니다!`);
   }, []);
 
   const handleSendCalendar = useCallback(() => {
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "Beck",
+      avatar: "/src/assets/images/profile1.png",
+      text: "📅 일정을 생성했습니다",
+      time: new Date().toLocaleTimeString("ko-KR", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }),
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
     alert("일정 생성 기능이 호출되었습니다!");
   }, []);
 
@@ -151,8 +220,16 @@ export default function ChatDemoPage() {
           type: "other",
           name: "I'll kill you",
           avatar: "/src/assets/images/pierrot.png",
-          text: "이전 메시지입니다.",
+          text: "이전 대화 내용입니다.",
           time: "AM 12:30",
+        },
+        {
+          id: (Date.now() - 2000).toString(),
+          type: "me",
+          name: "Beck",
+          avatar: "/src/assets/images/profile1.png",
+          text: "네, 알겠습니다!",
+          time: "AM 12:29",
         },
       ];
 

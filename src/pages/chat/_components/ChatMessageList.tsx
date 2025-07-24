@@ -123,7 +123,7 @@ export default function ChatMessageList({
         ))}
       </div>
 
-      <div ref={messagesEndRef} />
+      <div ref={messagesEndRef} className="pb-32" />
     </div>
   );
 }
