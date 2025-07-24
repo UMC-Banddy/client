@@ -27,7 +27,6 @@ import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
 import NotificationPage from "@/pages/Notification/NotificationPage";
 import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
 import ChatPage from "@/pages/chat/ChatPage";
-import PretestPage from "@/pages/pretest/PretestPage";
 import PretestArtistPage from "@/pages/pretest/artist/PretestArtistPage";
 import PretestSessionPage from "@/pages/pretest/session/PretestSessionPage";
 
