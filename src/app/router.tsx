@@ -26,6 +26,8 @@ import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage"
 import ChatPage from "@/pages/chat/ChatPage";
 import PretestArtistPage from "@/pages/pretest/artist/PretestArtistPage";
 import PretestSessionPage from "@/pages/pretest/session/PretestSessionPage";
+import PretestProfileCompletePage from "@/pages/pretest/profile/PretestProfileCompletePage";
+import PretestProfileEditPage from "@/pages/pretest/profile/PretestProfileEditPage";
 
 const routes = [
   {
@@ -80,6 +82,11 @@ const routes = [
       { path: "/join/band-recruit", element: <BandRecruit /> },
       { path: "/pre-test/artist", element: <PretestArtistPage /> },
       { path: "/pre-test/session", element: <PretestSessionPage /> },
+      {
+        path: "/pre-test/profile/complete",
+        element: <PretestProfileCompletePage />,
+      },
+      { path: "/pre-test/profile/edit", element: <PretestProfileEditPage /> },
     ],
   },
 ];
