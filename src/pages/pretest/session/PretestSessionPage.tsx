@@ -38,13 +38,13 @@ const PretestSessionPage = () => {
 
   // 건너뛰기 처리
   const handleSkip = () => {
-    navigate("/home");
+    navigate("/pre-test/profile/complete");
   };
 
   // 다음 단계 처리
   const handleNext = () => {
     if (Object.keys(selectedSessions).length > 0) {
-      navigate("/home");
+      navigate("/pre-test/profile/complete");
     }
   };
 
