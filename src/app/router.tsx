@@ -30,6 +30,8 @@ import CreateChat2 from "@/pages/Join/CreateChat2";
 import CreateBandSong from "@/pages/Join/create_band/CreateBandSong";
 import CreateBandGenre from "@/pages/Join/create_band/CreateBandGenre";
 import CreateBandArtist from "@/pages/Join/create_band/CreateBandArtist";
+import SavedBand from "@/pages/Join/saved_band/SavedBand";
+import SavedBandDetail from "@/pages/Join/saved_band/SavedBandDetail";
 
 const routes = [
   {
@@ -90,6 +92,8 @@ const routes = [
       { path: "/join/create-band/artist", element: <CreateBandArtist /> },
       { path: "/join/create-chat", element: <CreateChat /> },
       { path: "/join/create-chat/2", element: <CreateChat2 /> },
+      { path: "/join/saved-band", element: <SavedBand /> },
+      { path: "/join/saved-band/:id", element: <SavedBandDetail /> },
     ],
   },
 ];
