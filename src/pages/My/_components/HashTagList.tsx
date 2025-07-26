@@ -8,7 +8,7 @@ interface HashtagListProps {
 const HashtagList: React.FC<HashtagListProps> = ({ tags, className }) => {
   if (!tags || tags.length === 0) return null;
   return (
-    <div className={`flex flex-wrap px-[6vw] gap-x-[2vw] gap-y-[1vh] mb-[2vh] w-full mt-[3vh] ${className || ""}`}>
+    <div className={`flex flex-wrap px-[6vw] gap-x-[2vw] gap-y-[1vh] mb-[5vh] w-full ${className || ""}`}>
       {tags.map((tag, i) => (
         <span
           key={i}
