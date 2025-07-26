@@ -41,7 +41,7 @@ export default function ProfileCard({
   const navigate = useNavigate();
 
   return (
-    <div className="bg-[#CACACA] rounded-[3vh] w-[87vw] pl-[24px] mt-[4vh] mb-[3vh] flex flex-col items-center relative max-w-md mx-auto">
+    <div className="bg-[#CACACA] rounded-[3vh] w-[87vw] px-[24px] mt-[4vh] mb-[3vh] flex flex-col items-center relative max-w-md mx-auto">
       <div className="absolute top-[1rem] right-[4vw] flex flex-col gap-[0.5rem]">
         <button
           className="bg-[#B42127] rounded-full w-[12vw] h-[12vw] flex items-center justify-center max-w-[48px] max-h-[48px] cursor-pointer"
