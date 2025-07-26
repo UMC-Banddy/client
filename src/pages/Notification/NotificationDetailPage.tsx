@@ -1,11 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import arrow_back from "@/assets/icons/back.svg";
 import CommonBtn from "@/shared/components/CommonBtn";
 
 export default function NotificationDetailPage() {
   const navigate = useNavigate();
-  // const { id } = useParams();
+  const { id } = useParams();
 
   // 일단은 목데이터
   const notification = {
@@ -31,7 +31,7 @@ export default function NotificationDetailPage() {
         <div className="flex justify-center items-center mt-[3vh]">
           <ChevronLeft size={24} className="text-[#FFFFFF]/70 mr-[3vw] invisible" />
           <div className="text-[#FFFFFF] text-hakgyo-b-24">{notification.name}</div>
-          <ChevronRight size={24} className="text-[#FFFFFF]/70 ml-[3vw] cursor-pointer" onClick={() => navigate("/profile-detail")} />
+          <ChevronRight size={24} className="text-[#FFFFFF]/70 ml-[3vw] cursor-pointer" onClick={() => navigate(`/profile-detail/${id}`)} />
         </div>
         <div className="flex gap-[3vw] mt-[6vh]">
           <CommonBtn color="gray">거절</CommonBtn>

@@ -20,7 +20,7 @@ export default function ArtistGrid({ items }: ArtistGridProps) {
           <img
             src={item.image}
             alt={item.title}
-            className="w-[25vw] h-[25vw] rounded-full object-cover border border-[#FFFFFF]/20"
+            className="w-[25vw] h-[25vw] rounded-full object-cover border border-[#FFFFFF]/20 max-w-[98px] max-h-[98px]"
           />
           <span className="text-hakgyo-r-14 text-[#FFFFFF] mt-[1.4vh] text-center whitespace-nowrap max-w-[72px] truncate">
             {item.title}

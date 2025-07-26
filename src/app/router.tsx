@@ -32,6 +32,8 @@ import ArchivePage from "@/pages/Archive/ArchivePage";
 import AddPage from "@/pages/Archive/AddPage";
 import ArtistPage from "@/pages/Archive/Artist/ArtistPage";
 import AlbumPage from "@/pages/Archive/Album/AlbumPage";
+import OtherProfile from "@/pages/Profile/OtherProfile";
+import ProfileDetailPage from "@/pages/Profile/ProfileDetailPage";
 
 const routes = [
   {
@@ -62,6 +64,8 @@ const routes = [
       { path: "/my/archive/add", element: <AddPage /> },
       { path: "/my/archive/artist", element: <ArtistPage /> },
       { path: "/my/archive/album", element: <AlbumPage /> },
+      { path: "/profile-other/:id", element: <OtherProfile /> },
+      { path: "/profile-detail/:id", element: <ProfileDetailPage /> },
       { path: "/home/people", element: <PeoplePage /> },
       { path: "/home/playlist", element: <PlaylistPage /> },
       { path: "/home/prefer", element: <PreferPage /> },

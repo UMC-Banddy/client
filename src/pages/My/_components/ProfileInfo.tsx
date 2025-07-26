@@ -16,8 +16,8 @@ export default function ProfileInfo({
   avatarUrl, nickname, bio, showEdit = true, showShare = true, onEdit, onShare
 }: ProfileInfoProps) {
   return (
-    <div className="flex flex-row items-center gap-[7vw] px-[6vw] pt-[1.8vh] pb-[4vh] w-full">
-      <div className="w-[25vw] h-[25vw] rounded-full bg-[#9CA3AF] flex items-center justify-center overflow-hidden flex-shrink-0">
+    <div className="flex flex-row items-center gap-[28px] px-[24px] pt-[1.8vh] pb-[4vh] w-full">
+      <div className="w-[25vw] h-[25vw] rounded-full bg-[#9CA3AF] flex items-center justify-center overflow-hidden flex-shrink-0 max-w-[100px] max-h-[100px]">
         {avatarUrl ? (
           <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
         ) : (
