@@ -1,3 +1,6 @@
+import React from "react";
+import type { ChatMessage } from "@/types/chat";
+
 interface ChatMessageItemProps {
   type: "me" | "other";
   name: string;
@@ -135,8 +138,6 @@ export default function ChatMessageItem({
           )}
         </div>
       </div>
-
-      {/* 내 메시지일 때는 프로필 이미지와 닉네임을 표시하지 않음 */}
     </div>
   );
 }

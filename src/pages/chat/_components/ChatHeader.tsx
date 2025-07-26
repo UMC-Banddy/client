@@ -1,3 +1,4 @@
+import React, { useRef } from "react";
 import BackIcon from "@/assets/icons/back.svg";
 
 interface ChatHeaderProps {
@@ -5,7 +6,7 @@ interface ChatHeaderProps {
   bandAvatar?: string;
   bandStatus?: string;
   onBack?: () => void;
-  onSettings?: () => void;
+  onSettings?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export default function ChatHeader({
@@ -15,16 +16,18 @@ export default function ChatHeader({
   onBack,
   onSettings,
 }: ChatHeaderProps) {
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
+
   return (
     <div className="w-full bg-[#181818] pb-6">
       {/* Main Header Content */}
-      <div className="flex items-center justify-between px-6 py-5 h-24">
+      <div className="flex items-center justify-between px-6 pt-8 pb-5 h-32">
         {/* Back Button */}
         <button
-          className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-white/10 transition-colors"
+          className="flex items-center justify-center w-16 h-16 rounded-full hover:bg-white/10 transition-colors"
           onClick={onBack}
         >
-          <img src={BackIcon} alt="Back" className="w-6 h-6" />
+          <img src={BackIcon} alt="Back" className="w-8 h-8" />
         </button>
 
         {/* Band Info */}
@@ -33,7 +36,7 @@ export default function ChatHeader({
             <img
               src={bandAvatar}
               alt="밴드"
-              className="w-20 h-20 rounded-full object-cover mb-3"
+              className="w-20 h-20 rounded-full object-cover object-center mb-3"
             />
           </div>
           <span className="text-sm text-[#CACACA] text-center max-w-[200px] truncate">
@@ -43,12 +46,13 @@ export default function ChatHeader({
 
         {/* Settings Button */}
         <button
-          className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-white/10 transition-colors"
+          ref={settingsButtonRef}
+          className="flex items-center justify-center w-16 h-16 rounded-full hover:bg-white/10 transition-colors"
           onClick={onSettings}
         >
           <svg
-            width="24"
-            height="24"
+            width="32"
+            height="32"
             fill="none"
             viewBox="0 0 24 24"
             className="text-white"

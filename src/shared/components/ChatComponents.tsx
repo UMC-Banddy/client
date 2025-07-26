@@ -65,38 +65,38 @@ export function ChatHeader({
   return (
     <div className="w-full bg-[#181818] pb-6">
       {/* Main Header Content */}
-      <div className="flex items-center justify-between px-6 py-5 h-24">
+      <div className="flex items-center justify-between px-6 py-5 h-28">
         <button
-          className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-white/10 transition-colors"
+          className="flex items-center justify-center w-24 h-24 rounded-full hover:bg-white/10 transition-colors"
           onClick={onBack}
         >
           <img
             src="/src/assets/icons/back.svg"
             alt="Back"
-            className="w-6 h-6"
+            className="w-14 h-14"
           />
         </button>
 
         <div className="flex flex-col items-center">
-          <div className="relative">
+          <div className="relative w-36 h-36 flex items-center justify-center">
             <img
               src={bandAvatar}
               alt="밴드"
-              className="w-20 h-20 rounded-full object-cover mb-3"
+              className="w-16 h-16 rounded-full object-cover mb-3"
             />
           </div>
-          <span className="text-sm text-[#CACACA] text-center max-w-[200px] truncate">
+          <span className="text-sm text-[#CACACA] text-center max-w-[200px] truncate mt-2">
             {bandName}
           </span>
         </div>
 
         <button
-          className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-white/10 transition-colors"
+          className="flex items-center justify-center w-24 h-24 rounded-full hover:bg-white/10 transition-colors"
           onClick={onSettings}
         >
           <svg
-            width="24"
-            height="24"
+            width="56"
+            height="56"
             fill="none"
             viewBox="0 0 24 24"
             className="text-white"
@@ -428,7 +428,7 @@ export function ChatInputBar({
           </div>
 
           {showActions && (
-            <div className="flex justify-around w-full">
+            <div className="flex justify-around w-full animate-slide-up">
               <button
                 onClick={() => onSendCalendar?.()}
                 className="flex flex-col items-center group"

@@ -1,21 +1,24 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ChatHeader,
-  ChatDateDivider,
-  ChatMessageList,
-  ChatInputBar,
-  type ChatMessage,
-} from "@/shared/components/ChatComponents";
+import ChatHeader from "./_components/ChatHeader";
+import ChatDateDivider from "./_components/ChatDateDivider";
+import ChatMessageList from "./_components/ChatMessageList";
+import ChatInputBar from "./_components/ChatInputBar";
+import Modal from "@/shared/components/MuiDialog";
+import FlagIcon from "@/assets/icons/chat/flag.svg";
+import BlockIcon from "@/assets/icons/chat/block.svg";
+import GetoutIcon from "@/assets/icons/chat/getout.svg";
+import type { ChatMessage } from "@/types/chat";
 
 export default function ChatDemoPage() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-  // Sample messages for demonstration
+  // Demo messages from Figma design
   useEffect(() => {
-    const sampleMessages: ChatMessage[] = [
+    const demoMessages: ChatMessage[] = [
       {
         id: "1",
         type: "other",
@@ -40,7 +43,7 @@ export default function ChatDemoPage() {
         audio: {
           duration: 30,
           isPlaying: false,
-          onPlay: () => console.log("Play audio message 3"),
+          onPlay: () => console.log("Play audio"),
         },
         time: "AM 12:48",
       },
@@ -53,26 +56,9 @@ export default function ChatDemoPage() {
         time: "AM 12:52",
         unreadCount: 1,
       },
-      {
-        id: "5",
-        type: "other",
-        name: "I'll kill you",
-        avatar: "/src/assets/images/pierrot.png",
-        text: "그럼 이제 우리 밴드에 들어오실래요? 정말 실력이 좋으시네요!",
-        time: "AM 12:53",
-      },
-      {
-        id: "6",
-        type: "me",
-        name: "Beck",
-        avatar: "/src/assets/images/profile1.png",
-        text: "고민해보겠습니다. 언제까지 답변하면 되나요?",
-        time: "AM 12:54",
-        unreadCount: 2,
-      },
     ];
 
-    setMessages(sampleMessages);
+    setMessages(demoMessages);
   }, []);
 
   const handleBack = useCallback(() => {
@@ -80,8 +66,24 @@ export default function ChatDemoPage() {
   }, [navigate]);
 
   const handleSettings = useCallback(() => {
-    alert("설정 버튼이 클릭되었습니다!");
+    setIsSettingsModalOpen(true);
   }, []);
+
+  const handleReport = useCallback(() => {
+    console.log("신고하기");
+    setIsSettingsModalOpen(false);
+  }, []);
+
+  const handleBlock = useCallback(() => {
+    console.log("차단하기");
+    setIsSettingsModalOpen(false);
+  }, []);
+
+  const handleLeave = useCallback(() => {
+    console.log("나가기");
+    setIsSettingsModalOpen(false);
+    navigate("/");
+  }, [navigate]);
 
   const handleSendMessage = useCallback((text: string) => {
     const newMessage: ChatMessage = {
@@ -98,37 +100,6 @@ export default function ChatDemoPage() {
     };
 
     setMessages((prev) => [...prev, newMessage]);
-
-    // Simulate response after 1-3 seconds
-    setTimeout(() => {
-      const responses = [
-        "좋은 말씀이네요!",
-        "그렇군요...",
-        "흥미롭습니다!",
-        "더 자세히 들려주세요.",
-        "완전 동감해요!",
-        "그럼 언제 연락드릴까요?",
-        "밴드 연습은 매주 토요일 저녁에 해요.",
-        "정말 기대되네요!",
-      ];
-      const randomResponse =
-        responses[Math.floor(Math.random() * responses.length)];
-
-      const responseMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: "other",
-        name: "I'll kill you",
-        avatar: "/src/assets/images/pierrot.png",
-        text: randomResponse,
-        time: new Date().toLocaleTimeString("ko-KR", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }),
-      };
-
-      setMessages((prev) => [...prev, responseMessage]);
-    }, 1000 + Math.random() * 2000);
   }, []);
 
   const handleSendAudio = useCallback((audioBlob: Blob) => {
@@ -138,9 +109,9 @@ export default function ChatDemoPage() {
       name: "Beck",
       avatar: "/src/assets/images/profile1.png",
       audio: {
-        duration: Math.floor(Math.random() * 60) + 10, // 10-70초 랜덤
+        duration: 30,
         isPlaying: false,
-        onPlay: () => console.log("Play my audio message"),
+        onPlay: () => console.log("Play audio"),
       },
       time: new Date().toLocaleTimeString("ko-KR", {
         hour: "numeric",
@@ -150,90 +121,19 @@ export default function ChatDemoPage() {
     };
 
     setMessages((prev) => [...prev, newMessage]);
-
-    // Simulate audio response
-    setTimeout(() => {
-      const responseMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: "other",
-        name: "I'll kill you",
-        avatar: "/src/assets/images/pierrot.png",
-        audio: {
-          duration: Math.floor(Math.random() * 60) + 10,
-          isPlaying: false,
-          onPlay: () => console.log("Play response audio"),
-        },
-        time: new Date().toLocaleTimeString("ko-KR", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }),
-      };
-
-      setMessages((prev) => [...prev, responseMessage]);
-    }, 2000 + Math.random() * 1000);
   }, []);
 
   const handleSendImage = useCallback((imageFile: File) => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: "me",
-      name: "Beck",
-      avatar: "/src/assets/images/profile1.png",
-      text: `📷 ${imageFile.name}`,
-      time: new Date().toLocaleTimeString("ko-KR", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }),
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-    alert(`이미지 파일 "${imageFile.name}"이 전송되었습니다!`);
+    console.log("Image file:", imageFile);
   }, []);
 
   const handleSendCalendar = useCallback(() => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: "me",
-      name: "Beck",
-      avatar: "/src/assets/images/profile1.png",
-      text: "📅 일정을 생성했습니다",
-      time: new Date().toLocaleTimeString("ko-KR", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }),
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-    alert("일정 생성 기능이 호출되었습니다!");
+    console.log("Calendar event creation");
   }, []);
 
   const handleLoadMore = useCallback(() => {
     setIsLoading(true);
-    // Simulate loading more messages
     setTimeout(() => {
-      const oldMessages: ChatMessage[] = [
-        {
-          id: (Date.now() - 1000).toString(),
-          type: "other",
-          name: "I'll kill you",
-          avatar: "/src/assets/images/pierrot.png",
-          text: "이전 대화 내용입니다.",
-          time: "AM 12:30",
-        },
-        {
-          id: (Date.now() - 2000).toString(),
-          type: "me",
-          name: "Beck",
-          avatar: "/src/assets/images/profile1.png",
-          text: "네, 알겠습니다!",
-          time: "AM 12:29",
-        },
-      ];
-
-      setMessages((prev) => [...oldMessages, ...prev]);
       setIsLoading(false);
     }, 1000);
   }, []);
@@ -241,14 +141,14 @@ export default function ChatDemoPage() {
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#121212]">
       <ChatHeader
-        bandName="우리밴드 정상영업합니다"
-        bandAvatar="/src/assets/images/profile1.png"
+        bandName="I'll kill you"
+        bandAvatar="/src/assets/images/pierrot.png"
         onBack={handleBack}
         onSettings={handleSettings}
       />
 
       <div className="flex-1 flex flex-col bg-[#F3F3F3] rounded-t-[40px] overflow-hidden relative">
-        <ChatDateDivider />
+        <ChatDateDivider date="2025.06.14" />
         <ChatMessageList
           messages={messages}
           onLoadMore={handleLoadMore}
@@ -261,8 +161,38 @@ export default function ChatDemoPage() {
         onSendAudio={handleSendAudio}
         onSendImage={handleSendImage}
         onSendCalendar={handleSendCalendar}
-        placeholder="메시지를 입력해보세요..."
       />
+
+      {/* Settings Modal */}
+      <Modal open={isSettingsModalOpen} setOpen={setIsSettingsModalOpen}>
+        <div className="bg-white rounded-[14px] p-4 min-w-[280px]">
+          <div className="space-y-4">
+            <button
+              onClick={handleReport}
+              className="flex items-center w-full p-3 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <img src={FlagIcon} alt="신고" className="w-5 h-5 mr-3" />
+              <span className="text-black font-medium">신고</span>
+            </button>
+
+            <button
+              onClick={handleBlock}
+              className="flex items-center w-full p-3 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <img src={BlockIcon} alt="차단" className="w-5 h-5 mr-3" />
+              <span className="text-black font-medium">차단</span>
+            </button>
+
+            <button
+              onClick={handleLeave}
+              className="flex items-center w-full p-3 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <img src={GetoutIcon} alt="나가기" className="w-5 h-5 mr-3" />
+              <span className="text-black font-medium">나가기</span>
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
