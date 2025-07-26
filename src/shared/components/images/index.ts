@@ -12,3 +12,7 @@ export { default as Prefer } from "./Prefer";
 export { default as Instagram } from "./Instagram";
 export { default as Tictok } from "./Tictok";
 export { default as Youtube } from "./Youtube";
+export { default as OasisImg } from "./OasisImg";
+export { default as PierrotImg } from "./PierrotImg";
+export { default as ImgCircle } from "./ImgCircle";
+export { default as SkillLevelIcon } from "./SkillLevelIcon";

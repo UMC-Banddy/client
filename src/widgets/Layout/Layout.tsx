@@ -14,22 +14,31 @@ export default function Layout() {
     "/signup/complete",
     "/home/chat",
     "/profile-detail",
+    "/pre-test",
   ].some((path) => location.pathname.startsWith(path));
   const hideHeader =
-    ["/my/notifications/", "/profile-detail"].some((path) =>
+    ["/my/notifications/", "/profile-detail", "/pre-test"].some((path) =>
       location.pathname.startsWith(path)
     ) || location.pathname === "/my";
+
+  const isPretestPage = location.pathname.startsWith("/pre-test");
+  const isFullScreenPage = hideBottomBar || isPretestPage;
 
   return (
     <div className="relative min-h-[100dvh] flex flex-col overflow-hidden w-full bg-[radial-gradient(ellipse_at_center,_#2a2a2a_20%,_#1c1c1c_80%)]">
       {!hideHeader && <Header />}
       <main
-        className="flex-1 flex flex-col items-center justify-center w-full max-w-md mx-auto gap-y-8"
+        className={`flex-1 flex flex-col w-full ${
+          isFullScreenPage
+            ? "h-full"
+            : "max-w-md mx-auto items-center justify-center gap-y-8"
+        }`}
         style={{
-          paddingBottom: "calc(64px + env(safe-area-inset-bottom, 0px))",
+          paddingBottom: isFullScreenPage
+            ? "0px"
+            : "calc(64px + env(safe-area-inset-bottom, 0px))",
         }}
       >
-        {/*  페이지마다 다를 것 같지만 추후 협의 필요한 지점 */}
         <Outlet />
       </main>
       {!hideBottomBar && <BottomBar />}

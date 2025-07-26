@@ -10,9 +10,6 @@ import SignupProfilePage from "@/pages/Signup/SignupProfilePage";
 import SignupCompletePage from "@/pages/Signup/SignupCompletePage";
 import ArtistsPage from "@/pages/Artist/ArtistsPage";
 import ArtistDetailPage from "@/pages/Artist/ArtistDetailPage";
-import SessionsPage from "@/pages/Session/SessionsPage";
-import SessionDetailPage from "@/pages/Session/SessionDetailPage";
-import SessionSelectPage from "@/pages/Session/SessionSelectPage";
 import BandDetailPage from "@/pages/Band/BandDetailPage";
 import BandChatPage from "@/pages/Band/BandChatPage";
 import ManualPage from "@/pages/Manual/ManualPage";
@@ -27,6 +24,10 @@ import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
 import NotificationPage from "@/pages/Notification/NotificationPage";
 import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
 import ChatPage from "@/pages/chat/ChatPage";
+import PretestArtistPage from "@/pages/pretest/artist/PretestArtistPage";
+import PretestSessionPage from "@/pages/pretest/session/PretestSessionPage";
+import PretestProfileCompletePage from "@/pages/pretest/profile/PretestProfileCompletePage";
+import PretestProfileEditPage from "@/pages/pretest/profile/PretestProfileEditPage";
 import ArchivePage from "@/pages/Archive/ArchivePage";
 import AddPage from "@/pages/Archive/AddPage";
 import ArtistPage from "@/pages/Archive/Artist/ArtistPage";
@@ -50,50 +51,31 @@ const routes = [
       { path: "/signup/complete", element: <SignupCompletePage /> },
       { path: "/artists", element: <ArtistsPage /> },
       { path: "/artists/:id", element: <ArtistDetailPage /> },
-      { path: "/sessions", element: <SessionsPage /> },
-      { path: "/sessions/:id", element: <SessionDetailPage /> },
-      { path: "/sessions/select", element: <SessionSelectPage /> },
       { path: "/bands/:id", element: <BandDetailPage /> },
       { path: "/bands/:id/chat", element: <BandChatPage /> },
       { path: "/manual", element: <ManualPage /> },
       { path: "/settings", element: <SettingsPage /> },
-
       { path: "/my", element: <MyPage /> },
       { path: "/my/notifications", element: <NotificationPage /> },
       { path: "/my/notifications/:id", element: <NotificationDetailPage /> },
       { path: "/my/archive", element: <ArchivePage /> },
       { path: "/my/archive/add", element: <AddPage /> },
       { path: "/my/archive/artist", element: <ArtistPage /> },
-      { path: "/my/archive/album", element: <AlbumPage /> }, 
-      { path: "*", element: <NotFoundPage /> },
-
-      //Home 관련 페이지
-      { path: "/", element: <HomePage /> },
+      { path: "/my/archive/album", element: <AlbumPage /> },
       { path: "/home/people", element: <PeoplePage /> },
       { path: "/home/playlist", element: <PlaylistPage /> },
       { path: "/home/prefer", element: <PreferPage /> },
       { path: "/home/chat", element: <ChatPage /> },
-
-      { path: "/login", element: <LoginPage /> },
-      { path: "/signup", element: <SignupPage /> },
-      { path: "/signup/verify", element: <SignupVerifyPage /> },
-      { path: "/signup/password", element: <SignupPasswordPage /> },
-      { path: "/signup/nickname", element: <SignupNicknamePage /> },
-      { path: "/signup/profile", element: <SignupProfilePage /> },
-      { path: "/signup/complete", element: <SignupCompletePage /> },
-      { path: "/artists", element: <ArtistsPage /> },
-      { path: "/artists/:id", element: <ArtistDetailPage /> },
-      { path: "/sessions", element: <SessionsPage /> },
-      { path: "/sessions/:id", element: <SessionDetailPage /> },
-      { path: "/sessions/select", element: <SessionSelectPage /> },
-      { path: "/bands/:id", element: <BandDetailPage /> },
-      { path: "/bands/:id/chat", element: <BandChatPage /> },
-      { path: "/manual", element: <ManualPage /> },
-      { path: "/settings", element: <SettingsPage /> },
-      { path: "*", element: <NotFoundPage /> },
-
       { path: "/join", element: <Join /> },
       { path: "/join/band-recruit", element: <BandRecruit /> },
+      { path: "/pre-test/artist", element: <PretestArtistPage /> },
+      { path: "/pre-test/session", element: <PretestSessionPage /> },
+      {
+        path: "/pre-test/profile/complete",
+        element: <PretestProfileCompletePage />,
+      },
+      { path: "/pre-test/profile/edit", element: <PretestProfileEditPage /> },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
 ];
