@@ -1,82 +1,82 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import logo from "../../assets/logos/white-star.svg";
+import { AnimatePresence, motion } from "framer-motion";
+import whiteStar from "../../assets/logos/white-star.svg";
+import blackstar from "../../assets/logos/black-star.svg";
+
+import { authStore } from "../../store/authStore";
+import { sendEmailCode } from "../../store/auth";
 
 const SignupPage: React.FC = () => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(authStore.email);
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
-
+  /* 이전꺼
   const handleSendCode = () => {
+    if (!email) return;
+    authStore.email = email; // 전역 상태에 저장
     setShowPopup(true);
     setTimeout(() => {
       setShowPopup(false);
-      navigate("/signup/verify"); // 인증번호 입력 화면 경로
+      navigate("/signup/verify");
     }, 1500);
   };
+  */
+ const handleSendCode = async () => {
+  if (!email) return;
+  try {
+    await sendEmailCode(email); 
+    setShowPopup(true);
+    setTimeout(() => {
+      setShowPopup(false);
+      navigate("/signup/verify");
+    }, 1500);
+  } catch (error) {
+    console.error("이메일 인증 요청 실패", error);
+    
+  }
+};
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-black text-white px-6 pt-6 relative">
-      {/* 뒤로가기 버튼 */}
-      <button
-        onClick={() => navigate("/")}
-        className="absolute top-4 left-4"
-        aria-label="뒤로가기"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-      </button>
-
-      {/* Progress Bar */}
-      <div className="h-0.5 w-full bg-neutral-700 mt-10 mb-8 relative">
-        <div className="h-full bg-red-500 w-1/4 absolute top-0 left-0" />
+    <div className="relative w-full min-h-screen max-w-md mx-auto bg-black text-white overflow-hidden">
+      {/* Progress bar*/}
+      <div className="w-full h-0.5 bg-[#959595]">
+        <div className="w-1/4 h-full bg-[#C7242D]" />
       </div>
 
-      {/* 로고 */}
-      <img src={logo} alt="Banddy" className="w-8 h-8 absolute top-4 right-4" />
+      {/* 별 아이콘 */}
+      <img src={whiteStar} alt="step" className="absolute right-6 top-[25px] w-8 h-8" />
 
-      {/* 안내 */}
-      <div className="mt-20">
-        <p className="text-sm text-neutral-400 mb-1">Step. 1</p>
+      {/* 콘텐츠 영역 */}
+      <div className="flex flex-col items-start justify-center px-6 text-left min-h-[calc(100vh-180px)]">
+        <p className="text-sm text-[#959595] mb-1">Step. 1</p>
         <h1 className="text-lg font-semibold mb-8">이메일 아이디를 입력해주세요.</h1>
 
-        {/* 입력창 */}
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="example@banddy.com"
-          className="w-full border-b border-neutral-500 bg-transparent py-2 focus:outline-none placeholder-gray-500"
+          className="w-full border-b border-[#959595] bg-transparent py-2 focus:outline-none placeholder-[#959595] text-sm"
         />
       </div>
 
-      {/* 인증번호 발송 버튼 */}
-      <button
-        disabled={!email}
-        onClick={handleSendCode}
-        className={`w-full py-3 mt-10 rounded-[24px] font-semibold transition ${
-          email
-            ? "bg-red-600 hover:bg-red-700 text-white"
-            : "bg-neutral-700 text-neutral-400 cursor-default"
-        }`}
-      >
-        인증번호 발송
-      </button>
+      {/* 인증번호 발송 버튼*/}
+      <div className="px-6 pb-8 bottom-10 left-0 right-0 max-w-md mx-auto bg-black">
+        <button
+          onClick={handleSendCode}
+          disabled={!email}
+          className={`w-full h-[49px] rounded-[24px] font-semibold transition ${
+            email
+              ? "bg-[#C7242D] text-white"
+              : "bg-[#959595] text-[#696969] cursor-default"
+          }`}
+        >
+          인증번호 발송
+        </button>
+      </div>
 
-      {/* 팝업 */}
+      {/* 팝업 애니메이션 */}
       <AnimatePresence>
         {showPopup && (
           <motion.div
@@ -89,16 +89,18 @@ const SignupPage: React.FC = () => {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-neutral-900 rounded-2xl p-6 w-72 text-center"
+              className="bg-[#E9E9E9] rounded-[18px] p-6 w-[300px] text-center"
             >
-              <img src={logo} alt="Banddy" className="w-8 h-8 mx-auto mb-4" />
-              <p className="mb-6">인증번호가 발송되었습니다.</p>
+              <img src={blackstar} alt="Banddy" className="w-12 h-12 mx-auto mb-4" />
+              <p className="mb-6 text-[#292929] font-medium text-base">
+                인증번호가 발송되었습니다.
+              </p>
               <button
                 onClick={() => {
                   setShowPopup(false);
                   navigate("/signup/verify");
                 }}
-                className="w-full py-2 rounded-[24px] bg-red-600 hover:bg-red-700 text-white font-semibold"
+                className="w-[130px] mx-auto py-2 rounded-[24px] bg-[#C7242D] text-white font-semibold"
               >
                 확인
               </button>

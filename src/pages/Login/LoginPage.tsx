@@ -5,18 +5,17 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import logo from "../../assets/logos/LOGO1.svg";
+import eyeOpen from "../../assets/icons/login/eye-open.svg";
+import eyeClosed from "../../assets/icons/login/eye-closed.svg";
+//import { login } from "././store/auth"; //연동시에 주석 해제
 
 const LoginPage: React.FC = () => {
   const snap = useSnapshot(authStore);
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    if (!snap.email || !snap.password) {
-      // 아무 변화 없음
-      return;
-    }
+  const handleLogin = () => { //const handleLogin = async () => { //연동시에 주석 해제
+    if (!snap.email || !snap.password) return;
 
-    // 간단한 인증 로직 (백엔드 연동 시 axios로 대체)
     if (snap.email === "admin@banddy.com" && snap.password === "admin123") {
       authStore.role = "ADMIN";
       toast.success("로그인 되었습니다.");
@@ -35,106 +34,88 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 w-full bg-black text-white">
+    <div className="min-h-screen bg-[#121212] text-white flex flex-col items-center px-6 pt-[120px] pb-10 w-full">
+      {/* 로고 */}
       <motion.img
         src={logo}
         alt="Banddy"
-        className="mb-12 w-40"
+        className="mb-[64px] w-[165px] h-[42px]"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       />
-      <div className="w-full max-w-sm space-y-4">
-        {/* 이메일 */}
-        <div>
-          <label htmlFor="email" className="block text-sm mb-1">아이디</label>
+
+      <div className="w-[321px] space-y-6">
+        {/* 아이디 */}
+        <div className="space-y-2">
+          <label htmlFor="email" className="block text-sm text-[#E9E9E9]">
+            아이디
+          </label>
           <input
             id="email"
             type="email"
+            placeholder="이메일 또는 아이디"
             value={snap.email}
             onChange={(e) => {
               authStore.email = e.target.value;
               authStore.errorMessage = "";
             }}
-            className="w-full bg-neutral-800 rounded-[9px] px-4 py-3 focus:outline-none"
+            className="w-full h-[49px] bg-[#292929] text-white placeholder-[#959595] rounded-[9px] px-4 py-[13px] focus:outline-none"
           />
         </div>
+
         {/* 비밀번호 */}
-        <div className="relative">
-          <label htmlFor="password" className="block text-sm mb-1">비밀번호</label>
+        <div className="space-y-2 relative">
+          <label htmlFor="password" className="block text-sm text-[#E9E9E9]">
+            비밀번호
+          </label>
           <input
             id="password"
             type={snap.showPassword ? "text" : "password"}
+            placeholder="비밀번호"
             value={snap.password}
             onChange={(e) => {
               authStore.password = e.target.value;
               authStore.errorMessage = "";
             }}
-            className="w-full bg-neutral-800 rounded-[9px] px-4 py-3 focus:outline-none pr-12"
+            className="w-full h-[49px] bg-[#292929] text-white placeholder-[#959595] rounded-[9px] px-4 py-[13px] pr-12 focus:outline-none"
           />
           <button
             type="button"
-            className="absolute right-3 top-9"
+            className="absolute right-4 top-[38px]"
             onClick={() => (authStore.showPassword = !authStore.showPassword)}
           >
-            {snap.showPassword ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 opacity-60"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.973 9.973 0 012.195-6.275m3.36-2.15a10.014 10.014 0 0110.185 1.575M19.8 14.15a9.996 9.996 0 01-3.585 3.675m-4.83.675a10.016 10.016 0 01-7.38-2.825M9 12a3 3 0 006 0 3 3 0 00-6 0z"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 opacity-60"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-            )}
+            <img
+              src={snap.showPassword ? eyeOpen : eyeClosed}
+              alt="toggle visibility"
+              className="w-5 h-5 opacity-70"
+            />
           </button>
         </div>
+
         {/* 에러 메시지 */}
         {snap.errorMessage && (
           <p className="text-red-500 text-sm mt-1">{snap.errorMessage}</p>
         )}
+
         {/* 아이디/비밀번호 찾기 */}
-        <div className="text-right">
-          <button className="text-sm underline opacity-70 cursor-default" disabled>
+        <div className="text-right mt-2 mb-[64px]">
+          <button className="text-sm underline text-[#E9E9E9] opacity-70 cursor-default" disabled>
             아이디/비밀번호 찾기
           </button>
         </div>
-        {/* 버튼 */}
+
+        {/* 로그인 버튼 */}
         <button
-          className="w-full py-3 mt-2 rounded-[24px] bg-red-600 hover:bg-red-700 font-semibold text-black"
+          className="w-full h-[49px] bg-[#C7242D] text-black font-semibold rounded-[24px] py-[13px]"
           onClick={handleLogin}
         >
           LOG IN
         </button>
+
+        {/* 회원가입 버튼 */}
         <button
-          className="w-full py-3 rounded-[24px] bg-neutral-700 hover:bg-neutral-600 font-semibold"
+          className="w-full h-[49px] bg-[#555555] text-[#CACACA] font-semibold rounded-[24px] py-[13px]"
           onClick={handleSignUp}
         >
           SIGN UP
