@@ -41,22 +41,22 @@ export default function ProfileCard({
   const navigate = useNavigate();
 
   return (
-    <div className="bg-[#CACACA] rounded-[3vh] w-[87vw] p-[4vw] mt-[4vh] mb-[3vh] flex flex-col items-center relative">
+    <div className="bg-[#CACACA] rounded-[3vh] w-[87vw] p-[4vw] mt-[4vh] mb-[3vh] flex flex-col items-center relative max-w-md mx-auto">
       <div className="absolute top-[1rem] right-[4vw] flex flex-col gap-[0.5rem]">
         <button
-          className="bg-[#B42127] rounded-full w-[12vw] h-[12vw] flex items-center justify-center"
+          className="bg-[#B42127] rounded-full w-[12vw] h-[12vw] flex items-center justify-center max-w-[48px] max-h-[48px] cursor-pointer"
           onClick={() => navigate(`/profile-other/${profile.id}`)}
         >
-          <img src={file_music} alt="file-music" className="w-[12vw] h-[12vw]" />
+          <img src={file_music} alt="file-music" className="w-[12vw] h-[12vw] max-w-[48px] max-h-[48px]" />
         </button>
-        <button className="bg-black rounded-full w-[12vw] h-[12vw] flex items-center justify-center">
+        <button className="bg-black rounded-full w-[12vw] h-[12vw] flex items-center justify-center max-w-[48px] max-h-[48px]">
           <img src={youtube} alt="youtube" className="w-[12vw] h-[12vw]" />
         </button>
       </div>
       
       {/* 프로필 이미지와 가이드 */}
       <div className="relative">
-        <div className="w-[38vw] h-[38vw] rounded-full bg-[#808080] flex items-center justify-center overflow-hidden mt-[4vh] mb-[1vh]">
+        <div className="w-[38vw] h-[38vw] max-w-[152px] max-h-[152px] rounded-full bg-[#808080] flex items-center justify-center overflow-hidden mt-[4vh] mb-[1vh]">
           <img src={profile.avatar} alt="avatar" className="w-full h-full object-cover" />
         </div>
         

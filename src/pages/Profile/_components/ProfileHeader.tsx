@@ -25,7 +25,7 @@ export default function ProfileHeader({
   return (
     <header className="w-full h-[12vh] flex items-center justify-between">
       <button className="w-[8vw] h-[8vw] flex items-center justify-center ml-[3vw]" onClick={() => navigate(-1)}>
-        <img src={arrow_back} alt="arrow-back" className="w-[8vw] h-[8vw]" />
+        <img src={arrow_back} alt="arrow-back" className="w-[8vw] h-[8vw] max-w-[32px] max-h-[32px]" />
       </button>
       <ProfileMoreMenu open={menuOpen} setOpen={setMenuOpen} onReport={onReport} onBan={onBan} />
     </header>

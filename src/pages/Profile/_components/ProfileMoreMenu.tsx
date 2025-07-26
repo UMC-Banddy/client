@@ -30,15 +30,15 @@ export default function ProfileMoreMenu({ open, setOpen, onReport, onBan }: Prof
   return (
     <div className="relative">
       <button
-        className="w-[8vw] h-[8vw] flex items-center justify-center mr-[3vw]"
+        className="w-[8vw] h-[8vw] flex items-center justify-center mr-[3vw] max-w-[32px] max-h-[32px]"
         onClick={() => setOpen(!open)}
       >
-        <img src={more_vertical} alt="more-vertical" className="w-[8vw] h-[8vw]" />
+        <img src={more_vertical} alt="more-vertical" className="w-[8vw] h-[8vw] max-w-[32px] max-h-[32px]" />
       </button>
       {open && (
         <div
           ref={menuRef}
-          className="absolute right-[4vw] mt-[2vw] w-[32vw] bg-white rounded-xl shadow-lg z-50 flex flex-col py-2"
+          className="absolute right-[4vw] w-[32vw] bg-white rounded-xl shadow-lg z-50 flex flex-col py-2 max-w-[128px]"
         >
           <button
             className="flex items-center px-4 py-2 hover:bg-gray-100 text-black"

@@ -14,7 +14,7 @@ export default function ProfileArtistList({ artists }: ProfileArtistListProps) {
       <div className="flex gap-[3vw] mb-[3vh]">
         {artists.map((a: Artist, i: number) => (
           <div key={i} className="flex flex-col items-center">
-            <img src={a.image} alt={a.name} className="w-[17vw] h-[17vw] rounded-full object-cover mb-[0.4vh]" />
+            <img src={a.image} alt={a.name} className="w-[17vw] h-[17vw] rounded-full object-cover mb-[0.4vh] max-w-[68px] max-h-[68px]" />
             <span className="text-black text-wanted-sb-12 text-center max-w-[55px] whitespace-normal break-words">{a.name}</span>
           </div>
         ))}

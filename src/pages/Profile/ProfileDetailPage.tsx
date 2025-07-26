@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Drum, Mic2 } from "lucide-react";
 import ProfileHeader from "./_components/ProfileHeader";
 import ProfileCard from "./_components/ProfileCard";
 import ProfileModalSection from "./_components/ProfileModalSection";
+import { DrumImg, MicImg } from "@/shared/components/images";
 
 export default function ProfileDetailPage() {
   // 가이드 상태 관리
@@ -25,8 +25,8 @@ export default function ProfileDetailPage() {
     gender: "여성",
     location: "서울시 노원구",
     session: [
-      { icon: <Mic2 size={20} /> },
-      { icon: <Drum size={20} /> },
+      { icon: <MicImg color="red" size={32} /> },
+      { icon: <DrumImg color="red" size={32} /> },
     ],
     genres: [
       { icon: "🤘", label: "Tiwan Indie" },

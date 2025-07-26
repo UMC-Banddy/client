@@ -45,18 +45,16 @@ export default function OtherProfile() {
       <ProfileInfo avatarUrl={profile.avatar} nickname={profile.name} bio={profile.bio} showEdit={false} showShare={false} />
       <HashtagList tags={profile.hashtags} />
       
-      {/* Artist Grid Section */}
-      <div className="pl-[6vw] mb-[1vh]">
+      <div className="pl-[24px] mb-[1vh]">
         <ArtistGrid items={profile.artists} />
       </div>
       
       <SectionDivider />
       
-      {/* Tab Navigation */}
-      <div className="flex gap-[2.5vw] px-[6vw] mb-[3.2vh]">
+      <div className="flex gap-[2.5vw] px-[24px] mb-[3.2vh]">
         <button
           onClick={() => setActiveTab("곡")}
-          className={`px-[5vw] py-[1vh] rounded-[19px] text-wanted-sb-15 ${
+          className={`px-[20px] py-[8px] rounded-[19px] text-wanted-sb-15 ${
             activeTab === "곡" 
               ? "bg-[#B42127] text-[#E9E9E9]" 
               : "bg-[#555555] text-[#E9E9E9]"
@@ -66,7 +64,7 @@ export default function OtherProfile() {
         </button>
         <button
           onClick={() => setActiveTab("앨범")}
-          className={`px-[5vw] py-[1vh] rounded-[19px] text-wanted-sb-15 ${
+          className={`px-[20px] py-[8px] rounded-[19px] text-wanted-sb-15 ${
             activeTab === "앨범" 
               ? "bg-[#B42127] text-[#E9E9E9]" 
               : "bg-[#555555] text-[#E9E9E9]"
@@ -76,8 +74,7 @@ export default function OtherProfile() {
         </button>
       </div>
       
-      {/* Content Section */}
-      <div className="px-[6vw]">
+      <div className="px-[24px]">
         {activeTab === "곡" ? (
           <MusicList 
             items={profile.musics.map(music => ({
@@ -87,7 +84,7 @@ export default function OtherProfile() {
             }))} 
           />
         ) : (
-          <div className="grid grid-cols-3 gap-x-[4vw] gap-y-[2.3vh]">
+          <div className="grid grid-cols-3 gap-x-[16px] gap-y-[20px]">
             {profile.albums.map((album, i) => (
               <MyArchiveItem
                 key={i}
