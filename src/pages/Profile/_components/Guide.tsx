@@ -36,15 +36,15 @@ export default function Guide({ showGuide, onClose }: GuideProps) {
       {/* 가이드 툴팁 */}
       <div
         ref={guideRef}
-        className="absolute top-[14vh] left-[20vw] z-30"
+        className="absolute top-[14vh] left-1/2 z-30"
         style={{
-          transform: "translateY(2vh)",
+          transform: "translateY(2vh) translateX(-25%)",
         }}
       >
         <img 
           src={guideSvg} 
           alt="guide" 
-          className="min-w-[44.64vw] min-h-[16.26vh] drop-shadow-lg"
+          className="min-w-[44.64vw] min-h-[16.26vh] drop-shadow-lg max-w-[175.4px] max-h-[138.5px]"
         />
       </div>
     </>
