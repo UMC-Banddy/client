@@ -29,9 +29,9 @@ export default function ChatPage() {
   // Initialize current room and messages
   useEffect(() => {
     const defaultRoom: ChatRoom = {
-      id: "1",
-      name: "우리밴드 정상영업합니다",
-      avatar: "/src/assets/images/profile1.png",
+      roomId: 1,
+      roomName: "우리밴드 정상영업합니다",
+      roomImage: "/src/assets/images/profile1.png",
       lastMessage: `안녕하세요! 누룽지밴드입니다.
 
 저희 밴드에 관심을 가져 주셔서 감사합니다. 아래 양식에 맞추어 메시지 보내주시면 감사드리겠습니다.
@@ -60,7 +60,12 @@ export default function ChatPage() {
 🎵 남자보컬
 • (필수) 겁쟁이 - 버즈
 • (선택) 본인의 매력이 잘 드러나는 자유곡 1곡`,
-      lastMessageTime: "AM 12:47",
+      member: [
+        {
+          userid: 1,
+          userName: "밴드 관리자",
+        },
+      ],
       unreadCount: 0,
       isOnline: true,
     };
@@ -190,8 +195,8 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#121212]">
       <ChatHeader
-        bandName={currentRoom?.name || "우리밴드 정상영업합니다"}
-        bandAvatar={currentRoom?.avatar || "/src/assets/images/profile1.png"}
+        bandName={currentRoom?.roomName || "우리밴드 정상영업합니다"}
+        bandAvatar={currentRoom?.roomImage || "/src/assets/images/profile1.png"}
         onBack={handleBack}
         onReport={handleReport}
         onBlock={handleBlock}

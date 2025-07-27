@@ -14,14 +14,40 @@ export interface ChatMessage {
   unreadCount?: number;
 }
 
+export interface ChatRoomMember {
+  userid: number;
+  userName: string;
+}
+
 export interface ChatRoom {
-  id: string;
-  name: string;
-  avatar: string;
+  roomId: number;
+  roomName: string;
+  roomImage?: string;
   lastMessage?: string;
-  lastMessageTime?: string;
-  unreadCount: number;
-  isOnline: boolean;
+  pinnedAt?: string;
+  member: ChatRoomMember[];
+  unreadCount?: number;
+  isOnline?: boolean;
+}
+
+export interface InterviewRoom {
+  bandId: number;
+  bandName: string;
+  bandImage?: string;
+  createdAt: string;
+}
+
+export interface AppliedRoom {
+  roomId: number;
+  roomName: string;
+  roomImage?: string;
+  createdAt: string;
+}
+
+export interface ChatRoomsResponse {
+  rooms: ChatRoom[];
+  interviewRooms: InterviewRoom[];
+  appliedRooms: AppliedRoom[];
 }
 
 export interface ChatUser {
@@ -33,9 +59,13 @@ export interface ChatUser {
 }
 
 export interface ChatState {
-  messages: ChatMessage[];
+  rooms: ChatRoom[];
+  interviewRooms: InterviewRoom[];
+  appliedRooms: AppliedRoom[];
   currentRoom: ChatRoom | null;
+  messages: ChatMessage[];
   isLoading: boolean;
   isTyping: boolean;
   playingAudioId: string | null;
+  error: string | null;
 }
