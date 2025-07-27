@@ -4,7 +4,7 @@ import React from "react";
 
 interface ImgCircleProps {
   size?: number;
-  color: "red" | "gray" | "red-400" | "gray-700" | "gray-200";
+  color: "red" | "gray" | "red-400" | "gray-700" | "gray-200" | "gray-500";
 }
 
 const ImgCircle = ({
@@ -16,10 +16,14 @@ const ImgCircle = ({
   const bgColor =
     color === "red" || color === "red-400"
       ? "#B42127"
-      : color === "gray" || color === "gray-700"
+      : color === "gray"
+      ? "#E5E7EB"
+      : color === "gray-700"
       ? "#292929"
       : color === "gray-200"
       ? "#CACACA"
+      : color === "gray-500"
+      ? "#E5E7EB"
       : undefined;
 
   return (
