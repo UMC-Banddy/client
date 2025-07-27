@@ -9,7 +9,7 @@ export default function MyArchiveItem({
 }: MyArchiveItemProps) {
   return (
     <div className="flex flex-col items-start">
-      <div className="relative w-[26vw] h-[26vw] overflow-hidden flex items-center justify-center">
+      <div className="relative w-[26vw] h-[26vw] overflow-hidden flex items-center justify-center max-w-[104px] max-h-[104px]">
         {coverUrl ? (
           <img
             src={coverUrl}
