@@ -103,7 +103,7 @@ export default function ChatPage() {
 • (필수) 겁쟁이 - 버즈
 • (선택) 본인의 매력이 잘 드러나는 자유곡 1곡`,
       time: "오후 3:08",
-      unreadCount: 0,
+      unreadCount: 1,
     };
 
     chatActions.setMessages([initialMessage]);
