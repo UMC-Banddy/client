@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 
 interface ChatInputBarProps {
   onSendMessage?: (message: string) => void;
-  onSendAudio?: (audioBlob: Blob) => void;
+
   onSendImage?: (imageFile: File) => void;
   onSendCalendar?: () => void;
   placeholder?: string;
@@ -12,7 +12,6 @@ interface ChatInputBarProps {
 
 export default function ChatInputBar({
   onSendMessage,
-  onSendAudio,
   onSendImage,
   onSendCalendar,
   placeholder = "메시지를 입력하세요",

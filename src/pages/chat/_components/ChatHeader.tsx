@@ -17,7 +17,6 @@ interface ChatHeaderProps {
 export default function ChatHeader({
   bandName = "우리밴드 정상영업합니다",
   bandAvatar = "/src/assets/images/profile1.png",
-  bandStatus = "정상영업중",
   onBack,
   onReport,
   onBlock,

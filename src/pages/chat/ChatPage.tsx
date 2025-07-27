@@ -5,6 +5,7 @@ import ChatDateDivider from "./_components/ChatDateDivider";
 import ChatMessageList from "./_components/ChatMessageList";
 import ChatInputBar from "./_components/ChatInputBar";
 import Modal from "@/shared/components/MuiDialog";
+import SessionSelectModal from "./_components/SessionSelectModal";
 import { useChat } from "./hooks/useChat";
 import { chatActions } from "@/store/chatStore";
 import type { ChatRoom, ChatMessage } from "@/types/chat";
@@ -13,19 +14,16 @@ export default function ChatPage() {
   const navigate = useNavigate();
   const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
   const [showActions, setShowActions] = useState(false);
+  const [showSessionModal, setShowSessionModal] = useState(true);
 
   const {
     messages,
     currentRoom,
     isLoading,
-    messagesEndRef,
     sendMessage,
-    sendAudio,
     sendImage,
     sendCalendar,
-    handleAudioPlay,
     loadMoreMessages,
-    markMessageAsRead,
   } = useChat();
 
   // Initialize current room and messages
@@ -131,18 +129,16 @@ export default function ChatPage() {
     navigate("/");
   }, [navigate]);
 
+  const handleSessionConfirm = useCallback((selectedSession: string) => {
+    console.log("선택된 세션:", selectedSession);
+    setShowSessionModal(false);
+  }, []);
+
   const handleSendMessage = useCallback(
     (text: string) => {
       sendMessage(text);
     },
     [sendMessage]
-  );
-
-  const handleSendAudio = useCallback(
-    (audioBlob: Blob) => {
-      sendAudio(audioBlob);
-    },
-    [sendAudio]
   );
 
   const handleSendImage = useCallback(
@@ -188,7 +184,6 @@ export default function ChatPage() {
 
       <ChatInputBar
         onSendMessage={handleSendMessage}
-        onSendAudio={handleSendAudio}
         onSendImage={handleSendImage}
         onSendCalendar={handleSendCalendar}
         onShowActionsChange={setShowActions}
@@ -217,6 +212,13 @@ export default function ChatPage() {
           </div>
         </div>
       </Modal>
+
+      {/* 세션 선택 모달 */}
+      <SessionSelectModal
+        open={showSessionModal}
+        onClose={() => setShowSessionModal(false)}
+        onConfirm={handleSessionConfirm}
+      />
     </div>
   );
 }

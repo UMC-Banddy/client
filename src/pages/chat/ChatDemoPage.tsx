@@ -65,10 +65,6 @@ export default function ChatDemoPage() {
     navigate(-1);
   }, [navigate]);
 
-  const handleSettings = useCallback(() => {
-    setIsSettingsModalOpen(true);
-  }, []);
-
   const handleReport = useCallback(() => {
     console.log("신고하기");
     setIsSettingsModalOpen(false);
@@ -102,27 +98,6 @@ export default function ChatDemoPage() {
     setMessages((prev) => [...prev, newMessage]);
   }, []);
 
-  const handleSendAudio = useCallback((audioBlob: Blob) => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: "me",
-      name: "Beck",
-      avatar: "/src/assets/images/profile1.png",
-      audio: {
-        duration: 30,
-        isPlaying: false,
-        onPlay: () => console.log("Play audio"),
-      },
-      time: new Date().toLocaleTimeString("ko-KR", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }),
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-  }, []);
-
   const handleSendImage = useCallback((imageFile: File) => {
     console.log("Image file:", imageFile);
   }, []);
@@ -144,7 +119,6 @@ export default function ChatDemoPage() {
         bandName="I'll kill you"
         bandAvatar="/src/assets/images/pierrot.png"
         onBack={handleBack}
-        onSettings={handleSettings}
       />
 
       <div className="flex-1 flex flex-col bg-[#F3F3F3] rounded-t-[40px] overflow-hidden relative">
@@ -158,7 +132,6 @@ export default function ChatDemoPage() {
 
       <ChatInputBar
         onSendMessage={handleSendMessage}
-        onSendAudio={handleSendAudio}
         onSendImage={handleSendImage}
         onSendCalendar={handleSendCalendar}
       />

@@ -58,7 +58,6 @@ export interface ChatInputBarProps {
 export function ChatHeader({
   bandName = "우리밴드 정상영업합니다",
   bandAvatar = "/src/assets/images/profile1.png",
-  bandStatus = "정상영업중",
   onBack,
   onSettings,
 }: ChatHeaderProps) {
@@ -321,7 +320,6 @@ export function ChatMessageList({
 // Chat Input Bar Component
 export function ChatInputBar({
   onSendMessage,
-  onSendAudio,
   onSendImage,
   onSendCalendar,
   placeholder = "메시지를 입력하세요",
