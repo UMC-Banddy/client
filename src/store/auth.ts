@@ -1,12 +1,4 @@
-import axios from "axios";
-
-
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+import { API } from "@/api/API";
 
 // 회원가입 API
 export const signupMember = async (data: {
@@ -33,5 +25,3 @@ export const checkNickname = async (nickname: string) => {
   const res = await API.get(`/member/check-nickname?nickname=${nickname}`);
   return res.data;
 };
-
-
