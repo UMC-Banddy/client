@@ -12,6 +12,7 @@ import type { ChatRoom, ChatMessage } from "@/types/chat";
 export default function ChatPage() {
   const navigate = useNavigate();
   const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
+  const [showActions, setShowActions] = useState(false);
 
   const {
     messages,
@@ -177,6 +178,12 @@ export default function ChatPage() {
           onLoadMore={handleLoadMore}
           isLoading={isLoading}
         />
+        {/* 하단 여백 - 입력창 상태에 따라 동적 조정 */}
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            showActions ? "h-32" : "h-4"
+          }`}
+        ></div>
       </div>
 
       <ChatInputBar
@@ -184,6 +191,7 @@ export default function ChatPage() {
         onSendAudio={handleSendAudio}
         onSendImage={handleSendImage}
         onSendCalendar={handleSendCalendar}
+        onShowActionsChange={setShowActions}
       />
 
       {/* Leave Confirmation Modal */}

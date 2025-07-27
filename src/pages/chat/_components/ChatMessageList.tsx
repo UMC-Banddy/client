@@ -74,7 +74,7 @@ export default function ChatMessageList({
         ))}
       </div>
 
-      <div ref={messagesEndRef} className="pb-32" />
+      <div ref={messagesEndRef} className="pb-16" />
     </div>
   );
 }

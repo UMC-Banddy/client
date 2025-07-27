@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 interface ChatInputBarProps {
   onSendMessage?: (message: string) => void;
@@ -7,6 +7,7 @@ interface ChatInputBarProps {
   onSendCalendar?: () => void;
   placeholder?: string;
   disabled?: boolean;
+  onShowActionsChange?: (show: boolean) => void;
 }
 
 export default function ChatInputBar({
@@ -16,8 +17,14 @@ export default function ChatInputBar({
   onSendCalendar,
   placeholder = "메시지를 입력하세요",
   disabled = false,
+  onShowActionsChange,
 }: ChatInputBarProps) {
   const [showActions, setShowActions] = useState(false);
+
+  // 부모 컴포넌트에 상태 변경 알림
+  useEffect(() => {
+    onShowActionsChange?.(showActions);
+  }, [showActions, onShowActionsChange]);
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,7 +63,7 @@ export default function ChatInputBar({
   return (
     <div className="fixed left-0 right-0 bottom-0 z-30">
       <div
-        className={`transition-transform duration-300 ease-in-out ${
+        className={`transition-all duration-300 ease-in-out ${
           showActions ? "translate-y-0" : "translate-y-0"
         }`}
         style={{
