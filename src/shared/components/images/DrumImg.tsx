@@ -13,7 +13,9 @@ const DrumImg = ({ size = 68, color }: ImgSrcProps) => {
       >
         <path
           d="M4.5 4L20.5 20M44.5 4L28.5 20"
-          stroke={color === "gray" ? "#555555" : "#ffffff"}
+          stroke={
+            color === "gray" || color === "gray-700" ? "#555555" : "#ffffff"
+          }
           stroke-width="3"
           stroke-linecap="round"
           stroke-linejoin="round"

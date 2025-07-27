@@ -17,8 +17,8 @@ export default function Layout() {
     "/pre-test",
   ].some((path) => location.pathname.startsWith(path));
   const hideHeader =
-    ["/my/notifications/", "/profile-detail", "/pre-test"].some((path) =>
-      location.pathname.startsWith(path)
+    ["/my/notifications/", "/profile-detail", "/pre-test", "/home/chat"].some(
+      (path) => location.pathname.startsWith(path)
     ) || location.pathname === "/my";
 
   const isPretestPage = location.pathname.startsWith("/pre-test");

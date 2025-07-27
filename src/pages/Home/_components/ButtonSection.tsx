@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import whiteStar from "@/assets/logos/white-star.svg";
 import blackStar from "@/assets/logos/black-star.svg";
 import muteIcon from "@/assets/icons/home/no-sound.svg";
@@ -8,6 +9,7 @@ import scrabStarIcon from "@/assets/icons/home/scrab-star.svg";
 import MuiDialog from "@/shared/components/MuiDialog";
 
 const ButtonSection = ({ setToast }: { setToast: (v: boolean) => void }) => {
+  const navigate = useNavigate();
   const [soundOn, setSoundOn] = useState(false);
   const [starOn, setStarOn] = useState(false);
   const [open, setOpen] = useState(false);
@@ -66,7 +68,10 @@ const ButtonSection = ({ setToast }: { setToast: (v: boolean) => void }) => {
             </button>
             <button
               className="flex-1 bg-red-600 text-white font-bold py-3 rounded-full text-lg"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                navigate("/home/chat");
+              }}
             >
               예
             </button>

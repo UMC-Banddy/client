@@ -13,7 +13,7 @@ const Modal = ({ children, open, setOpen }: ModalProps) => {
       open={open}
       sx={{
         "& .MuiDialog-paper": {
-          borderRadius: "14px",
+          borderRadius: "20px",
         },
       }}
     >

@@ -1,10 +1,28 @@
 import React from "react";
-export default function ChatDateDivider({ date }: { date: string }) {
+
+interface ChatDateDividerProps {
+  date?: string;
+  className?: string;
+}
+
+export default function ChatDateDivider({
+  date,
+  className = "",
+}: ChatDateDividerProps) {
+  // 현재 날짜를 기본값으로 사용
+  const currentDate =
+    date ||
+    new Date()
+      .toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+      .replace(/\./g, ".");
+
   return (
-    <div className="flex justify-center my-2">
-      <span className="bg-[#F3F3F3] text-[#A0A0A0] text-xs px-3 py-1 rounded-full shadow">
-        {date}
-      </span>
+    <div className={`flex items-center justify-center py-4 ${className}`}>
+      <span className="text-sm text-gray-500 font-medium">{currentDate}</span>
     </div>
   );
 }
