@@ -24,6 +24,7 @@ export const useChat = () => {
         minute: "2-digit",
         hour12: true,
       }),
+      unreadCount: 0, // 읽음 표시
     };
 
     chatActions.addMessage(newMessage);
@@ -45,6 +46,7 @@ export const useChat = () => {
         minute: "2-digit",
         hour12: true,
       }),
+      unreadCount: 0, // 읽음 표시
     };
 
     chatActions.addMessage(newMessage);

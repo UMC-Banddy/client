@@ -1,12 +1,17 @@
-import React, { useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import BackIcon from "@/assets/icons/back.svg";
+import FlagIcon from "@/assets/icons/chat/flag.svg";
+import BlockIcon from "@/assets/icons/chat/block.svg";
+import GetoutIcon from "@/assets/icons/chat/getout.svg";
 
 interface ChatHeaderProps {
   bandName?: string;
   bandAvatar?: string;
   bandStatus?: string;
   onBack?: () => void;
-  onSettings?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onReport?: () => void;
+  onBlock?: () => void;
+  onLeave?: () => void;
 }
 
 export default function ChatHeader({
@@ -14,9 +19,34 @@ export default function ChatHeader({
   bandAvatar = "/src/assets/images/profile1.png",
   bandStatus = "정상영업중",
   onBack,
-  onSettings,
+  onReport,
+  onBlock,
+  onLeave,
 }: ChatHeaderProps) {
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node) &&
+        settingsButtonRef.current &&
+        !settingsButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsPopupOpen(false);
+      }
+    };
+
+    if (isPopupOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isPopupOpen]);
 
   return (
     <div className="w-full bg-[#181818] pb-6">
@@ -48,7 +78,7 @@ export default function ChatHeader({
         <button
           ref={settingsButtonRef}
           className="flex items-center justify-center w-16 h-16 rounded-full hover:bg-white/10 transition-colors"
-          onClick={onSettings}
+          onClick={() => setIsPopupOpen(!isPopupOpen)}
         >
           <svg
             width="32"
@@ -63,6 +93,57 @@ export default function ChatHeader({
           </svg>
         </button>
       </div>
+
+      {/* Popup Menu */}
+      {isPopupOpen && (
+        <div className="fixed inset-0 z-50">
+          <div
+            ref={popupRef}
+            className="absolute bg-white rounded-[14px] shadow-lg border border-gray-200 min-w-[200px] py-2"
+            style={{
+              top: settingsButtonRef.current
+                ? settingsButtonRef.current.getBoundingClientRect().bottom + 8
+                : 0,
+              right: settingsButtonRef.current
+                ? window.innerWidth -
+                  settingsButtonRef.current.getBoundingClientRect().right -
+                  16
+                : 0,
+            }}
+          >
+            <button
+              onClick={() => {
+                onReport?.();
+                setIsPopupOpen(false);
+              }}
+              className="flex items-center w-full px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <img src={FlagIcon} alt="신고" className="w-5 h-5 mr-3" />
+              <span className="text-black font-medium">신고</span>
+            </button>
+            <button
+              onClick={() => {
+                onBlock?.();
+                setIsPopupOpen(false);
+              }}
+              className="flex items-center w-full px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <img src={BlockIcon} alt="차단" className="w-5 h-5 mr-3" />
+              <span className="text-black font-medium">차단</span>
+            </button>
+            <button
+              onClick={() => {
+                onLeave?.();
+                setIsPopupOpen(false);
+              }}
+              className="flex items-center w-full px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <img src={GetoutIcon} alt="나가기" className="w-5 h-5 mr-3" />
+              <span className="text-black font-medium">나가기</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

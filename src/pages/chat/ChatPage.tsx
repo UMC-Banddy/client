@@ -5,16 +5,13 @@ import ChatDateDivider from "./_components/ChatDateDivider";
 import ChatMessageList from "./_components/ChatMessageList";
 import ChatInputBar from "./_components/ChatInputBar";
 import Modal from "@/shared/components/MuiDialog";
-import FlagIcon from "@/assets/icons/chat/flag.svg";
-import BlockIcon from "@/assets/icons/chat/block.svg";
-import GetoutIcon from "@/assets/icons/chat/getout.svg";
 import { useChat } from "./hooks/useChat";
 import { chatActions } from "@/store/chatStore";
-import type { ChatRoom } from "@/types/chat";
+import type { ChatRoom, ChatMessage } from "@/types/chat";
 
 export default function ChatPage() {
   const navigate = useNavigate();
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
 
   const {
     messages,
@@ -30,42 +27,106 @@ export default function ChatPage() {
     markMessageAsRead,
   } = useChat();
 
-  // Initialize current room
+  // Initialize current room and messages
   useEffect(() => {
     const defaultRoom: ChatRoom = {
       id: "1",
       name: "우리밴드 정상영업합니다",
       avatar: "/src/assets/images/profile1.png",
-      lastMessage: "안녕하세요!",
+      lastMessage: `안녕하세요! 누룽지밴드입니다.
+
+저희 밴드에 관심을 가져 주셔서 감사합니다. 아래 양식에 맞추어 메시지 보내주시면 감사드리겠습니다.
+
+📅 지원 마감: 7/30
+📅 합격자 발표: 8/1
+
+📝 지원 양식:
+• 이름, 나이, 연락처
+• 거주 지역(시군구)
+• 가능한 연습 요일
+• SNS(선택사항)
+• 지원 영상 or 녹음
+
+📧 지원 영상/녹음은 banddy79@gmail.com으로 보내주세요!
+
+❓ 문의사항이 있으면 이 채팅방에 남겨주시면 빠르게 확인하고 답장 드리겠습니다.
+
+🎤 보컬 지원자 분들은 아래 오디션 곡 영상/녹음을 보내주세요!
+⚠️ 노래방에서 부른 영상은 지양해주시면 감사드리겠습니다.
+
+🎵 여자보컬
+• (필수) 혜성 - 윤하
+• (선택) 본인의 매력이 잘 드러나는 자유곡 1곡
+
+🎵 남자보컬
+• (필수) 겁쟁이 - 버즈
+• (선택) 본인의 매력이 잘 드러나는 자유곡 1곡`,
       lastMessageTime: "AM 12:47",
       unreadCount: 0,
       isOnline: true,
     };
 
     chatActions.setCurrentRoom(defaultRoom);
+
+    // Add initial message with unreadCount
+    const initialMessage: ChatMessage = {
+      id: "1",
+      type: "other",
+      name: "밴드",
+      avatar: "/src/assets/images/profile1.png",
+      text: `안녕하세요! 누룽지밴드입니다.
+
+저희 밴드에 관심을 가져 주셔서 감사합니다. 아래 양식에 맞추어 메시지 보내주시면 감사드리겠습니다.
+
+📅 지원 마감: 7/30
+📅 합격자 발표: 8/1
+
+📝 지원 양식:
+• 이름, 나이, 연락처
+• 거주 지역(시군구)
+• 가능한 연습 요일
+• SNS(선택사항)
+• 지원 영상 or 녹음
+
+📧 지원 영상/녹음은 banddy79@gmail.com으로 보내주세요!
+
+❓ 문의사항이 있으면 이 채팅방에 남겨주시면 빠르게 확인하고 답장 드리겠습니다.
+
+🎤 보컬 지원자 분들은 아래 오디션 곡 영상/녹음을 보내주세요!
+⚠️ 노래방에서 부른 영상은 지양해주시면 감사드리겠습니다.
+
+🎵 여자보컬
+• (필수) 혜성 - 윤하
+• (선택) 본인의 매력이 잘 드러나는 자유곡 1곡
+
+🎵 남자보컬
+• (필수) 겁쟁이 - 버즈
+• (선택) 본인의 매력이 잘 드러나는 자유곡 1곡`,
+      time: "오후 3:08",
+      unreadCount: 0,
+    };
+
+    chatActions.setMessages([initialMessage]);
   }, []);
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
 
-  const handleSettings = useCallback(() => {
-    setIsSettingsModalOpen(true);
-  }, []);
-
   const handleReport = useCallback(() => {
     console.log("신고하기");
-    setIsSettingsModalOpen(false);
   }, []);
 
   const handleBlock = useCallback(() => {
     console.log("차단하기");
-    setIsSettingsModalOpen(false);
   }, []);
 
   const handleLeave = useCallback(() => {
-    console.log("나가기");
-    setIsSettingsModalOpen(false);
+    setIsLeaveConfirmOpen(true);
+  }, []);
+
+  const handleConfirmLeave = useCallback(() => {
+    console.log("채팅방 나가기 확인");
     navigate("/");
   }, [navigate]);
 
@@ -104,7 +165,9 @@ export default function ChatPage() {
         bandName={currentRoom?.name || "우리밴드 정상영업합니다"}
         bandAvatar={currentRoom?.avatar || "/src/assets/images/profile1.png"}
         onBack={handleBack}
-        onSettings={handleSettings}
+        onReport={handleReport}
+        onBlock={handleBlock}
+        onLeave={handleLeave}
       />
 
       <div className="flex-1 flex flex-col bg-[#F3F3F3] rounded-t-[40px] overflow-hidden relative">
@@ -123,32 +186,25 @@ export default function ChatPage() {
         onSendCalendar={handleSendCalendar}
       />
 
-      {/* Settings Modal */}
-      <Modal open={isSettingsModalOpen} setOpen={setIsSettingsModalOpen}>
-        <div className="bg-white rounded-[14px] p-4 min-w-[280px]">
-          <div className="space-y-4">
+      {/* Leave Confirmation Modal */}
+      <Modal open={isLeaveConfirmOpen} setOpen={setIsLeaveConfirmOpen}>
+        <div className="bg-gray-50 rounded-[20px] p-6 min-w-[320px] min-h-[220px] flex flex-col justify-center">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-black mb-3">채팅방 나가기</h2>
+            <p className="text-black text-base">채팅방에서 나가시겠습니까?</p>
+          </div>
+          <div className="flex gap-3 justify-center">
             <button
-              onClick={handleReport}
-              className="flex items-center w-full p-3 hover:bg-gray-50 rounded-lg transition-colors"
+              onClick={() => setIsLeaveConfirmOpen(false)}
+              className="flex-1 py-3 px-4 rounded-[25px] font-medium transition-colors bg-gray-200 text-red-600 hover:bg-gray-300 min-w-[100px]"
             >
-              <img src={FlagIcon} alt="신고" className="w-5 h-5 mr-3" />
-              <span className="text-black font-medium">신고</span>
+              아니오
             </button>
-
             <button
-              onClick={handleBlock}
-              className="flex items-center w-full p-3 hover:bg-gray-50 rounded-lg transition-colors"
+              onClick={handleConfirmLeave}
+              className="flex-1 py-3 px-4 rounded-[25px] font-medium transition-colors bg-red-600 text-white hover:bg-red-700 min-w-[100px]"
             >
-              <img src={BlockIcon} alt="차단" className="w-5 h-5 mr-3" />
-              <span className="text-black font-medium">차단</span>
-            </button>
-
-            <button
-              onClick={handleLeave}
-              className="flex items-center w-full p-3 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <img src={GetoutIcon} alt="나가기" className="w-5 h-5 mr-3" />
-              <span className="text-black font-medium">나가기</span>
+              예
             </button>
           </div>
         </div>
