@@ -30,7 +30,7 @@ export const useChat = () => {
     chatActions.addMessage(newMessage);
   }, []);
 
-  const sendAudio = useCallback((audioBlob: Blob) => {
+  const sendAudio = useCallback(() => {
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
       type: "me",
