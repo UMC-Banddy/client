@@ -105,7 +105,42 @@ export default function ChatPage() {
       unreadCount: 1,
     };
 
-    chatActions.setMessages([initialMessage]);
+    // Add sample audio message
+    const audioMessage: ChatMessage = {
+      id: "2",
+      type: "other",
+      name: "밴드",
+      avatar: "/src/assets/images/profile1.png",
+      audio: {
+        duration: 45, // 45초
+        isPlaying: false,
+        onPlay: () => {
+          console.log("오디오 재생 시작");
+          // 실제 오디오 재생 로직은 여기에 구현
+        },
+      },
+      time: "오후 3:10",
+      unreadCount: 2,
+    };
+
+    const myAudioMessage: ChatMessage = {
+      id: "3",
+      type: "me",
+      name: "나",
+      avatar: "/src/assets/images/profile1.png",
+      audio: {
+        duration: 23, // 23초
+        isPlaying: false,
+        onPlay: () => {
+          console.log("내 오디오 재생 시작");
+          // 실제 오디오 재생 로직은 여기에 구현
+        },
+      },
+      time: "오후 3:12",
+      unreadCount: 0,
+    };
+
+    chatActions.setMessages([initialMessage, audioMessage, myAudioMessage]);
   }, []);
 
   const handleBack = useCallback(() => {

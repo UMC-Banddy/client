@@ -99,15 +99,31 @@ export default function ChatMessageItem({
           >
             <div className="relative">
               <div
-                className={`px-4 py-3 rounded-2xl shadow-sm flex items-center w-48 ${
+                className={`px-4 py-3 rounded-2xl shadow-sm flex items-center w-56 ${
                   isMe
                     ? "bg-gray-200 text-gray-800 rounded-br-md"
                     : "bg-white text-gray-800 rounded-bl-md"
                 }`}
               >
+                {/* 오디오 아이콘 */}
+                <div className="mr-3 w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4 text-gray-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+
+                {/* 재생 버튼 */}
                 <button
                   onClick={audio.onPlay}
-                  className={`mr-3 w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+                  className={`mr-3 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
                     isMe
                       ? "bg-gray-800 text-white hover:bg-gray-900"
                       : "bg-[#292929] text-white hover:bg-gray-800"
@@ -115,28 +131,42 @@ export default function ChatMessageItem({
                 >
                   {audio.isPlaying ? (
                     <svg
-                      width="12"
-                      height="12"
+                      className="w-4 h-4"
                       fill="currentColor"
-                      viewBox="0 0 24 24"
+                      viewBox="0 0 20 20"
                     >
-                      <rect x="6" y="4" width="4" height="16" />
-                      <rect x="14" y="4" width="4" height="16" />
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   ) : (
                     <svg
-                      width="12"
-                      height="12"
+                      className="w-4 h-4"
                       fill="currentColor"
-                      viewBox="0 0 24 24"
+                      viewBox="0 0 20 20"
                     >
-                      <path d="M8 5v14l11-7z" />
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   )}
                 </button>
+
+                {/* 진행바와 시간 */}
                 <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">0:00</span>
+                    <span className="text-xs text-gray-500">
+                      {Math.floor(audio.duration / 60)}:
+                      {(audio.duration % 60).toString().padStart(2, "0")}
+                    </span>
+                  </div>
                   <div
-                    className={`h-1 rounded-full ${
+                    className={`h-1.5 rounded-full ${
                       isMe ? "bg-gray-400" : "bg-gray-300"
                     }`}
                   >
@@ -148,10 +178,6 @@ export default function ChatMessageItem({
                     />
                   </div>
                 </div>
-                <span className="text-xs ml-2 opacity-70">
-                  {Math.floor(audio.duration / 60)}:
-                  {(audio.duration % 60).toString().padStart(2, "0")}
-                </span>
               </div>
               {/* 말풍선 꼬리 (상대방 메시지일 때만) */}
               {!isMe && (
@@ -162,13 +188,15 @@ export default function ChatMessageItem({
               className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
             >
               {/* 읽지 않은 사람 수 */}
-              <span
-                className={`text-[10px] text-red-500 font-medium mb-0.5 ${
-                  !isMe ? "ml-2" : ""
-                }`}
-              >
-                {unreadCount || 1}
-              </span>
+              {unreadCount && unreadCount > 0 && (
+                <span
+                  className={`text-[10px] text-red-500 font-medium mb-0.5 ${
+                    !isMe ? "ml-2" : ""
+                  }`}
+                >
+                  {unreadCount}
+                </span>
+              )}
               <span className="text-[10px] text-gray-400 whitespace-nowrap">
                 {time}
               </span>

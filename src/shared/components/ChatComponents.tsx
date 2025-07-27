@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Dialog, DialogContent } from "@mui/material";
 import calendarIcon from "@/assets/icons/chat/calendar.svg";
 import albumIcon from "@/assets/icons/chat/album.svg";
 import recordIcon from "@/assets/icons/chat/record.svg";
@@ -164,15 +165,35 @@ export function ChatMessageItem({
         {/* 오디오 메시지 */}
         {audio && (
           <div
-            className={`px-4 py-3 rounded-2xl shadow-sm flex items-center w-48 ${
+            className={`px-4 py-3 rounded-2xl shadow-sm flex items-center w-56 ${
               isMe
                 ? "bg-[#292929] text-white rounded-br-md"
                 : "bg-white text-gray-800 rounded-bl-md"
             }`}
           >
+            {/* 오디오 아이콘 */}
+            <div
+              className={`mr-3 w-8 h-8 rounded-full flex items-center justify-center ${
+                isMe ? "bg-white/20" : "bg-gray-300"
+              }`}
+            >
+              <svg
+                className={`w-4 h-4 ${isMe ? "text-white" : "text-gray-600"}`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+
+            {/* 재생 버튼 */}
             <button
               onClick={audio.onPlay}
-              className={`mr-3 w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+              className={`mr-3 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
                 isMe
                   ? "bg-white text-[#292929] hover:bg-gray-100"
                   : "bg-[#292929] text-white hover:bg-gray-800"
@@ -180,28 +201,52 @@ export function ChatMessageItem({
             >
               {audio.isPlaying ? (
                 <svg
-                  width="12"
-                  height="12"
+                  className="w-4 h-4"
                   fill="currentColor"
-                  viewBox="0 0 24 24"
+                  viewBox="0 0 20 20"
                 >
-                  <rect x="6" y="4" width="4" height="16" />
-                  <rect x="14" y="4" width="4" height="16" />
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               ) : (
                 <svg
-                  width="12"
-                  height="12"
+                  className="w-4 h-4"
                   fill="currentColor"
-                  viewBox="0 0 24 24"
+                  viewBox="0 0 20 20"
                 >
-                  <path d="M8 5v14l11-7z" />
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               )}
             </button>
+
+            {/* 진행바와 시간 */}
             <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <span
+                  className={`text-xs ${
+                    isMe ? "text-white/70" : "text-gray-500"
+                  }`}
+                >
+                  0:00
+                </span>
+                <span
+                  className={`text-xs ${
+                    isMe ? "text-white/70" : "text-gray-500"
+                  }`}
+                >
+                  {Math.floor(audio.duration / 60)}:
+                  {(audio.duration % 60).toString().padStart(2, "0")}
+                </span>
+              </div>
               <div
-                className={`h-1 rounded-full ${
+                className={`h-1.5 rounded-full ${
                   isMe ? "bg-white/30" : "bg-gray-300"
                 }`}
               >
@@ -213,10 +258,6 @@ export function ChatMessageItem({
                 />
               </div>
             </div>
-            <span className="text-xs ml-2 opacity-70">
-              {Math.floor(audio.duration / 60)}:
-              {(audio.duration % 60).toString().padStart(2, "0")}
-            </span>
           </div>
         )}
 
@@ -330,9 +371,16 @@ export function ChatInputBar({
   disabled = false,
 }: ChatInputBarProps) {
   const [showActions, setShowActions] = useState(false);
-  const [message, setMessage] = useState("");
+  const [showAudioModal, setShowAudioModal] = useState(false);
+  const [showRecordingModal, setShowRecordingModal] = useState(false);
+  const [showSendConfirmModal, setShowSendConfirmModal] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [message, setMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSendMessage = useCallback(() => {
     if (message.trim() && onSendMessage && !disabled) {
@@ -362,14 +410,76 @@ export function ChatInputBar({
   );
 
   const handleAudioRecord = useCallback(() => {
-    if (isRecording) {
-      setIsRecording(false);
-      // Stop recording logic here
-    } else {
-      setIsRecording(true);
-      // Start recording logic here
+    setShowAudioModal(true);
+  }, []);
+
+  const handleStartRecording = useCallback(() => {
+    setShowAudioModal(false);
+    setShowRecordingModal(true);
+    setIsRecording(true);
+    setRecordingTime(0);
+    // 실제 녹음 로직은 여기에 구현
+    const interval = setInterval(() => {
+      setRecordingTime((prev) => prev + 1);
+    }, 1000);
+
+    // interval을 저장하여 정지 시 clear할 수 있도록 함
+    recordingIntervalRef.current = interval;
+  }, []);
+
+  const handleStopRecording = useCallback(() => {
+    setIsRecording(false);
+    setShowRecordingModal(false);
+    setShowSendConfirmModal(true);
+    // interval 정리
+    if (recordingIntervalRef.current) {
+      clearInterval(recordingIntervalRef.current);
+      recordingIntervalRef.current = null;
     }
-  }, [isRecording]);
+    // 녹음 정지 로직
+    console.log("녹음 완료:", recordingTime, "초");
+  }, [recordingTime]);
+
+  const handleSendRecording = useCallback(() => {
+    // 녹음 파일 전송 로직
+    console.log("녹음 파일 전송:", recordingTime, "초");
+    setShowSendConfirmModal(false);
+    setRecordingTime(0);
+  }, [recordingTime]);
+
+  const handleCancelRecording = useCallback(() => {
+    setShowSendConfirmModal(false);
+    setRecordingTime(0);
+  }, []);
+
+  const handleFileUpload = useCallback(() => {
+    audioFileInputRef.current?.click();
+  }, []);
+
+  const handleAudioFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file && file.type.startsWith("audio/")) {
+        setAudioFile(file);
+      }
+    },
+    []
+  );
+
+  const handleSendAudio = useCallback(() => {
+    if (audioFile) {
+      // 오디오 파일 전송 로직
+      console.log("오디오 파일 전송:", audioFile);
+      setAudioFile(null);
+      setShowAudioModal(false);
+    }
+  }, [audioFile]);
+
+  const formatTime = useCallback((seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  }, []);
 
   return (
     <div className="fixed left-0 right-0 bottom-0 z-30">
@@ -463,6 +573,269 @@ export function ChatInputBar({
         onChange={handleFileSelect}
         className="hidden"
       />
+      <input
+        ref={audioFileInputRef}
+        type="file"
+        accept="audio/*"
+        onChange={handleAudioFileSelect}
+        className="hidden"
+      />
+
+      {/* Audio Modal */}
+      <Dialog
+        open={showAudioModal}
+        onClose={() => setShowAudioModal(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "20px",
+            backgroundColor: "#E9E9E9",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+          },
+        }}
+      >
+        <DialogContent sx={{ padding: "24px" }}>
+          <div className="space-y-4">
+            {/* Header */}
+            <div className="text-left">
+              <h3 className="text-lg font-semibold text-gray-800">음성</h3>
+            </div>
+
+            {/* Recording Section */}
+            {!audioFile && (
+              <div className="space-y-3">
+                <button
+                  onClick={handleStartRecording}
+                  disabled={isRecording}
+                  className={`w-full py-4 px-6 rounded-xl text-left transition-all ${
+                    isRecording
+                      ? "text-red-700"
+                      : "text-gray-800 hover:text-gray-600"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">지금 녹음</span>
+                    {isRecording && (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                        <span className="text-sm">
+                          {formatTime(recordingTime)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </button>
+
+                <button
+                  onClick={handleFileUpload}
+                  className="w-full py-4 px-6 rounded-xl text-left text-gray-800 hover:text-gray-600 transition-all"
+                >
+                  <span className="font-medium">파일에서 찾기</span>
+                </button>
+              </div>
+            )}
+
+            {/* Audio File Preview */}
+            {audioFile && (
+              <div className="space-y-4">
+                <div className="bg-white rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                        <svg
+                          className="w-5 h-5 text-gray-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.793L4.5 13.5H2a1 1 0 01-1-1v-5a1 1 0 011-1h2.5l3.883-3.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">
+                          {audioFile.name}
+                        </p>
+                        <p className="text-sm text-gray-500">오디오 파일</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setAudioFile(null)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => setShowAudioModal(false)}
+                    className="flex-1 py-3 px-4 rounded-xl bg-gray-300 text-gray-700 font-medium hover:bg-gray-400 transition-colors"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleSendAudio}
+                    className="flex-1 py-3 px-4 rounded-xl bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    전송
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Recording Modal */}
+      <Dialog
+        open={showRecordingModal}
+        onClose={() => setShowRecordingModal(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "20px",
+            backgroundColor: "#E9E9E9",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+          },
+        }}
+      >
+        <DialogContent sx={{ padding: "32px 24px" }}>
+          <div className="text-center space-y-6">
+            {/* Recording Animation */}
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+                  <svg
+                    className="w-12 h-12 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                {/* Ripple Effect */}
+                <div className="absolute inset-0 w-24 h-24 bg-red-500 rounded-full animate-ping opacity-20"></div>
+              </div>
+            </div>
+
+            {/* Recording Status */}
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-gray-800">
+                녹음 중...
+              </h3>
+              <p className="text-3xl font-mono text-red-600 font-bold">
+                {formatTime(recordingTime)}
+              </p>
+            </div>
+
+            {/* Stop Button */}
+            <div className="flex justify-center">
+              <button
+                onClick={handleStopRecording}
+                className="w-16 h-16 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition-colors shadow-lg"
+              >
+                <svg
+                  className="w-8 h-8 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Instructions */}
+            <p className="text-sm text-gray-600">
+              정지 버튼을 눌러 녹음을 완료하세요
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Confirmation Modal */}
+      <Dialog
+        open={showSendConfirmModal}
+        onClose={() => setShowSendConfirmModal(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "20px",
+            backgroundColor: "#E9E9E9",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+          },
+        }}
+      >
+        <DialogContent sx={{ padding: "24px" }}>
+          <div className="text-center space-y-6">
+            {/* Recording Info */}
+            <div className="space-y-2">
+              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto">
+                <svg
+                  className="w-8 h-8 text-gray-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <p className="text-lg font-semibold text-gray-800">녹음 완료</p>
+              <p className="text-2xl font-mono text-gray-600 font-bold">
+                {formatTime(recordingTime)}
+              </p>
+            </div>
+
+            {/* Confirmation Message */}
+            <p className="text-base text-gray-700">
+              이 녹음을 전송하시겠습니까?
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-3">
+              <button
+                onClick={handleCancelRecording}
+                className="flex-1 py-3 px-4 rounded-xl bg-gray-300 text-gray-700 font-medium hover:bg-gray-400 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleSendRecording}
+                className="flex-1 py-3 px-4 rounded-xl bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors"
+              >
+                전송
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
