@@ -7,6 +7,7 @@ export interface ChatMessage {
   audio?: {
     duration: number;
     isPlaying: boolean;
+    currentTime?: number;
     onPlay: () => void;
   };
   time: string;

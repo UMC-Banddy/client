@@ -52,7 +52,7 @@ export interface ChatMessageListProps {
 
 export interface ChatInputBarProps {
   onSendMessage?: (message: string) => void;
-  onSendAudio?: (audioBlob: Blob) => void;
+  onSendAudio?: (duration: number) => void;
   onSendImage?: (imageFile: File) => void;
   onSendCalendar?: () => void;
   placeholder?: string;
@@ -164,98 +164,104 @@ export function ChatMessageItem({
 
         {/* 오디오 메시지 */}
         {audio && (
-          <div
-            className={`px-4 py-3 rounded-2xl shadow-sm flex items-center w-56 ${
-              isMe
-                ? "bg-[#292929] text-white rounded-br-md"
-                : "bg-white text-gray-800 rounded-bl-md"
-            }`}
-          >
-            {/* 오디오 아이콘 */}
+          <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
             <div
-              className={`mr-3 w-8 h-8 rounded-full flex items-center justify-center ${
-                isMe ? "bg-white/20" : "bg-gray-300"
-              }`}
+              className={`flex ${
+                isMe ? "flex-row-reverse" : "flex-row"
+              } items-end gap-2 max-w-[70%]`}
             >
-              <svg
-                className={`w-4 h-4 ${isMe ? "text-white" : "text-gray-600"}`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-
-            {/* 재생 버튼 */}
-            <button
-              onClick={audio.onPlay}
-              className={`mr-3 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                isMe
-                  ? "bg-white text-[#292929] hover:bg-gray-100"
-                  : "bg-[#292929] text-white hover:bg-gray-800"
-              }`}
-            >
-              {audio.isPlaying ? (
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
-                    clipRule="evenodd"
+              {/* 상대방 메시지일 때만 프로필과 닉네임 표시 */}
+              {!isMe && (
+                <div className="flex flex-col items-center">
+                  <img
+                    src={avatar}
+                    alt={name}
+                    className="w-8 h-8 rounded-full object-cover"
                   />
-                </svg>
-              ) : (
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                  <span className="text-xs text-gray-600 mt-1">{name}</span>
+                </div>
               )}
-            </button>
 
-            {/* 진행바와 시간 */}
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <span
-                  className={`text-xs ${
-                    isMe ? "text-white/70" : "text-gray-500"
+              <div className="relative">
+                <div
+                  className={`px-4 py-3 rounded-2xl shadow-sm flex items-center ${
+                    isMe
+                      ? "bg-[#292929] text-white rounded-br-md"
+                      : "bg-white text-gray-800 rounded-bl-md"
                   }`}
                 >
-                  0:00
-                </span>
-                <span
-                  className={`text-xs ${
-                    isMe ? "text-white/70" : "text-gray-500"
-                  }`}
-                >
-                  {Math.floor(audio.duration / 60)}:
-                  {(audio.duration % 60).toString().padStart(2, "0")}
-                </span>
+                  {/* 재생 버튼 */}
+                  <button
+                    onClick={audio.onPlay}
+                    className="mr-3 flex items-center justify-center transition-colors"
+                  >
+                    <svg
+                      width="16"
+                      height="19"
+                      viewBox="0 0 16 19"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="text-gray-700"
+                    >
+                      <path
+                        d="M4.23525e-08 1.05582V17.9442C-5.3432e-05 18.132 0.0505316 18.3164 0.146536 18.4784C0.24254 18.6404 0.380486 18.7742 0.546143 18.8658C0.711799 18.9574 0.899165 19.0037 1.08891 18.9998C1.27866 18.9958 1.46391 18.9419 1.62555 18.8435L15.4918 10.3993C15.6471 10.3049 15.7754 10.1726 15.8643 10.0152C15.9533 9.85775 16 9.68038 16 9.5C16 9.31962 15.9533 9.14225 15.8643 8.98481C15.7754 8.82738 15.6471 8.69513 15.4918 8.60069L1.62555 0.156515C1.46391 0.0581028 1.27866 0.00415256 1.08891 0.000230269C0.899165 -0.00369202 0.711799 0.0425557 0.546143 0.134202C0.380486 0.225848 0.24254 0.359574 0.146536 0.521581C0.0505316 0.683589 -5.3432e-05 0.868011 4.23525e-08 1.05582Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </button>
+
+                  {/* 시간과 진행바 */}
+                  <span
+                    className={`text-xs mr-2 whitespace-nowrap ${
+                      isMe ? "text-white/70" : "text-gray-500"
+                    }`}
+                  >
+                    0초
+                  </span>
+                  <div className="w-20 mx-2">
+                    <div
+                      className={`h-1 rounded-full ${
+                        isMe ? "bg-white/30" : "bg-gray-300"
+                      }`}
+                    >
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${
+                          isMe ? "bg-white" : "bg-[#292929]"
+                        }`}
+                        style={{ width: audio.isPlaying ? "60%" : "0%" }}
+                      />
+                    </div>
+                  </div>
+                  <span
+                    className={`text-xs ml-2 whitespace-nowrap ${
+                      isMe ? "text-white/70" : "text-gray-500"
+                    }`}
+                  >
+                    {Math.floor(audio.duration)}초
+                  </span>
+                </div>
+                {/* 말풍선 꼬리 (상대방 메시지일 때만) */}
+                {!isMe && (
+                  <div className="absolute -left-2 top-0 w-0 h-0 border-r-[8px] border-r-white border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent"></div>
+                )}
               </div>
+
               <div
-                className={`h-1.5 rounded-full ${
-                  isMe ? "bg-white/30" : "bg-gray-300"
+                className={`flex flex-col ${
+                  isMe ? "items-end" : "items-start"
                 }`}
               >
-                <div
-                  className={`h-full rounded-full transition-all duration-300 ${
-                    isMe ? "bg-white" : "bg-[#292929]"
+                {/* 읽지 않은 사람 수 */}
+                <span
+                  className={`text-[10px] text-red-500 font-medium mb-0.5 ${
+                    !isMe ? "ml-0.5" : ""
                   }`}
-                  style={{ width: audio.isPlaying ? "60%" : "0%" }}
-                />
+                >
+                  {unreadCount || 1}
+                </span>
+                <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                  {time}
+                </span>
               </div>
             </div>
           </div>
@@ -365,6 +371,7 @@ export function ChatMessageList({
 // Chat Input Bar Component
 export function ChatInputBar({
   onSendMessage,
+  onSendAudio,
   onSendImage,
   onSendCalendar,
   placeholder = "메시지를 입력하세요",
@@ -443,9 +450,10 @@ export function ChatInputBar({
   const handleSendRecording = useCallback(() => {
     // 녹음 파일 전송 로직
     console.log("녹음 파일 전송:", recordingTime, "초");
+    onSendAudio?.(recordingTime);
     setShowSendConfirmModal(false);
     setRecordingTime(0);
-  }, [recordingTime]);
+  }, [recordingTime, onSendAudio]);
 
   const handleCancelRecording = useCallback(() => {
     setShowSendConfirmModal(false);

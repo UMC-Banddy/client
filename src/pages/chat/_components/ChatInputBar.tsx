@@ -7,7 +7,7 @@ import topArrowIcon from "@/assets/icons/chat/top-arrow.svg";
 
 interface ChatInputBarProps {
   onSendMessage?: (message: string) => void;
-
+  onSendAudio?: (duration: number) => void;
   onSendImage?: (imageFile: File) => void;
   onSendCalendar?: () => void;
   placeholder?: string;
@@ -17,6 +17,7 @@ interface ChatInputBarProps {
 
 export default function ChatInputBar({
   onSendMessage,
+  onSendAudio,
   onSendImage,
   onSendCalendar,
   placeholder = "메시지를 입력하세요",
@@ -96,6 +97,7 @@ export default function ChatInputBar({
   const handleSendRecording = () => {
     // 녹음 파일 전송 로직
     console.log("녹음 파일 전송:", recordingTime, "초");
+    onSendAudio?.(recordingTime);
     setShowSendConfirmModal(false);
     setRecordingTime(0);
   };

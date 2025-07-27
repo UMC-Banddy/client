@@ -105,42 +105,7 @@ export default function ChatPage() {
       unreadCount: 1,
     };
 
-    // Add sample audio message
-    const audioMessage: ChatMessage = {
-      id: "2",
-      type: "other",
-      name: "밴드",
-      avatar: "/src/assets/images/profile1.png",
-      audio: {
-        duration: 45, // 45초
-        isPlaying: false,
-        onPlay: () => {
-          console.log("오디오 재생 시작");
-          // 실제 오디오 재생 로직은 여기에 구현
-        },
-      },
-      time: "오후 3:10",
-      unreadCount: 2,
-    };
-
-    const myAudioMessage: ChatMessage = {
-      id: "3",
-      type: "me",
-      name: "나",
-      avatar: "/src/assets/images/profile1.png",
-      audio: {
-        duration: 23, // 23초
-        isPlaying: false,
-        onPlay: () => {
-          console.log("내 오디오 재생 시작");
-          // 실제 오디오 재생 로직은 여기에 구현
-        },
-      },
-      time: "오후 3:12",
-      unreadCount: 0,
-    };
-
-    chatActions.setMessages([initialMessage, audioMessage, myAudioMessage]);
+    chatActions.setMessages([initialMessage]);
   }, []);
 
   const handleBack = useCallback(() => {
@@ -187,6 +152,37 @@ export default function ChatPage() {
     sendCalendar();
   }, [sendCalendar]);
 
+  const handleSendAudio = useCallback(
+    (duration: number) => {
+      // 오디오 메시지 생성 및 전송
+      const audioMessage: ChatMessage = {
+        id: Date.now().toString(),
+        type: "me",
+        name: "나",
+        avatar: "/src/assets/images/profile1.png",
+        audio: {
+          duration: duration,
+          isPlaying: false,
+          onPlay: () => {
+            console.log("내 오디오 재생 시작:", duration, "초");
+            // 실제 오디오 재생 로직은 여기에 구현
+          },
+        },
+        time: new Date().toLocaleTimeString("ko-KR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        unreadCount: 0,
+      };
+
+      // 메시지 목록에 추가
+      const currentMessages = messages || [];
+      chatActions.setMessages([...currentMessages, audioMessage]);
+    },
+    [messages]
+  );
+
   const handleLoadMore = useCallback(() => {
     loadMoreMessages();
   }, [loadMoreMessages]);
@@ -217,12 +213,16 @@ export default function ChatPage() {
         ></div>
       </div>
 
-      <ChatInputBar
-        onSendMessage={handleSendMessage}
-        onSendImage={handleSendImage}
-        onSendCalendar={handleSendCalendar}
-        onShowActionsChange={setShowActions}
-      />
+      {/* ChatInputBar를 고정 위치로 변경 */}
+      <div className="fixed bottom-0 left-0 right-0 z-10">
+        <ChatInputBar
+          onSendMessage={handleSendMessage}
+          onSendImage={handleSendImage}
+          onSendCalendar={handleSendCalendar}
+          onSendAudio={handleSendAudio}
+          onShowActionsChange={setShowActions}
+        />
+      </div>
 
       {/* Leave Confirmation Modal */}
       <Modal open={isLeaveConfirmOpen} setOpen={setIsLeaveConfirmOpen}>
