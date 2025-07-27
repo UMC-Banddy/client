@@ -59,8 +59,19 @@ export default function ChatInputBar({
         className={`transition-transform duration-300 ease-in-out ${
           showActions ? "translate-y-0" : "translate-y-0"
         }`}
+        style={{
+          minHeight: showActions ? "200px" : "auto",
+          maxHeight: showActions ? "calc(100vh - 100px)" : "auto",
+        }}
       >
-        <div className="bg-[#E9E9E9] px-4 pt-4 pb-6 flex flex-col items-center rounded-t-3xl shadow-lg">
+        <div
+          className="bg-[#E9E9E9] px-4 pt-4 pb-6 flex flex-col items-center rounded-t-3xl shadow-lg"
+          style={{
+            paddingBottom: showActions
+              ? "calc(1.5rem + env(safe-area-inset-bottom))"
+              : "1.5rem",
+          }}
+        >
           {/* Input Bar */}
           <div className="w-full flex items-center gap-3 mb-4">
             <button
@@ -71,7 +82,11 @@ export default function ChatInputBar({
               {showActions ? "×" : "+"}
             </button>
 
-            <div className="flex-1 flex items-center bg-white rounded-2xl px-4 py-2 shadow-sm">
+            <div
+              className={`flex items-center bg-white rounded-2xl px-4 py-2 shadow-sm ${
+                showActions ? "flex-1" : "flex-1 max-w-[calc(100%-120px)]"
+              }`}
+            >
               <input
                 type="text"
                 value={message}
@@ -114,7 +129,7 @@ export default function ChatInputBar({
 
           {/* Action Buttons */}
           {showActions && (
-            <div className="flex justify-around w-full animate-slide-up">
+            <div className="flex justify-around w-full animate-slide-up pb-4">
               <button
                 onClick={() => onSendCalendar?.()}
                 className="flex flex-col items-center group"
