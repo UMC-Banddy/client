@@ -13,10 +13,11 @@ import exitIcon from "@/assets/icons/setting/exit.svg";
 
 const SettingsPage = () => {
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
   const navigate = useNavigate();
   
   // 커스텀 훅 사용
-  const { isLoading, error, handleWithdrawal } = useWithdrawal();
+  const { isLoading, error, isSuccess, handleWithdrawal } = useWithdrawal();
   
   // 에러가 있으면 로그 출력
   useEffect(() => {
@@ -24,6 +25,14 @@ const SettingsPage = () => {
       console.log(error);
     }
   }, [error]);
+
+  // 성공 시 성공 모달 띄우기
+  useEffect(() => {
+    if (isSuccess) {
+      setSuccessOpen(true);
+      setWithdrawalOpen(false);
+    }
+  }, [isSuccess]);
   
   // 설정 아이템 데이터
   const settingsItems: SettingItem[] = [
@@ -76,7 +85,7 @@ const SettingsPage = () => {
               onClick={handleWithdrawal}
               disabled={isLoading}
             >
-              {isLoading ? "처리중..." : "예"}
+              예
             </CommonBtn>
             <CommonBtn 
               color="red" 
@@ -84,6 +93,27 @@ const SettingsPage = () => {
               disabled={isLoading}
             >
               아니오
+            </CommonBtn>
+          </div>
+        </div>
+      </MuiDialog>
+
+      {/* 성공 모달 */}
+      <MuiDialog open={successOpen} setOpen={setSuccessOpen}>
+        <div className="flex flex-col items-center justify-center bg-[#e9e9e9] rounded-[14px] pt-[7vh] pb-[3vh] px-[6vw] max-w-[336px]">
+          <div className="text-hakgyo-b-24 text-[#292929] mb-[1.4vh]">탈퇴 완료</div>
+          <div className="text-hakgyo-r-14 text-[#555555] mx-[12vw] mb-[5vh] text-center leading-relaxed w-[61vw] break-keep max-w-[240px]">
+            회원탈퇴가 완료되었습니다. 7일 후 모든 정보가 삭제됩니다.
+          </div>
+          <div className="flex gap-[2vw] w-full justify-center">
+            <CommonBtn 
+              color="gray" 
+              onClick={() => {
+                setSuccessOpen(false);
+                navigate("/login");
+              }}
+            >
+              확인
             </CommonBtn>
           </div>
         </div>

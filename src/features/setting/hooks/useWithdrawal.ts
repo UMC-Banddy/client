@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { withdrawUser } from "@/store/settingApi";
 
 export const useWithdrawal = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleWithdrawal = async () => {
     try {
@@ -31,8 +30,7 @@ export const useWithdrawal = () => {
         localStorage.clear();
         sessionStorage.clear();
         
-        alert("회원탈퇴가 완료되었습니다. 7일 후 모든 정보가 삭제됩니다.");
-        navigate("/login");
+        setIsSuccess(true);
       } else {
         setError(response.message || "회원탈퇴 처리 중 오류가 발생했습니다.");
       }
@@ -60,6 +58,7 @@ export const useWithdrawal = () => {
   return {
     isLoading,
     error,
+    isSuccess,
     handleWithdrawal,
   };
 }; 

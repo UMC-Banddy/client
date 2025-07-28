@@ -57,7 +57,7 @@ const routes = [
       { path: "/bands/:id", element: <BandDetailPage /> },
       { path: "/bands/:id/chat", element: <BandChatPage /> },
       { path: "/manual", element: <ManualPage /> },
-      // { path: "/settings", element: <SettingsPage /> },
+
       { path: "/my", element: <MyPage /> },
       { path: "/my/setting", element: <SettingsPage /> },
       { path: "/my/notifications", element: <NotificationPage /> },
