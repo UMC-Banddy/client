@@ -4,7 +4,7 @@ import MuiDialog from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
 import backIcon from "@/assets/icons/back.svg";
 import { useNavigate } from "react-router-dom";
-import { useWithdrawal } from "@/store/useWithdrawal";
+import { useWithdrawal } from "@/features/setting/hooks/useWithdrawal";
 import { type SettingItem } from "@/types/setting";
 import alarmIcon from "@/assets/icons/setting/alarm.svg";
 import noteIcon from "@/assets/icons/setting/note.svg";

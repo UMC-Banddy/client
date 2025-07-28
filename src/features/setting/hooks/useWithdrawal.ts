@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { withdrawUser } from "./settingApi";
+import { withdrawUser } from "@/store/settingApi";
 
 export const useWithdrawal = () => {
   const [isLoading, setIsLoading] = useState(false);
