@@ -13,11 +13,21 @@ const routeNameMap: Record<string, string> = {
   // 필요시 추가
 };
 
+const nonHeaderRouteNames = [
+  "/join",
+  "/join/create-chat",
+  "/join/create-chat/2",
+];
+
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const routeName = routeNameMap[location.pathname] || "";
   const depth = location.pathname.split("/").filter(Boolean).length;
+
+  if (nonHeaderRouteNames.includes(location.pathname)) {
+    return null;
+  }
 
   if (depth >= 2 && !routeName) {
     // 뒤로가기 버튼만
