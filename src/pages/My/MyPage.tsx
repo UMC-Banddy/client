@@ -1,13 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "./_components/Header";
-import bell from "@/assets/icons/my/bell.svg";
-import no_bell from "@/assets/icons/my/no-bell.svg";
 import ProfileInfo from "./_components/ProfileInfo";
 import SectionDivider from "./_components/SectionDivider";
 import HashtagList from "./_components/HashTagList";
 import ArchiveSection from "./_components/Archive/ArchiveSection";
-import ArchiveItem from "./_components/Archive/ArchiveItem";
+import MyArchiveItem from "./_components/Archive/MyArchiveItem";
+import MuiDialog from "@/shared/components/MuiDialog";
+import CommonBtn from "@/shared/components/CommonBtn";
 
 const MyPage = () => {
   const navigate = useNavigate();
@@ -32,15 +32,16 @@ const MyPage = () => {
   };
   // 알림 여부 (나중에 API로 대체)
   const hasNotification = true; // false로 바꾸면 알림 없음
+  // const hasNotification = false;
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   return (
-    <div className="min-h-[100vh] w-full flex flex-col bg-[#1C1C1E]">
+    <div className="min-h-[100vh] w-full flex flex-col">
       <Header
         title="MY"
-        rightIcon={<img src={hasNotification ? bell : no_bell} alt="bell" className="text-[#FFFFFF] mb" />}
-        rightLink={"/notifications"}
+        hasNotification={hasNotification}
       />
-      <div className="mt-[15vh]"></div>
+      <div className="mt-[10vh]"></div>
       <ProfileInfo
         nickname="BECK"
         avatarUrl="https://siff.kr/wp-content/uploads/2024/11/3.jpg"
@@ -52,12 +53,42 @@ const MyPage = () => {
       />
       <HashtagList tags={myProfile.hashtags} />
       <SectionDivider />
-      <ArchiveSection title="음악 아카이빙" onClick={() => navigate("/archive")}/>
-      <div className="w-full flex flex-row gap-[3vw] px-[6vw] overflow-x-auto flex-nowrap scrollbar-hide">
+      <ArchiveSection title="음악 아카이빙" onClick={() => navigate("/my/archive")}/>
+      <div className="w-full grid grid-cols-3 gap-x-[4vw] gap-y-[6vw] px-[6vw]">
         {myProfile.albums.map((album, i) => (
-          <ArchiveItem key={i} coverUrl={album.image} title={album.title} muted />
+          <MyArchiveItem
+            key={i}
+            coverUrl={album.image}
+            title={album.title}
+          />
         ))}
       </div>
+
+      <div
+        className="w-full flex flex-col items-center px-[6vw] mt-[5vh] cursor-pointer"
+        onClick={() => setLogoutOpen(true)}
+      >
+        <div className="text-wanted-sb-13 border-b-[1px] border-[#555555] text-[#555555]">로그아웃</div>
+      </div>
+      <MuiDialog open={logoutOpen} setOpen={setLogoutOpen}>
+        <div
+          className="flex flex-col items-center justify-center bg-[#e9e9e9] rounded-[14px] pt-[7vh] pb-[3vh]"
+        >
+          <div className="text-hakgyo-b-24 text-[#292929] mb-[1.4vh]">로그아웃</div>
+          <div className="text-hakgyo-r-14 text-[#555555] mb-[5vh] mx-[12vw] w-[61vw] text-center">정말 로그아웃 하시겠습니까?</div>
+          <div className="flex gap-[2vw] w-full justify-center">
+            <CommonBtn color="gray" onClick={() => setLogoutOpen(false)}>
+              아니요
+            </CommonBtn>
+            <CommonBtn color="red" onClick={() => {
+              setLogoutOpen(false);
+              // 실제 로그아웃 로직 추가 예정
+            }}>
+              예
+            </CommonBtn>
+          </div>
+        </div>
+      </MuiDialog>
     </div>
   );
 };

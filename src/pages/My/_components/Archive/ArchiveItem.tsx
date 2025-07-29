@@ -1,15 +1,11 @@
-import no_sound from "@/assets/icons/home/no-sound.svg";
-
 interface ArchiveItemProps {
   coverUrl?: string;
   title: string;
-  muted?: boolean;
 }
 
 export default function ArchiveItem({
   coverUrl,
   title,
-  muted,
 }: ArchiveItemProps) {
   return (
     <div className="flex flex-col items-start">
@@ -21,19 +17,10 @@ export default function ArchiveItem({
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-[#FFFFFF] text-3xl" />
-        )}
-        {muted && (
-          <div className="absolute bottom-[1vw] right-[1vw] w-[8vw] h-[8vw] rounded-full  flex items-center justify-center shadow-lg">
-            <img
-              src={no_sound}
-              alt="no-sound"
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <span className="text-[#CACACA] text-3xl" />
         )}
       </div>
-      <span className="text-hakgyo-r-14 text-[#FFFFFF] text-left mt-[1vh] truncate w-full">
+      <span className="text-hakgyo-r-14 text-[#CACACA] text-left mt-[1vh] truncate w-full">
         {title}
       </span>
     </div>

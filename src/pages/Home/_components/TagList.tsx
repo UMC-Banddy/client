@@ -2,19 +2,28 @@ import React from "react";
 import CustomButton from "@/shared/ui/atoms/CustomButton";
 import micIcon from "@/assets/icons/home/mic.svg";
 
-const TagList: React.FC<{ tags: string[] }> = ({ tags }) => {
+const TagList: React.FC<{
+  tags: string[];
+  variant?: "home" | "card";
+}> = ({ tags, variant = "home" }) => {
   return (
     <>
       {tags.map((tag, idx) => {
         let colorClass = "";
-        if (idx === 0) {
-          colorClass = "!bg-[#DF0001] !text-white !border-none";
-        } else if (idx === 1) {
-          colorClass = "!bg-white !text-black !border-none";
-        } else {
-          colorClass = "!bg-black !text-white !border !border-white";
+
+        if (variant === "home") {
+          if (idx === 0) {
+            colorClass = "!bg-[#DF0001] !text-white !border-none";
+          } else if (idx === 1) {
+            colorClass = "!bg-white !text-black !border-none";
+          } else {
+            colorClass = "!bg-black !text-white !border !border-white";
+          }
+        } else if (variant === "card") {
+          // 👉 캐러셀 카드 전용 스타일
+          colorClass = "!bg-white !text-black !border-none"; // 예: 전부 깔끔한 흰색
         }
-        //  api 태그 상태들에 따라 수정 필요 현재는 피그마 디자인에 맞춰서 수정
+
         return (
           <CustomButton
             key={idx}
@@ -25,7 +34,7 @@ const TagList: React.FC<{ tags: string[] }> = ({ tags }) => {
               textOverflow: "unset",
             }}
           >
-            {idx === 0 && (
+            {variant === "home" && idx === 0 && (
               <img
                 src={micIcon}
                 alt="mic"
