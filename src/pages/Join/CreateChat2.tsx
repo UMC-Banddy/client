@@ -5,14 +5,19 @@ import happy from "@/assets/icons/join/ic_mood_happy.svg";
 import cameraBtn from "@/assets/icons/join/ic_camera_btn.svg";
 import MuiDialog from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
+import { useLocation, useNavigate } from "react-router-dom";
+import { API } from "@/api/API";
 
 const CreateChat2 = () => {
   const [name, setName] = useState("");
   const [enableConfirmBtn, setEnableConfirmBtn] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [imgSrc, setImgSrc] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { checkedList } = useLocation().state;
+  const navigate = useNavigate();
 
   useEffect(() => {
     setEnableConfirmBtn(name.length > 0);
@@ -34,8 +39,17 @@ const CreateChat2 = () => {
     fileInputRef.current?.click();
   };
 
+  const handleCreateChat = async () => {
+    await API.post("/api/chat/rooms", {
+      memberIds: checkedList,
+      imageUrl: imgSrc,
+      roomName: name,
+    });
+    navigate("/join");
+  };
+
   return (
-    <main className="flex flex-col items-center relative p-[16px] min-h-screen w-[393px] mx-auto bg-[#121212]/90">
+    <main className="flex flex-col items-center relative p-[16px] min-h-screen w-[393px] mx-auto">
       <div className="flex justify-between mb-[16px] w-full">
         <button className="p-[0] bg-transparent border-none cursor-pointer">
           <img src={back} alt="back" />
@@ -45,6 +59,7 @@ const CreateChat2 = () => {
             "p-[0] bg-transparent border-none text-ibm-sb-16",
             enableConfirmBtn ? "text-[#79D000] cursor-pointer" : "text-[#555]"
           )}
+          onClick={handleCreateChat}
         >
           확인
         </button>
@@ -64,7 +79,7 @@ const CreateChat2 = () => {
         <input
           type="text"
           placeholder="그룹 이름을 입력해주세요."
-          className="w-full h-full bg-transparent border-none text-hakgyo-r-16 focus:outline-none"
+          className="w-full h-full bg-transparent border-none text-hakgyo-r-16 text-[#fff] focus:outline-none"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
