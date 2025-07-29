@@ -72,17 +72,17 @@ const Join = () => {
       <div className="fixed bottom-[66px] right-[16px]">
         {openFloatingBtn && (
           <div className="flex flex-col gap-[16px] mb-[16px]">
-            <button className="size-[61px] border-none rounded-full bg-[#fff] cursor-pointer">
+            <button className="flex justify-center items-center size-[61px] border-none rounded-full bg-[#fff] cursor-pointer">
               <img src={chatPlus} alt="+"></img>
             </button>
-            <button className="size-[61px] border-none rounded-full bg-[#fff] cursor-pointer">
+            <button className="flex justify-center items-center size-[61px] border-none rounded-full bg-[#fff] cursor-pointer">
               <img src={handRock} alt="+"></img>
             </button>
           </div>
         )}
         <button
           onClick={() => setOpenFloatingBtn(!openFloatingBtn)}
-          className="size-[61px] border-none rounded-full bg-[#B42127] cursor-pointer"
+          className="flex justify-center items-center size-[61px] border-none rounded-full bg-[#B42127] cursor-pointer"
         >
           <img src={plus} alt="+"></img>
         </button>

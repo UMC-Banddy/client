@@ -21,6 +21,14 @@ import MyPage from "@/pages/My/MyPage";
 import PeoplePage from "@/pages/Home/BandDetailPage/PeoplePage";
 import PlaylistPage from "@/pages/Home/BandDetailPage/PlaylistPage";
 import PreferPage from "@/pages/Home/BandDetailPage/PreferPage";
+import CreateBand from "@/pages/Join/create_band/CreateBand";
+import CreateChat from "@/pages/Join/CreateChat";
+import CreateChat2 from "@/pages/Join/CreateChat2";
+import CreateBandSong from "@/pages/Join/create_band/CreateBandSong";
+import CreateBandGenre from "@/pages/Join/create_band/CreateBandGenre";
+import CreateBandArtist from "@/pages/Join/create_band/CreateBandArtist";
+import SavedBand from "@/pages/Join/saved_band/SavedBand";
+import SavedBandDetail from "@/pages/Join/saved_band/SavedBandDetail";
 import NotificationPage from "@/pages/Notification/NotificationPage";
 import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
 import ChatPage from "@/pages/chat/ChatPage";
@@ -73,8 +81,18 @@ const routes = [
       { path: "/home/prefer", element: <PreferPage /> },
       { path: "/home/chat", element: <ChatPage /> },
       { path: "/chat-demo", element: <ChatDemoPage /> },
+      
       { path: "/join", element: <Join /> },
       { path: "/join/band-recruit", element: <BandRecruit /> },
+      { path: "/join/create-band", element: <CreateBand /> },
+      { path: "/join/create-band/song", element: <CreateBandSong /> },
+      { path: "/join/create-band/genre", element: <CreateBandGenre /> },
+      { path: "/join/create-band/artist", element: <CreateBandArtist /> },
+      { path: "/join/create-chat", element: <CreateChat /> },
+      { path: "/join/create-chat/2", element: <CreateChat2 /> },
+      { path: "/join/saved-band", element: <SavedBand /> },
+      { path: "/join/saved-band/:id", element: <SavedBandDetail /> },
+
       { path: "/pre-test/artist", element: <PretestArtistPage /> },
       { path: "/pre-test/session", element: <PretestSessionPage /> },
       {
