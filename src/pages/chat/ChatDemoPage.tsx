@@ -156,7 +156,8 @@ export default function ChatDemoPage() {
       type: "me",
       name: "나",
       avatar: "/src/assets/images/profile1.png",
-      image: "/src/assets/images/home-album3.png",
+      // ChatMessage 타입에 맞게 image 속성을 text로 대체 (예시: 이미지 전송 메시지 안내)
+      text: "[이미지]",
       time: new Date().toLocaleTimeString(),
     };
     setMessages((prev) => [...prev, newMessage]);
