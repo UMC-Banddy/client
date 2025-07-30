@@ -54,7 +54,7 @@ export const getChatMessages = async (
   cursor?: number,
   limit: number = 20
 ): Promise<MessagesResponse> => {
-  const params: any = { limit };
+  const params: Record<string, number> = { limit };
   if (cursor !== undefined) {
     params.cursor = cursor;
   }

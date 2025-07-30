@@ -41,7 +41,7 @@ export const useChat = () => {
       
       console.log(`채팅방 ${roomId} 입장 완료`);
     } catch (error) {
-      console.error('채팅방 입장 실패:', error);
+      console.error("채팅방 입장 실패:", error);
       throw error;
     }
   }, [joinRoom]);
@@ -63,7 +63,7 @@ export const useChat = () => {
       
       console.log(`채팅방 ${currentRoomId} 나가기 완료`);
     } catch (error) {
-      console.error('채팅방 나가기 실패:', error);
+      console.error("채팅방 나가기 실패:", error);
       throw error;
     }
   }, [currentRoomId, leaveRoom]);
@@ -104,7 +104,7 @@ export const useChat = () => {
       
       console.log(`${chatMessages.length}개의 메시지 로드 완료`);
     } catch (error) {
-      console.error('메시지 로드 실패:', error);
+      console.error("메시지 로드 실패:", error);
       throw error;
     } finally {
       setIsLoadingMessages(false);
@@ -114,12 +114,12 @@ export const useChat = () => {
   // 메시지 전송
   const sendMessage = useCallback((text: string) => {
     if (!currentRoomId) {
-      console.error('현재 채팅방이 설정되지 않았습니다.');
+      console.error("현재 채팅방이 설정되지 않았습니다.");
       return;
     }
 
     if (!isConnected) {
-      console.warn('WebSocket이 연결되지 않았습니다. 로컬 메시지로 처리합니다.');
+      console.warn("WebSocket이 연결되지 않았습니다. 로컬 메시지로 처리합니다.");
       // WebSocket이 연결되지 않은 경우 로컬 메시지로 처리
       const newMessage: ChatMessage = {
         id: Date.now().toString(),
@@ -158,7 +158,7 @@ export const useChat = () => {
       };
       chatActions.addMessage(newMessage);
     } catch (error) {
-      console.error('메시지 전송 실패:', error);
+      console.error("메시지 전송 실패:", error);
       throw error;
     }
   }, [currentRoomId, isConnected, sendWebSocketMessage]);

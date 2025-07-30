@@ -5,9 +5,20 @@ import { chatActions } from "@/store/chatStore";
 import { API_ENDPOINTS } from "@/constants";
 import type { WebSocketMessage, WebSocketSendMessage } from "@/types/chat";
 
+interface StompFrame {
+  command: string;
+  headers: Record<string, string>;
+  body?: string;
+}
+
+interface WebSocketError {
+  message: string;
+  type: string;
+}
+
 class WebSocketService {
   private stompClient: Client | null = null;
-  private subscriptions: Map<string, any> = new Map();
+  private subscriptions: Map<string, { unsubscribe: () => void }> = new Map();
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000; // 1초
@@ -46,8 +57,8 @@ class WebSocketService {
   private setupEventHandlers() {
     if (!this.stompClient) return;
 
-    // @ts-ignore - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onConnect = (frame: any) => {
+    // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
+    this.stompClient.onConnect = (frame: StompFrame) => {
       console.log("WebSocket 연결 성공:", frame);
       this.reconnectAttempts = 0;
       this.isConnecting = false;
@@ -55,21 +66,21 @@ class WebSocketService {
       chatActions.setError(null);
     };
 
-    // @ts-ignore - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onStompError = (frame: any) => {
+    // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
+    this.stompClient.onStompError = (frame: StompFrame) => {
       console.error("STOMP 에러:", frame);
       chatActions.setError("WebSocket 연결 에러가 발생했습니다.");
       this.handleReconnect();
     };
 
-    // @ts-ignore - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onWebSocketError = (error: any) => {
+    // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
+    this.stompClient.onWebSocketError = (error: WebSocketError) => {
       console.error("WebSocket 에러:", error);
       chatActions.setError("WebSocket 연결이 끊어졌습니다.");
       this.handleReconnect();
     };
 
-    // @ts-ignore - STOMP 클라이언트의 이벤트 핸들러들
+    // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
     this.stompClient.onWebSocketClose = () => {
       console.log("WebSocket 연결 종료");
       chatActions.setWebSocketConnected(false);
@@ -166,9 +177,9 @@ class WebSocketService {
 
     const subscription = this.stompClient.subscribe(
       destination,
-      (frame: any) => {
+      (frame: StompFrame) => {
         try {
-          const message: WebSocketMessage = JSON.parse(frame.body);
+          const message: WebSocketMessage = JSON.parse(frame.body || "");
           console.log("실시간 메시지 수신:", message);
           onMessage(message);
         } catch (error) {
