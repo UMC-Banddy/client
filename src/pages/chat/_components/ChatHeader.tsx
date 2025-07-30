@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import BackIcon from "@/assets/icons/back.svg";
 import FlagIcon from "@/assets/icons/chat/flag.svg";
 import BlockIcon from "@/assets/icons/chat/block.svg";

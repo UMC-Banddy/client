@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ChatHeader from "./_components/ChatHeader";
 import ChatDateDivider from "./_components/ChatDateDivider";
@@ -6,7 +6,6 @@ import ChatMessageList from "./_components/ChatMessageList";
 import ChatInputBar from "./_components/ChatInputBar";
 import Modal from "@/shared/components/MuiDialog";
 import SessionSelectModal from "./_components/SessionSelectModal";
-import { chatActions } from "@/store/chatStore";
 import type { ChatRoom, ChatMessage } from "@/types/chat";
 
 export default function ChatPage() {
@@ -16,7 +15,7 @@ export default function ChatPage() {
   const [showSessionModal, setShowSessionModal] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentRoom, setCurrentRoom] = useState<ChatRoom | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   // Initialize current room and messages
   useEffect(() => {
