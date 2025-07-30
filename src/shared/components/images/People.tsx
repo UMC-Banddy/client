@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+// ... existing code ...
 import ImgCircle from "./ImgCircle";
 import type { ImgLinksProps } from "./types/imgSrc";
 

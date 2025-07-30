@@ -1,14 +1,17 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ChatHeader from "./_components/ChatHeader";
+// ... existing code ...
 import ChatDateDivider from "./_components/ChatDateDivider";
 import ChatMessageList from "./_components/ChatMessageList";
 import ChatInputBar from "./_components/ChatInputBar";
 import Modal from "@/shared/components/MuiDialog";
 import SessionSelectModal from "./_components/SessionSelectModal";
-import { chatActions } from "@/store/chatStore";
+// ... existing code ...
 import type { ChatMessage } from "@/types/chat";
 import { webSocketService } from "@/services/WebSocketService";
+import profile1 from "@/assets/images/profile1.png";
+import pierrot from "@/assets/images/pierrot.png";
+import oasis from "@/assets/images/oasis.png";
 
 export default function ChatDemoPage() {
   const navigate = useNavigate();
@@ -29,7 +32,7 @@ export default function ChatDemoPage() {
         id: "1",
         type: "other",
         name: "시스템",
-        avatar: "/src/assets/images/profile1.png",
+        avatar: profile1,
         text: "WebSocket 데모 채팅방에 오신 것을 환영합니다!",
         time: new Date().toLocaleTimeString(),
       },
@@ -37,7 +40,7 @@ export default function ChatDemoPage() {
         id: "2",
         type: "other",
         name: "시스템",
-        avatar: "/src/assets/images/pierrot.png",
+        avatar: pierrot,
         text: "메시지를 입력하고 전송해보세요.",
         time: new Date().toLocaleTimeString(),
       },
@@ -75,7 +78,7 @@ export default function ChatDemoPage() {
           id: message.messageId.toString(),
           type: "other",
           name: message.senderName,
-          avatar: "/src/assets/images/oasis.png",
+          avatar: oasis,
           text: message.content,
           time: new Date(message.timestamp).toLocaleTimeString(),
         };
@@ -136,7 +139,7 @@ export default function ChatDemoPage() {
           id: Date.now().toString(),
           type: "me",
           name: "나",
-          avatar: "/src/assets/images/profile1.png",
+          avatar: profile1,
           text,
           time: new Date().toLocaleTimeString(),
         };
@@ -155,7 +158,7 @@ export default function ChatDemoPage() {
       id: Date.now().toString(),
       type: "me",
       name: "나",
-      avatar: "/src/assets/images/profile1.png",
+      avatar: profile1,
       // ChatMessage 타입에 맞게 image 속성을 text로 대체 (예시: 이미지 전송 메시지 안내)
       text: "[이미지]",
       time: new Date().toLocaleTimeString(),
@@ -170,7 +173,7 @@ export default function ChatDemoPage() {
       id: Date.now().toString(),
       type: "me",
       name: "나",
-      avatar: "/src/assets/images/profile1.png",
+      avatar: profile1,
       text: "캘린더 이벤트가 생성되었습니다.",
       time: new Date().toLocaleTimeString(),
     };
@@ -183,7 +186,7 @@ export default function ChatDemoPage() {
       id: Date.now().toString(),
       type: "me",
       name: "나",
-      avatar: "/src/assets/images/profile1.png",
+      avatar: profile1,
       audio: {
         duration: duration,
         isPlaying: false,
@@ -205,7 +208,7 @@ export default function ChatDemoPage() {
           id: "old-1",
           type: "other",
           name: "시스템",
-          avatar: "/src/assets/images/pierrot.png",
+          avatar: pierrot,
           text: "이전 메시지입니다.",
           time: new Date(Date.now() - 86400000).toLocaleTimeString(),
         },
@@ -261,11 +264,7 @@ export default function ChatDemoPage() {
             ←
           </button>
           <div className="flex items-center space-x-2">
-            <img
-              src="/src/assets/images/oasis.png"
-              alt="밴드"
-              className="w-8 h-8 rounded-full"
-            />
+            <img src={oasis} alt="밴드" className="w-8 h-8 rounded-full" />
             <span className="text-white font-medium">WebSocket 데모 채팅</span>
           </div>
         </div>

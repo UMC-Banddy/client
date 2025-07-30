@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+// ... existing code ...
 
 interface TagListProps {
   tags: { label: string; color?: "red" | "gray" }[];

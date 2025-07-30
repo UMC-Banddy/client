@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+// ... existing code ...
 import TagButton from "@/shared/ui/atoms/TagButton";
 
 interface Tag {

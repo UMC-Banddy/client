@@ -72,17 +72,7 @@ export default function ChatPage() {
     navigate(-1);
   }, [navigate]);
 
-  const handleReport = useCallback(() => {
-    console.log("신고하기");
-  }, []);
-
-  const handleBlock = useCallback(() => {
-    console.log("차단하기");
-  }, []);
-
-  const handleLeave = useCallback(() => {
-    setIsLeaveConfirmOpen(true);
-  }, []);
+  // ... existing code ...
 
   const handleConfirmLeave = useCallback(async () => {
     try {
@@ -158,12 +148,10 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#121212]">
       <ChatHeader
-        bandName={currentRoom?.roomName || "채팅방"}
-        bandAvatar={currentRoom?.roomImage || "/src/assets/images/profile1.png"}
+        roomName={currentRoom?.roomName || "채팅방"}
+        bandAvatar={currentRoom?.roomImage}
         onBack={handleBack}
-        onReport={handleReport}
-        onBlock={handleBlock}
-        onLeave={handleLeave}
+        onMenuClick={() => setIsLeaveConfirmOpen(true)}
       />
 
       {/* 연결 상태 표시 */}

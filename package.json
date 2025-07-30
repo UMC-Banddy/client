@@ -6,8 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:staging": "tsc -b && vite build --mode staging",
+    "build:production": "tsc -b && vite build --mode production",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "preview": "vite preview",
+    "deploy:vercel": "vercel --prod",
+    "deploy:aws:staging": "chmod +x scripts/deploy-aws.sh && ./scripts/deploy-aws.sh staging",
+    "deploy:aws:production": "chmod +x scripts/deploy-aws.sh && ./scripts/deploy-aws.sh production",
+    "deploy:aws": "npm run deploy:aws:production"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

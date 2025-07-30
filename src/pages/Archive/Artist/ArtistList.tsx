@@ -1,4 +1,4 @@
-import type { FC } from "react";
+// ... existing code ...
 
 interface ArtistListItem {
   image: string;

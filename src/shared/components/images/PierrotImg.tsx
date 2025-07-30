@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+// ... existing code ...
 import ImgCircle from "./ImgCircle";
 import pierrotImg from "@/assets/images/pierrot.png";
 import type { ImgSrcProps } from "./types/imgSrc";
