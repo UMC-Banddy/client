@@ -1,4 +1,4 @@
-import React from "react";
+import type { SVGProps } from "react";
 import ImgCircle from "./ImgCircle";
 import oasisImg from "@/assets/images/oasis.png";
 import type { ImgSrcProps } from "./types/imgSrc";

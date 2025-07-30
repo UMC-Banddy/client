@@ -1,4 +1,3 @@
-import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import whiteStar from "@/assets/logos/white-star.svg";
 import backIcon from "@/assets/icons/back.svg";

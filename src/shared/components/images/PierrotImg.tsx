@@ -1,4 +1,4 @@
-import React from "react";
+import type { SVGProps } from "react";
 import ImgCircle from "./ImgCircle";
 import pierrotImg from "@/assets/images/pierrot.png";
 import type { ImgSrcProps } from "./types/imgSrc";

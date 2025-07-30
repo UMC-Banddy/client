@@ -1,4 +1,4 @@
-import React from "react";
+import type { SVGProps } from "react";
 
 interface TagListProps {
   tags: { label: string; color?: "red" | "gray" }[];

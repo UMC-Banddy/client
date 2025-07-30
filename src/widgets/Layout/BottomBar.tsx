@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import homeIcon from "@/assets/icons/bottombar/home.svg";
 import noHomeIcon from "@/assets/icons/bottombar/no_home.svg";
