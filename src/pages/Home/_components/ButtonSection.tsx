@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import whiteStar from "@/assets/logos/white-star.svg";
 import blackStar from "@/assets/logos/black-star.svg";
@@ -8,11 +8,25 @@ import starIcon from "@/assets/icons/home/like-star.svg";
 import scrabStarIcon from "@/assets/icons/home/scrab-star.svg";
 import MuiDialog from "@/shared/components/MuiDialog";
 
-const ButtonSection = ({ setToast }: { setToast: (v: boolean) => void }) => {
+const ButtonSection = ({
+  setToast,
+  onJoinClick,
+}: {
+  setToast: (v: boolean) => void;
+  onJoinClick?: () => void;
+}) => {
   const navigate = useNavigate();
   const [soundOn, setSoundOn] = useState(false);
   const [starOn, setStarOn] = useState(false);
   const [open, setOpen] = useState(false);
+
+  const handleJoinClick = () => {
+    if (onJoinClick) {
+      onJoinClick();
+    } else {
+      setOpen(true);
+    }
+  };
 
   return (
     <>
@@ -29,7 +43,7 @@ const ButtonSection = ({ setToast }: { setToast: (v: boolean) => void }) => {
         </button>
         <button
           className="bg-red-600 text-white px-6 py-2 rounded-full flex items-center gap-2 font-bold hover:bg-red-500 transition"
-          onClick={() => setOpen(true)}
+          onClick={handleJoinClick}
         >
           <img src={whiteStar} alt="join" className="w-4 h-4" />
           JOIN
