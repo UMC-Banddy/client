@@ -6,8 +6,10 @@ import deleteIcon from "@/assets/icons/join/ic_delete.svg";
 import { API } from "@/api/API";
 import JoinHeader from "../_components/JoinHeader";
 import { useNavigate } from "react-router-dom";
+import { useSnapshot } from "valtio";
+import { createBandActions, createBandStore } from "@/store/createBandStore";
 
-type Artist = {
+export type Artist = {
   spotifyId: string;
   name: string;
   genres: string;
@@ -18,7 +20,10 @@ type Artist = {
 const CreateBandArtist: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<Artist[]>([]);
-  const [selectedArtists, setSelectedArtists] = useState<Artist[]>([]);
+
+  const { artists: selectedArtists } = useSnapshot(createBandStore);
+  const setArtists = createBandActions.setArtists;
+
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const navigate = useNavigate();
@@ -58,14 +63,16 @@ const CreateBandArtist: React.FC = () => {
   }, [searchTerm]);
 
   const toggleArtist = (artist: Artist) => {
-    setSelectedArtists((prev) => {
-      const exists = prev.some((a) => a.spotifyId === artist.spotifyId);
-      if (exists) {
-        return prev.filter((a) => a.spotifyId !== artist.spotifyId);
-      } else {
-        return [...prev, artist];
-      }
-    });
+    const exists = selectedArtists.some(
+      (a) => a.spotifyId === artist.spotifyId
+    );
+    if (exists) {
+      setArtists(
+        selectedArtists.filter((a) => a.spotifyId !== artist.spotifyId)
+      );
+    } else {
+      setArtists([...selectedArtists, artist]);
+    }
   };
 
   return (
