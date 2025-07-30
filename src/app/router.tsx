@@ -251,6 +251,14 @@ const routes = [
         ),
       },
       {
+        path: "/home/people/:bandId",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PeoplePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "/home/playlist",
         element: (
           <ProtectedRoute requireAuth={true}>
@@ -259,7 +267,23 @@ const routes = [
         ),
       },
       {
+        path: "/home/playlist/:bandId",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PlaylistPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "/home/prefer",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PreferPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/prefer/:bandId",
         element: (
           <ProtectedRoute requireAuth={true}>
             <PreferPage />

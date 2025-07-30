@@ -7,15 +7,15 @@ import HomeTagSection from "./HomeTagSection";
 interface Band {
   id: number;
   title: string;
-  description: string;
+  subtitle: string;
   image: string;
   tags: string[];
 }
 
-const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
-  bands,
-  onJoinClick,
-}) => {
+const BandCarousel: React.FC<{
+  bands: Band[];
+  onJoinClick?: (band: Band) => void;
+}> = ({ bands, onJoinClick }) => {
   const extendedBands = [bands[bands.length - 1], ...bands, bands[0]];
 
   const [index, setIndex] = useState(1); // 처음은 진짜 첫 번째 밴드 (복제 앞에 있음)
@@ -85,6 +85,12 @@ const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
     }
   }, [index]);
 
+  const handleBandClick = (band: Band) => {
+    if (onJoinClick) {
+      onJoinClick(band);
+    }
+  };
+
   return (
     <div className="relative w-full max-w-[420px] ">
       {/* 슬라이드 전체 줄 */}
@@ -107,13 +113,13 @@ const BandCarousel: React.FC<{ bands: Band[]; onJoinClick?: () => void }> = ({
               <img
                 src={band.image}
                 alt={band.title}
-                className="w-72 h-72 rounded-xl object-cover mb-4"
-                onClick={onJoinClick}
+                className="w-72 h-72 rounded-xl object-cover mb-4 cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => handleBandClick(band)}
               />
               <h2 className="text-white font-bold text-xl mb-2">
                 {band.title}
               </h2>
-              <p className="text-gray-400 text-sm mb-4">{band.description}</p>
+              <p className="text-gray-400 text-sm mb-4">{band.subtitle}</p>
               <ButtonSection setToast={setToast} />
             </div>
           ))}

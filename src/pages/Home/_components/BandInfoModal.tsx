@@ -15,6 +15,9 @@ interface BandInfoModalProps {
   tags: string[];
   description: string;
   deadline: string;
+  youtubeUrl?: string;
+  instagramUrl?: string;
+  bandId?: string; // 추가
 }
 
 const BandInfoModal: React.FC<BandInfoModalProps> = ({
@@ -24,6 +27,9 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
   tags,
   description,
   deadline,
+  youtubeUrl,
+  instagramUrl,
+  bandId, // 추가
 }) => {
   return (
     <div
@@ -46,11 +52,23 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
       {/* 아이콘 리스트 */}
       <div className="flex justify-center gap-4 mb-6">
         {[
-          { Comp: Prefer, color: "red-400", link: "/home/prefer" },
-          { Comp: Playlist, color: "red-400", link: "/home/playlist" },
-          { Comp: People, color: "red-400", link: "/home/people" },
-          { Comp: Youtube, color: "gray-700", link: "https://youtube.com" },
-          { Comp: Instagram, color: "gray-700", link: "https://instagram.com" },
+          {
+            Comp: Prefer,
+            color: "red-400",
+            link: bandId ? `/home/prefer/${bandId}` : "/home/prefer",
+          },
+          {
+            Comp: Playlist,
+            color: "red-400",
+            link: bandId ? `/home/playlist/${bandId}` : "/home/playlist",
+          },
+          {
+            Comp: People,
+            color: "red-400",
+            link: bandId ? `/home/people/${bandId}` : "/home/people",
+          },
+          { Comp: Youtube, color: "gray-700", link: youtubeUrl },
+          { Comp: Instagram, color: "gray-700", link: instagramUrl },
           { Comp: Tictok, color: "gray-700", link: "https://tiktok.com" },
         ].map(({ Comp, color, link }, idx) =>
           link && link.startsWith("/") ? (

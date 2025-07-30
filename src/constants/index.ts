@@ -33,10 +33,9 @@ export const API_ENDPOINTS = {
     SELF: "/profile",
     EDIT: "/profile",
     MEDIA_UPLOAD: "/profile/media",
-    OTHER: (memberId: string) => `/member/${memberId}/profile`,
-    OTHER_TRACKS: (memberId: string) =>
-      `/member/${memberId}/profile/saved-tracks`,
-    OTHER_TAGS: (memberId: string) => `/member/${memberId}/tags`,
+    OTHER: (memberId: string) => `/members/${memberId}/profile`,
+    OTHER_TRACKS: (memberId: string) => `/members/${memberId}/saved-tracks`,
+    OTHER_TAGS: (memberId: string) => `/members/${memberId}/tags`,
     NOTIFICATIONS: "/notifications",
   },
 
@@ -49,9 +48,13 @@ export const API_ENDPOINTS = {
   BANDS: {
     PROFILE: (bandId: string) => `/band/${bandId}/profile`,
     DETAIL: (bandId: string) => `/band/${bandId}/detail`,
+    LIST: "/bands", // 모든 밴드 목록 조회 (백엔드 구현 필요)
+    RECOMMENDED: "/bands/recommended", // 추천 밴드 목록 조회 (백엔드 구현 필요)
     BOOKMARK: (bandId: string) => `/bands/${bandId}/bookmark`,
     BOOKMARKS: "/bands/bookmarks",
     DELETE_BOOKMARK: (bandId: string) => `/bands/${bandId}/bookmark`,
+    RECRUIT: "/recruitments",
+    JOIN: (bandId: string) => `/bands/${bandId}/join`, // 해당 api가 스웨거에 없음 백엔드와 소통 필요해보임 (노션에는 있음)
   },
 
   RECRUITMENT: {
