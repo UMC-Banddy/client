@@ -1,4 +1,4 @@
-import React from "react";
+// ... existing code ...
 
 interface BandProfileHeaderProps {
   imageSrc: string;

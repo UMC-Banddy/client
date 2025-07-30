@@ -1,4 +1,4 @@
-import React from "react";
+// ... existing code ...
 import whiteStar from "@/assets/logos/white-star.svg";
 
 interface LogoProps {

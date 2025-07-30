@@ -15,11 +15,18 @@ export default function Layout() {
     "/home/chat",
     "/profile-detail",
     "/pre-test",
+    "/chat-demo",
   ].some((path) => location.pathname.startsWith(path));
   const hideHeader =
-    ["/my/notifications/", "/profile-detail", "/pre-test", "/home/chat", "/my/setting"].some(
-      (path) => location.pathname.startsWith(path)
-    ) || location.pathname === "/my";
+    [
+      "/my/notifications/",
+      "/profile-detail",
+      "/pre-test",
+      "/home/chat",
+      "/my/setting",
+      "/chat-demo",
+    ].some((path) => location.pathname.startsWith(path)) ||
+    location.pathname === "/my";
 
   const isPretestPage = location.pathname.startsWith("/pre-test");
   const isFullScreenPage = hideBottomBar || isPretestPage;

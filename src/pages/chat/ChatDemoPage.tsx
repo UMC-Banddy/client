@@ -1,65 +1,104 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ChatHeader from "./_components/ChatHeader";
+// ... existing code ...
 import ChatDateDivider from "./_components/ChatDateDivider";
 import ChatMessageList from "./_components/ChatMessageList";
 import ChatInputBar from "./_components/ChatInputBar";
 import Modal from "@/shared/components/MuiDialog";
-import FlagIcon from "@/assets/icons/chat/flag.svg";
-import BlockIcon from "@/assets/icons/chat/block.svg";
-import GetoutIcon from "@/assets/icons/chat/getout.svg";
+import SessionSelectModal from "./_components/SessionSelectModal";
+// ... existing code ...
 import type { ChatMessage } from "@/types/chat";
+import { webSocketService } from "@/services/WebSocketService";
+import profile1 from "@/assets/images/profile1.png";
+import pierrot from "@/assets/images/pierrot.png";
+import oasis from "@/assets/images/oasis.png";
 
 export default function ChatDemoPage() {
   const navigate = useNavigate();
+  const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [showConnectionStatus, setShowConnectionStatus] = useState(false);
+  const [roomId, setRoomId] = useState("1"); // 데모용 기본 채팅방 ID
+  const [connectionStatus, setConnectionStatus] = useState("연결 안됨");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Demo messages from Figma design
+  // 데모용 초기 메시지
   useEffect(() => {
     const demoMessages: ChatMessage[] = [
       {
         id: "1",
         type: "other",
-        name: "I'll kill you",
-        avatar: "/src/assets/images/pierrot.png",
-        text: "안녕하세요 제 실력 먼저 보여드리죠",
-        time: "AM 12:47",
+        name: "시스템",
+        avatar: profile1,
+        text: "WebSocket 데모 채팅방에 오신 것을 환영합니다!",
+        time: new Date().toLocaleTimeString(),
       },
       {
         id: "2",
-        type: "me",
-        name: "Beck",
-        avatar: "/src/assets/images/profile1.png",
-        text: "안녕하세요 저는 Beck이에요 덤벼 ㅋㅋ",
-        time: "AM 12:47",
-      },
-      {
-        id: "3",
         type: "other",
-        name: "I'll kill you",
-        avatar: "/src/assets/images/pierrot.png",
-        audio: {
-          duration: 30,
-          isPlaying: false,
-          onPlay: () => console.log("Play audio"),
-        },
-        time: "AM 12:48",
-      },
-      {
-        id: "4",
-        type: "me",
-        name: "Beck",
-        avatar: "/src/assets/images/profile1.png",
-        text: "와 칠 줄 아시네",
-        time: "AM 12:52",
-        unreadCount: 1,
+        name: "시스템",
+        avatar: pierrot,
+        text: "메시지를 입력하고 전송해보세요.",
+        time: new Date().toLocaleTimeString(),
       },
     ];
-
     setMessages(demoMessages);
   }, []);
+
+  // WebSocket 연결 상태 모니터링
+  useEffect(() => {
+    const checkConnection = () => {
+      if (webSocketService.isConnected()) {
+        setConnectionStatus("연결됨");
+        setError(null);
+      } else {
+        setConnectionStatus("연결 안됨");
+      }
+    };
+
+    checkConnection();
+    const interval = setInterval(checkConnection, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // WebSocket 연결 테스트
+  const testConnection = useCallback(async () => {
+    try {
+      setConnectionStatus("연결 중...");
+      setError(null);
+      await webSocketService.connect();
+      setConnectionStatus("연결 성공!");
+
+      // 채팅방 구독
+      webSocketService.subscribeToRoom(roomId, (message) => {
+        const newMessage: ChatMessage = {
+          id: message.messageId.toString(),
+          type: "other",
+          name: message.senderName,
+          avatar: oasis,
+          text: message.content,
+          time: new Date(message.timestamp).toLocaleTimeString(),
+        };
+        setMessages((prev) => [...prev, newMessage]);
+      });
+    } catch (error) {
+      console.error("WebSocket 연결 실패:", error);
+      setConnectionStatus("연결 실패");
+      setError("WebSocket 연결에 실패했습니다.");
+    }
+  }, [roomId]);
+
+  // 연결 상태 표시
+  useEffect(() => {
+    if (error) {
+      setShowConnectionStatus(true);
+      const timer = setTimeout(() => setShowConnectionStatus(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -67,105 +106,252 @@ export default function ChatDemoPage() {
 
   const handleReport = useCallback(() => {
     console.log("신고하기");
-    setIsSettingsModalOpen(false);
   }, []);
 
   const handleBlock = useCallback(() => {
     console.log("차단하기");
-    setIsSettingsModalOpen(false);
   }, []);
 
   const handleLeave = useCallback(() => {
-    console.log("나가기");
-    setIsSettingsModalOpen(false);
+    setIsLeaveConfirmOpen(true);
+  }, []);
+
+  const handleConfirmLeave = useCallback(() => {
+    if (webSocketService.isConnected()) {
+      webSocketService.disconnect();
+    }
+    setIsLeaveConfirmOpen(false);
     navigate("/");
   }, [navigate]);
 
-  const handleSendMessage = useCallback((text: string) => {
+  const handleSessionConfirm = useCallback((selectedSession: string) => {
+    console.log("선택된 세션:", selectedSession);
+    setShowSessionModal(false);
+  }, []);
+
+  const handleSendMessage = useCallback(
+    (text: string) => {
+      if (webSocketService.isConnected()) {
+        webSocketService.sendMessage(roomId, text);
+
+        // 로컬 메시지 추가 (낙관적 업데이트)
+        const newMessage: ChatMessage = {
+          id: Date.now().toString(),
+          type: "me",
+          name: "나",
+          avatar: profile1,
+          text,
+          time: new Date().toLocaleTimeString(),
+        };
+        setMessages((prev) => [...prev, newMessage]);
+      } else {
+        alert("WebSocket이 연결되지 않았습니다.");
+      }
+    },
+    [roomId]
+  );
+
+  const handleSendImage = useCallback((imageFile: File) => {
+    console.log("이미지 전송:", imageFile);
+    // 데모용 이미지 메시지 추가
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
       type: "me",
-      name: "Beck",
-      avatar: "/src/assets/images/profile1.png",
-      text,
-      time: new Date().toLocaleTimeString("ko-KR", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }),
+      name: "나",
+      avatar: profile1,
+      // ChatMessage 타입에 맞게 image 속성을 text로 대체 (예시: 이미지 전송 메시지 안내)
+      text: "[이미지]",
+      time: new Date().toLocaleTimeString(),
     };
-
     setMessages((prev) => [...prev, newMessage]);
   }, []);
 
-  const handleSendImage = useCallback((imageFile: File) => {
-    console.log("Image file:", imageFile);
+  const handleSendCalendar = useCallback(() => {
+    console.log("캘린더 이벤트 생성");
+    // 데모용 캘린더 메시지 추가
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "나",
+      avatar: profile1,
+      text: "캘린더 이벤트가 생성되었습니다.",
+      time: new Date().toLocaleTimeString(),
+    };
+    setMessages((prev) => [...prev, newMessage]);
   }, []);
 
-  const handleSendCalendar = useCallback(() => {
-    console.log("Calendar event creation");
+  const handleSendAudio = useCallback((duration: number) => {
+    // 데모용 오디오 메시지 생성
+    const audioMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "나",
+      avatar: profile1,
+      audio: {
+        duration: duration,
+        isPlaying: false,
+        onPlay: () => {
+          console.log("내 오디오 재생 시작:", duration, "초");
+        },
+      },
+      time: new Date().toLocaleTimeString(),
+    };
+    setMessages((prev) => [...prev, audioMessage]);
   }, []);
 
   const handleLoadMore = useCallback(() => {
     setIsLoading(true);
+    // 데모용 로딩 시뮬레이션
     setTimeout(() => {
+      const oldMessages: ChatMessage[] = [
+        {
+          id: "old-1",
+          type: "other",
+          name: "시스템",
+          avatar: pierrot,
+          text: "이전 메시지입니다.",
+          time: new Date(Date.now() - 86400000).toLocaleTimeString(),
+        },
+      ];
+      setMessages((prev) => [...oldMessages, ...prev]);
       setIsLoading(false);
     }, 1000);
   }, []);
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#121212]">
-      <ChatHeader
-        bandName="I'll kill you"
-        bandAvatar="/src/assets/images/pierrot.png"
-        onBack={handleBack}
-      />
+      {/* WebSocket 연결 상태 표시 */}
+      <div className="bg-gray-800 p-4 border-b border-gray-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-white">WebSocket 상태:</span>
+            <span
+              className={`px-2 py-1 rounded text-xs ${
+                connectionStatus === "연결됨"
+                  ? "bg-green-600"
+                  : connectionStatus === "연결 중..."
+                  ? "bg-yellow-600"
+                  : "bg-red-600"
+              }`}
+            >
+              {connectionStatus}
+            </span>
+            <span className="text-sm text-white">채팅방: {roomId}</span>
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={testConnection}
+              className="px-3 py-1 bg-blue-600 rounded text-sm hover:bg-blue-700 text-white"
+            >
+              연결 테스트
+            </button>
+            <button
+              onClick={() =>
+                setRoomId((prev) => (parseInt(prev) + 1).toString())
+              }
+              className="px-3 py-1 bg-gray-600 rounded text-sm hover:bg-gray-700 text-white"
+            >
+              채팅방 변경
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 데모용 간단한 헤더 */}
+      <div className="bg-[#121212] px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <button onClick={handleBack} className="text-white text-lg font-bold">
+            ←
+          </button>
+          <div className="flex items-center space-x-2">
+            <img src={oasis} alt="밴드" className="w-8 h-8 rounded-full" />
+            <span className="text-white font-medium">WebSocket 데모 채팅</span>
+          </div>
+        </div>
+        <div className="flex space-x-2">
+          <button onClick={handleReport} className="text-white text-sm">
+            신고
+          </button>
+          <button onClick={handleBlock} className="text-white text-sm">
+            차단
+          </button>
+          <button onClick={handleLeave} className="text-white text-sm">
+            나가기
+          </button>
+        </div>
+      </div>
+
+      {/* 연결 상태 표시 */}
+      {showConnectionStatus && error && (
+        <div className="bg-red-500 text-white px-4 py-2 text-center text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* WebSocket 연결 상태 표시 */}
+      {connectionStatus !== "연결됨" && (
+        <div className="bg-yellow-500 text-black px-4 py-2 text-center text-sm">
+          연결 중... 실시간 채팅이 제한됩니다.
+        </div>
+      )}
 
       <div className="flex-1 flex flex-col bg-[#F3F3F3] rounded-t-[40px] overflow-hidden relative">
-        <ChatDateDivider date="2025.06.14" />
+        <ChatDateDivider />
         <ChatMessageList
           messages={messages}
           onLoadMore={handleLoadMore}
           isLoading={isLoading}
         />
+        {/* 하단 여백 - 입력창 상태에 따라 동적 조정 */}
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            showActions ? "h-32" : "h-4"
+          }`}
+        ></div>
       </div>
 
-      <ChatInputBar
-        onSendMessage={handleSendMessage}
-        onSendImage={handleSendImage}
-        onSendCalendar={handleSendCalendar}
-      />
+      {/* ChatInputBar를 고정 위치로 변경 */}
+      <div className="fixed bottom-0 left-0 right-0 z-10">
+        <ChatInputBar
+          onSendMessage={handleSendMessage}
+          onSendImage={handleSendImage}
+          onSendCalendar={handleSendCalendar}
+          onSendAudio={handleSendAudio}
+          onShowActionsChange={setShowActions}
+          disabled={connectionStatus !== "연결됨"}
+        />
+      </div>
 
-      {/* Settings Modal */}
-      <Modal open={isSettingsModalOpen} setOpen={setIsSettingsModalOpen}>
-        <div className="bg-white rounded-[14px] p-4 min-w-[280px]">
-          <div className="space-y-4">
+      {/* Leave Confirmation Modal */}
+      <Modal open={isLeaveConfirmOpen} setOpen={setIsLeaveConfirmOpen}>
+        <div className="bg-gray-50 rounded-[20px] p-6 min-w-[320px] min-h-[220px] flex flex-col justify-center">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-black mb-3">채팅방 나가기</h2>
+            <p className="text-black text-base">채팅방에서 나가시겠습니까?</p>
+          </div>
+          <div className="flex gap-3 justify-center">
             <button
-              onClick={handleReport}
-              className="flex items-center w-full p-3 hover:bg-gray-50 rounded-lg transition-colors"
+              onClick={() => setIsLeaveConfirmOpen(false)}
+              className="flex-1 py-3 px-4 rounded-[25px] font-medium transition-colors bg-gray-200 text-red-600 hover:bg-gray-300 min-w-[100px]"
             >
-              <img src={FlagIcon} alt="신고" className="w-5 h-5 mr-3" />
-              <span className="text-black font-medium">신고</span>
+              아니오
             </button>
-
             <button
-              onClick={handleBlock}
-              className="flex items-center w-full p-3 hover:bg-gray-50 rounded-lg transition-colors"
+              onClick={handleConfirmLeave}
+              className="flex-1 py-3 px-4 rounded-[25px] font-medium transition-colors bg-red-600 text-white hover:bg-red-700 min-w-[100px]"
             >
-              <img src={BlockIcon} alt="차단" className="w-5 h-5 mr-3" />
-              <span className="text-black font-medium">차단</span>
-            </button>
-
-            <button
-              onClick={handleLeave}
-              className="flex items-center w-full p-3 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <img src={GetoutIcon} alt="나가기" className="w-5 h-5 mr-3" />
-              <span className="text-black font-medium">나가기</span>
+              예
             </button>
           </div>
         </div>
       </Modal>
+
+      {/* 세션 선택 모달 */}
+      <SessionSelectModal
+        open={showSessionModal}
+        onClose={() => setShowSessionModal(false)}
+        onConfirm={handleSessionConfirm}
+      />
     </div>
   );
 }

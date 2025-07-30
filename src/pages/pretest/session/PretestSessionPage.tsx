@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PretestHeader from "../artist/_components/PretestHeader";
 import SessionList from "./_components/SessionList";

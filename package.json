@@ -6,13 +6,22 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:staging": "tsc -b && vite build --mode staging",
+    "build:production": "tsc -b && vite build --mode production",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "preview": "vite preview",
+    "deploy:vercel": "vercel --prod",
+    "deploy:aws:staging": "chmod +x scripts/deploy-aws.sh && ./scripts/deploy-aws.sh staging",
+    "deploy:aws:production": "chmod +x scripts/deploy-aws.sh && ./scripts/deploy-aws.sh production",
+    "deploy:aws": "npm run deploy:aws:production"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^7.2.0",
+    "@stomp/stompjs": "^7.1.1",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.3",
@@ -22,6 +31,7 @@
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.3",
+    "sockjs-client": "^1.6.1",
     "tailwind-scrollbar-hide": "^4.0.0",
     "valtio": "^2.1.5",
     "zustand": "^5.0.6"
@@ -44,8 +54,8 @@
     "tailwindcss": "^4.1.11",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.36.0",
-    "vite": "^7.0.0",
-    "vite-plugin-pwa": "^1.0.1",
+    "vite": "^7.0.6",
+    "vite-plugin-pwa": "^1.0.2",
     "vite-plugin-svgr": "^4.3.0"
   }
 }

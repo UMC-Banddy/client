@@ -4,6 +4,7 @@ import calendarIcon from "@/assets/icons/chat/calendar.svg";
 import albumIcon from "@/assets/icons/chat/album.svg";
 import recordIcon from "@/assets/icons/chat/record.svg";
 import topArrowIcon from "@/assets/icons/chat/top-arrow.svg";
+// ... existing code ...
 
 // Types
 export interface ChatMessage {

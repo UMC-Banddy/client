@@ -2,27 +2,30 @@ import { useEffect, useState } from "react";
 import BandCarousel from "./_components/BandCarousel";
 import MuiDialog from "@/shared/components/MuiDialog";
 import BandInfoModal from "./_components/BandInfoModal";
+import homeAlbum1 from "@/assets/images/home-album1.svg";
+import homeAlbum2 from "@/assets/images/home-album2.svg";
+import homeAlbum3 from "@/assets/images/home-album3.png";
 
 const bandData = [
   {
     id: 1,
     title: "Flying Bobs",
     description: "난 그저 열일곱을 살던 중이었어요...",
-    image: "src/assets/images/home-album1.svg",
+    image: homeAlbum1,
     tags: ["보컬 모집", "Sheena Ringo", "いらないもの", "록", "신스팝"],
   },
   {
     id: 2,
     title: "냥커버!!",
     description: "베이스만 넷이에요 살려주세요",
-    image: "src/assets/images/home-album2.svg",
+    image: homeAlbum2,
     tags: ["드럼 모집", "King Gnu", "いらないもの", "재즈", "밴드"],
   },
   {
     id: 3,
     title: "그래요 저 왜색 짙어요",
     description: "혼또니 아리가또 고자이마스",
-    image: "src/assets/images/home-album3.png",
+    image: homeAlbum3,
     tags: ["기타 모집", "YOASOBI", "J-POP", "aiko"],
   },
 ];
