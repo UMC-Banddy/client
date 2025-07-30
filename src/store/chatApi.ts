@@ -7,7 +7,9 @@ import type {
   CreateChatResponse,
   MessagesResponse,
   JoinResponse,
-  LeaveResponse
+  LeaveResponse,
+  FriendRoomsResponse,
+  RoomMembersResponse
 } from "@/types/chat";
 
 // 채팅방 목록 조회 (새로운 API 스펙)
@@ -23,8 +25,8 @@ export const createGroupChat = async (data: CreateGroupChatRequest): Promise<Cre
 };
 
 // 1대1 채팅방 생성 (새로운 API 스펙)
-export const createDirectChat = async (data: CreateDirectChatRequest): Promise<CreateChatResponse> => {
-  const response = await API.post(API_ENDPOINTS.CHAT.CREATE_WITH_FRIEND, data);
+export const createDirectChat = async (data: CreateDirectChatRequest): Promise<{ roomId: number }> => {
+  const response = await API.post(API_ENDPOINTS.CHAT.PRIVATE, data);
   return response.data;
 };
 
@@ -58,8 +60,8 @@ export const getChatMessages = async (
 };
 
 // 채팅방 참가자 정보 조회 (새로운 API)
-export const getChatRoomMembers = async (roomId: string) => {
-  const response = await API.get(`/api/chat/rooms/${roomId}`);
+export const getChatRoomMembers = async (roomId: string): Promise<RoomMembersResponse> => {
+  const response = await API.get(API_ENDPOINTS.CHAT.ROOM_MEMBERS(roomId));
   return response.data;
 };
 
@@ -79,12 +81,12 @@ export const joinChatRoom = async (roomId: string): Promise<JoinResponse> => {
 
 // 채팅방 나가기 (새로운 API 스펙)
 export const leaveChatRoom = async (roomId: string): Promise<LeaveResponse> => {
-  const response = await API.post(`/api/chat/rooms/${roomId}/members/exit`);
+  const response = await API.post(API_ENDPOINTS.CHAT.LEAVE(roomId));
   return response.data;
 };
 
-// 친구 목록 조회 (채팅용)
-export const getChatFriends = async () => {
+// 친구 채팅방 목록 조회 (새로운 API 스펙)
+export const getChatFriends = async (): Promise<FriendRoomsResponse> => {
   const response = await API.get(API_ENDPOINTS.CHAT.FRIENDS);
   return response.data;
 };

@@ -62,19 +62,20 @@ export const API_ENDPOINTS = {
   },
 
   CHAT: {
-    ROOMS: "/api/chat/rooms", // 스웨거에 채팅방 조회 api 없음 백엔드와 소통 필요해보임 (노션에는 있음)
+    ROOMS: "/api/chat/rooms",
     CREATE_GROUP: "/api/chat/rooms",
-    FRIENDS: "/api/chat/friends", // 스웨거에 친구 채팅방 조회 api 없음 백엔드와 소통 필요해보임 (노션에는 있음)
-    CREATE_WITH_FRIEND: "/api/chat/friends", // 스웨거에 친구 채팅방 생성 api 없음 백엔드와 소통 필요해보임 (노션에는 있음)
-    PRIVATE: "/api/chat/rooms/friends", // 개인 채팅방 생성 api (노션에는 없음)
+    FRIENDS: "/api/chat/friends",
+    CREATE_WITH_FRIEND: "/api/chat/friends",
+    PRIVATE: "/api/chat/rooms/friends",
     MESSAGES: (roomId: string | number, cursor: string | number = 0, limit: number = 20) =>
-      `/api/chat/rooms/${roomId}/messages?cursor=${cursor}&limit=${limit}`, // 스웨거 형태로 변경
-    INVITE: (roomId: string) => `/api/chat/rooms/${roomId}/members/invite`, // 스웨거에 채팅방 초대 api 없음 백엔드와 소통 필요해보임 (노션에는 있음)
+      `/api/chat/rooms/${roomId}/messages?cursor=${cursor}&limit=${limit}`,
+    ROOM_MEMBERS: (roomId: string | number) => `/api/chat/rooms/${roomId}`,
+    INVITE: (roomId: string) => `/api/chat/rooms/${roomId}/members/invite`,
     JOIN: (roomId: string) => `/api/chat/rooms/${roomId}/members/join`,
-    LEAVE: (roomId: string) => `/api/chat/rooms/${roomId}/members/exit`, // leave -> exit 변경됨
-    CREATE_INTERVIEW: (bandId: string) => `/api/chat/rooms/interview/${bandId}`, // 해당 api 존재 여부 판단 필요 (노션, 스웨거에 없음)
+    LEAVE: (roomId: string) => `/api/chat/rooms/${roomId}/members/exit`,
+    CREATE_INTERVIEW: (bandId: string) => `/api/chat/rooms/interview/${bandId}`,
     CREATE_APPLICATION: (bandId: string) =>
-      `/api/chat/rooms/application/${bandId}`, // 해당 api 존재 여부 판단 필요 (노션, 스웨거에 없음)
+      `/api/chat/rooms/application/${bandId}`,
   },
 
   WEBSOCKET: {

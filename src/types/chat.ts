@@ -62,6 +62,29 @@ export interface ChatRoomsResponse {
   appliedRoomInfos: AppliedRoomInfo[];
 }
 
+// 친구 채팅방 타입
+export interface FriendRoomInfo {
+  roomId: number;
+  memberId: number;
+  friendName: string;
+  profileImage: string;
+}
+
+export interface FriendRoomsResponse {
+  rooms: FriendRoomInfo[];
+}
+
+// 채팅방 참가자 정보 타입
+export interface RoomMemberDetail {
+  memberId: number;
+  timestamp: string;
+}
+
+export interface RoomMembersResponse {
+  roomId: number;
+  infos: RoomMemberDetail[];
+}
+
 // 기존 호환성을 위한 타입 (deprecated)
 export interface LegacyChatRoomsResponse {
   rooms: ChatRoom[];
@@ -161,8 +184,6 @@ export interface AppliedRoom {
   roomImage?: string;
   createdAt: string;
 }
-
-
 
 export interface ChatUser {
   id: string;
