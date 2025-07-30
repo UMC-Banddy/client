@@ -4,14 +4,15 @@ import { BrowserRouter, useRoutes } from "react-router-dom";
 import "./index.css";
 import routes from "@/app/router"; // 라우트 배열 import
 import "@/shared/styles/fonts.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; 
-import { useUser } from "@/features/setting/hooks/useUser"; 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useUser } from "@/features/setting/hooks/useUser";
+import AuthProvider from "@/shared/components/AuthProvider";
 
-// QueryClient 생성 
-const queryClient = new QueryClient(); 
+// QueryClient 생성
+const queryClient = new QueryClient();
 
 function MainRoutes() {
-  useUser(); // 유저 정보 불러오기 (로딩 트리거) 
+  useUser(); // 유저 정보 불러오기 (로딩 트리거)
   return useRoutes(routes);
 }
 
@@ -36,7 +37,9 @@ if (container) {
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <MainRoutes />
+          <AuthProvider>
+            <MainRoutes />
+          </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
     </StrictMode>
