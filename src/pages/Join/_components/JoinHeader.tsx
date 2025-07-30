@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import back from "@/assets/icons/join/ic_back.svg";
+import { useNavigate } from "react-router-dom";
 
 interface JoinHeaderProps {
   enableConfirmBtn: boolean;
@@ -20,9 +21,13 @@ const JoinHeader = ({
   confirmBtnContent = "확인",
   onClick,
 }: JoinHeaderProps) => {
+  const navigate = useNavigate();
   return (
     <div className="flex justify-between mb-[16px] w-full">
-      <button className="p-[0] bg-transparent border-none cursor-pointer">
+      <button
+        className="p-[0] bg-transparent border-none cursor-pointer"
+        onClick={() => navigate(-1)}
+      >
         <img src={back} alt="back" />
       </button>
       <button
