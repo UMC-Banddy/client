@@ -27,6 +27,11 @@ import instagramIcon from "@/assets/icons/join/ic_instagram.svg";
 import tiktokIcon from "@/assets/icons/join/ic_tiktok.svg";
 import SnsInputField from "../_components/SnsInputField";
 import IOSSwitch from "../_components/create_band/IOSSwitch";
+import { genres } from "../_constants/genres";
+import { useSnapshot } from "valtio";
+import { createBandActions, createBandStore } from "@/store/createBandStore";
+import GenreStatusBlackBtn from "../_components/create_band/genre/GenreStatusBlackBtn";
+import { useNavigate } from "react-router-dom";
 
 const sessionList = [
   { key: "mic", Icon: MicImg },
@@ -122,6 +127,11 @@ const CreateBand = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { genres: toggledGenre } = useSnapshot(createBandStore);
+  const setToggledGenre = createBandActions.setGenres;
+
+  const navigate = useNavigate();
+
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
@@ -148,7 +158,7 @@ const CreateBand = () => {
     }));
 
   return (
-    <main className="relative min-h-screen w-[393px] mx-auto bg-[#121212]/90 pb-[200px]">
+    <main className="relative min-h-screen w-[393px] mx-auto pb-[200px]">
       <div className="flex flex-col gap-[48px] px-[24px] pt-[8px]">
         <section>
           <IOSSwitch defaultChecked />
@@ -263,31 +273,75 @@ const CreateBand = () => {
           </div>
         </section>
 
-        <section className="flex justify-between mb-[20.5px] w-full">
-          <div className="flex">
-            <p className="text-hakgyo-b-17 text-[#E9E9E9]">추구하는 장르</p>
-            &nbsp;
-            <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+        <section className="flex flex-col gap-[18px] w-full">
+          <div className="flex justify-between w-full">
+            <div className="flex">
+              <p className="text-hakgyo-b-17 text-[#E9E9E9]">추구하는 장르</p>
+              &nbsp;
+              <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+            </div>
+            <button
+              className="text-ibm-sb-16 text-[#D13D55]"
+              onClick={() => {
+                navigate("/join/create-band/genre");
+              }}
+            >
+              수정
+            </button>
           </div>
-          <button className="text-ibm-sb-16 text-[#D13D55]">수정</button>
+
+          {toggledGenre.length > 0 && (
+            <div className="flex flex-nowrap gap-[12px] overflow-x-auto">
+              {toggledGenre.map((genre) => (
+                <GenreStatusBlackBtn
+                  key={genre}
+                  onClick={() =>
+                    setToggledGenre(toggledGenre.filter((id) => id !== genre))
+                  }
+                >
+                  {genres[genre].content}
+                </GenreStatusBlackBtn>
+              ))}
+            </div>
+          )}
         </section>
 
-        <section className="flex justify-between mb-[20.5px] w-full">
-          <div className="flex">
-            <p className="text-hakgyo-b-17 text-[#E9E9E9]">대표하는 아티스트</p>
-            &nbsp;
-            <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+        <section className="flex flex-col gap-[18px] w-full">
+          <div className="flex justify-between w-full">
+            <div className="flex">
+              <p className="text-hakgyo-b-17 text-[#E9E9E9]">
+                대표하는 아티스트
+              </p>
+              &nbsp;
+              <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+            </div>
+            <button
+              className="text-ibm-sb-16 text-[#D13D55]"
+              onClick={() => {
+                navigate("/join/create-band/artist");
+              }}
+            >
+              수정
+            </button>
           </div>
-          <button className="text-ibm-sb-16 text-[#D13D55]">수정</button>
         </section>
 
-        <section className="flex justify-between mb-[20.5px] w-full">
-          <div className="flex">
-            <p className="text-hakgyo-b-17 text-[#E9E9E9]">목표하는 곡</p>
-            &nbsp;
-            <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+        <section className="flex flex-col gap-[18px] w-full">
+          <div className="flex justify-between w-full">
+            <div className="flex">
+              <p className="text-hakgyo-b-17 text-[#E9E9E9]">목표하는 곡</p>
+              &nbsp;
+              <p className="text-hakgyo-r-16 text-[#C7242D]">*</p>
+            </div>
+            <button
+              className="text-ibm-sb-16 text-[#D13D55]"
+              onClick={() => {
+                navigate("/join/create-band/song");
+              }}
+            >
+              수정
+            </button>
           </div>
-          <button className="text-ibm-sb-16 text-[#D13D55]">수정</button>
         </section>
 
         <section>
