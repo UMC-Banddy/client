@@ -29,7 +29,7 @@ export default function ChatDemoPage() {
         id: "1",
         type: "other",
         name: "시스템",
-        avatar: "/api/placeholder/40/40",
+        avatar: "/src/assets/images/profile1.png",
         text: "WebSocket 데모 채팅방에 오신 것을 환영합니다!",
         time: new Date().toLocaleTimeString(),
       },
@@ -37,7 +37,7 @@ export default function ChatDemoPage() {
         id: "2",
         type: "other",
         name: "시스템",
-        avatar: "/api/placeholder/40/40",
+        avatar: "/src/assets/images/pierrot.png",
         text: "메시지를 입력하고 전송해보세요.",
         time: new Date().toLocaleTimeString(),
       },
@@ -75,7 +75,7 @@ export default function ChatDemoPage() {
           id: message.messageId.toString(),
           type: "other",
           name: message.senderName,
-          avatar: "/api/placeholder/40/40",
+          avatar: "/src/assets/images/oasis.png",
           text: message.content,
           time: new Date(message.timestamp).toLocaleTimeString(),
         };
@@ -136,7 +136,7 @@ export default function ChatDemoPage() {
           id: Date.now().toString(),
           type: "me",
           name: "나",
-          avatar: "/api/placeholder/40/40",
+          avatar: "/src/assets/images/profile1.png",
           text,
           time: new Date().toLocaleTimeString(),
         };
@@ -155,8 +155,8 @@ export default function ChatDemoPage() {
       id: Date.now().toString(),
       type: "me",
       name: "나",
-      avatar: "/api/placeholder/40/40",
-      image: URL.createObjectURL(imageFile),
+      avatar: "/src/assets/images/profile1.png",
+      image: "/src/assets/images/home-album3.png",
       time: new Date().toLocaleTimeString(),
     };
     setMessages((prev) => [...prev, newMessage]);
@@ -169,7 +169,7 @@ export default function ChatDemoPage() {
       id: Date.now().toString(),
       type: "me",
       name: "나",
-      avatar: "/api/placeholder/40/40",
+      avatar: "/src/assets/images/profile1.png",
       text: "캘린더 이벤트가 생성되었습니다.",
       time: new Date().toLocaleTimeString(),
     };
@@ -182,7 +182,7 @@ export default function ChatDemoPage() {
       id: Date.now().toString(),
       type: "me",
       name: "나",
-      avatar: "/api/placeholder/40/40",
+      avatar: "/src/assets/images/profile1.png",
       audio: {
         duration: duration,
         isPlaying: false,
@@ -204,7 +204,7 @@ export default function ChatDemoPage() {
           id: "old-1",
           type: "other",
           name: "시스템",
-          avatar: "/api/placeholder/40/40",
+          avatar: "/src/assets/images/pierrot.png",
           text: "이전 메시지입니다.",
           time: new Date(Date.now() - 86400000).toLocaleTimeString(),
         },
@@ -255,7 +255,7 @@ export default function ChatDemoPage() {
 
       <ChatHeader
         bandName="WebSocket 데모 채팅"
-        bandAvatar="/api/placeholder/40/40"
+        bandAvatar="/src/assets/images/oasis.png"
         onBack={handleBack}
         onReport={handleReport}
         onBlock={handleBlock}
