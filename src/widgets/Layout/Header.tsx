@@ -18,6 +18,7 @@ const nonHeaderRouteNames = [
   "/join",
   "/join/create-chat",
   "/join/create-chat/2",
+  "/join/create-band/genre",
 ];
 
 const Header = () => {

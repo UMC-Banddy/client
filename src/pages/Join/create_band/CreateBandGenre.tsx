@@ -1,13 +1,24 @@
 import GenreToggleBtn from "../_components/create_band/genre/GenreToggleBtn";
 import GenreStatusBtn from "../_components/create_band/genre/GenreStatusBtn";
 import { genres } from "../_constants/genres";
-import { useState } from "react";
+import { createBandStore, createBandActions } from "@/store/createBandStore";
+import { useSnapshot } from "valtio";
+import JoinHeader from "../_components/JoinHeader";
+import { useNavigate } from "react-router-dom";
 
 const CreateBandGenre = () => {
-  const [toggledGenre, setToggledGenre] = useState<number[]>([]);
+  const { genres: toggledGenre } = useSnapshot(createBandStore);
+  const setToggledGenre = createBandActions.setGenres;
+
+  const navigate = useNavigate();
   return (
-    <main className="relative min-h-screen w-[393px] mx-auto bg-[#121212]/90 px-[24px] pt-[16px] pb-[200px]">
-      <section className="flex flex-col gap-[28px]">
+    <main className="relative min-h-screen w-[393px] mx-auto px-[24px] pt-[16px] pb-[200px]">
+      <JoinHeader
+        enableConfirmBtn={toggledGenre.length > 0}
+        onClick={() => navigate("/join/create-band")}
+      />
+
+      <section className="flex flex-col gap-[28px] mt-[24px]">
         <p className="text-hakgyo-b-24 text-[#E9E9E9]">추구하는 장르</p>
         {toggledGenre.length > 0 && (
           <div className="flex flex-nowrap gap-[12px] overflow-x-auto">
