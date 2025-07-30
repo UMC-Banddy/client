@@ -1,4 +1,4 @@
-import React from "react";
+import type { FC } from "react";
 
 interface ArtistListItem {
   image: string;
@@ -24,4 +24,4 @@ export default function ArtistList({ items }: ArtistListProps) {
       ))}
     </div>
   );
-} 
+}

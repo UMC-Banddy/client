@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 
 const ManualPage = () => (
   <div className="min-h-screen flex items-center justify-center bg-black text-white text-2xl font-bold">
