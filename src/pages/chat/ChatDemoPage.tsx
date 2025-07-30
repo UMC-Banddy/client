@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ChatHeader from "./_components/ChatHeader";
 import ChatDateDivider from "./_components/ChatDateDivider";
