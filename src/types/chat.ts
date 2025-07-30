@@ -1,3 +1,4 @@
+// 기존 타입들 (호환성 유지)
 export interface ChatMessage {
   id: string;
   type: "me" | "other";
@@ -14,6 +15,123 @@ export interface ChatMessage {
   unreadCount?: number;
 }
 
+// API 스펙에 맞는 새로운 타입들
+export interface MemberInfo {
+  memberId: number;
+  nickname: string;
+  profileImageUrl: string;
+}
+
+export interface ChatRoomInfo {
+  chatName: string;
+  imageUrl: string;
+  memberInfos: MemberInfo[];
+  unreadCount: number;
+  lastMessageAt: string;
+}
+
+export interface RoomMemberInfo {
+  memberId: number;
+  profileImageUrl: string;
+  session: string;
+  lastMessageAt: string;
+  unreadCount: number;
+}
+
+export interface ManagedRoomInfo {
+  bandId: number;
+  bandName: string;
+  profileImageUrl: string;
+  bandStatus: 'RECRUITING' | 'ACTIVE';
+  recruitingSession: string[];
+  rooms: RoomMemberInfo[];
+}
+
+export interface AppliedRoomInfo {
+  bandId: number;
+  roomId: number;
+  bandName: string;
+  profileImageUrl: string;
+  lastMessageAt: string;
+  unreadCount: number;
+}
+
+export interface ChatRoomsResponse {
+  chatRoomInfos: ChatRoomInfo[];
+  managedRoomInfos: ManagedRoomInfo[];
+  appliedRoomInfos: AppliedRoomInfo[];
+}
+
+// 기존 호환성을 위한 타입 (deprecated)
+export interface LegacyChatRoomsResponse {
+  rooms: ChatRoom[];
+  interviewRooms: InterviewRoom[];
+  appliedRooms: AppliedRoom[];
+}
+
+export interface CreateGroupChatRequest {
+  memberIds: number[];
+  imageUrl?: string;
+  roomName: string;
+}
+
+export interface CreateDirectChatRequest {
+  memberId: number;
+}
+
+export interface CreateChatResponse {
+  roomId: number;
+  roomName: string;
+  roomImageUrl: string;
+  lastMessageTime: string;
+  roomtype: 'GROUP' | 'DIRECT';
+  memberinfos: {
+    userId: number;
+    userName: string;
+  }[];
+}
+
+export interface MessagesResponse {
+  roomId: number;
+  messages: {
+    messageId: number;
+    senderId: number;
+    senderName: string;
+    content: string;
+    timestamp: string;
+  }[];
+  hasNext: boolean;
+  lastMessageId: number;
+}
+
+export interface JoinResponse {
+  roomId: number;
+  message: string;
+  timestamp: string;
+}
+
+export interface LeaveResponse {
+  roomId: number;
+  message: string;
+  timestamp: string;
+}
+
+// WebSocket 메시지 타입
+export interface WebSocketMessage {
+  messageId: number;
+  senderId: number;
+  senderName: string;
+  content: string;
+  timestamp: string;
+  roomId: number;
+}
+
+export interface WebSocketSendMessage {
+  content: string;
+  roomId: number;
+}
+
+// 기존 타입들 (호환성 유지)
 export interface ChatRoomMember {
   userid: number;
   userName: string;
@@ -44,11 +162,7 @@ export interface AppliedRoom {
   createdAt: string;
 }
 
-export interface ChatRoomsResponse {
-  rooms: ChatRoom[];
-  interviewRooms: InterviewRoom[];
-  appliedRooms: AppliedRoom[];
-}
+
 
 export interface ChatUser {
   id: string;
@@ -68,4 +182,8 @@ export interface ChatState {
   isTyping: boolean;
   playingAudioId: string | null;
   error: string | null;
+  // WebSocket 관련 상태 추가
+  webSocketConnected: boolean;
+  currentRoomId: string | null;
+  realtimeMessages: ChatMessage[];
 }

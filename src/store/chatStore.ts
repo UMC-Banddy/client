@@ -5,6 +5,7 @@ import type {
   ChatRoom,
   InterviewRoom,
   AppliedRoom,
+  WebSocketMessage,
 } from "@/types/chat";
 
 export const chatStore = proxy<ChatState>({
@@ -17,6 +18,10 @@ export const chatStore = proxy<ChatState>({
   isTyping: false,
   playingAudioId: null,
   error: null,
+  // WebSocket 관련 상태 추가
+  webSocketConnected: false,
+  currentRoomId: null,
+  realtimeMessages: [],
 });
 
 // Actions
@@ -112,5 +117,61 @@ export const chatActions = {
     chatStore.interviewRooms = [];
     chatStore.appliedRooms = [];
     chatStore.currentRoom = null;
+  },
+
+  // WebSocket 관련 액션들
+  setWebSocketConnected: (connected: boolean) => {
+    chatStore.webSocketConnected = connected;
+  },
+
+  setCurrentRoomId: (roomId: string | null) => {
+    chatStore.currentRoomId = roomId;
+  },
+
+  addRealtimeMessage: (wsMessage: WebSocketMessage) => {
+    // WebSocket 메시지를 ChatMessage 형식으로 변환
+    const chatMessage: ChatMessage = {
+      id: wsMessage.messageId.toString(),
+      type: "other", // 기본값, 실제로는 현재 사용자 ID와 비교해야 함
+      name: wsMessage.senderName,
+      avatar: "/src/assets/images/profile1.png", // 기본 아바타
+      text: wsMessage.content,
+      time: new Date(wsMessage.timestamp).toLocaleTimeString("ko-KR", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      unreadCount: 0,
+    };
+
+    chatStore.realtimeMessages.push(chatMessage);
+    
+    // 현재 채팅방의 메시지에도 추가
+    if (chatStore.currentRoomId === wsMessage.roomId.toString()) {
+      chatStore.messages.push(chatMessage);
+    }
+  },
+
+  clearRealtimeMessages: () => {
+    chatStore.realtimeMessages = [];
+  },
+
+  // WebSocket 메시지를 기존 메시지와 통합
+  mergeRealtimeMessages: () => {
+    // 실시간 메시지를 기존 메시지와 통합하고 중복 제거
+    const allMessages = [...chatStore.messages, ...chatStore.realtimeMessages];
+    const uniqueMessages = allMessages.filter((message, index, self) => 
+      index === self.findIndex(m => m.id === message.id)
+    );
+    
+    // 시간순으로 정렬
+    uniqueMessages.sort((a, b) => {
+      const timeA = new Date(a.time).getTime();
+      const timeB = new Date(b.time).getTime();
+      return timeA - timeB;
+    });
+
+    chatStore.messages = uniqueMessages;
+    chatStore.realtimeMessages = [];
   },
 };
