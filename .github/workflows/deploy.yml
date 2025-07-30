@@ -1,18 +1,19 @@
-name: Deploy to Production
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, feat/*]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 env:
   NODE_VERSION: "18"
 
 jobs:
-  # 테스트 및 빌드
-  test-and-build:
+  # 코드 품질 검사
+  code-quality:
     runs-on: ubuntu-latest
+    name: Code Quality Check
 
     steps:
       - name: Checkout code
@@ -33,22 +34,44 @@ jobs:
       - name: Run type checking
         run: npm run type-check
 
+  # 빌드 및 테스트
+  build:
+    runs-on: ubuntu-latest
+    name: Build Application
+    needs: code-quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Build application
         run: npm run build
         env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'http://localhost:8080' }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-files
           path: dist/
+          retention-days: 7
 
   # Vercel 배포 (개발/스테이징)
   deploy-vercel:
-    needs: test-and-build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
+    name: Deploy to Vercel (Staging)
+    needs: build
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment: staging
 
     steps:
       - name: Checkout code
@@ -69,11 +92,19 @@ jobs:
           working-directory: ./
           vercel-args: "--prod"
 
+      - name: Notify Vercel deployment
+        if: success()
+        run: |
+          echo "✅ Vercel staging deployment successful!"
+          echo "URL: https://${{ secrets.VERCEL_PROJECT_ID }}.vercel.app"
+
   # AWS S3 + CloudFront 배포 (프로덕션)
   deploy-aws:
-    needs: test-and-build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    name: Deploy to AWS (Production)
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
 
     steps:
       - name: Checkout code
@@ -97,6 +128,7 @@ jobs:
           aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
 
       - name: Invalidate CloudFront cache
+        if: secrets.CLOUDFRONT_DISTRIBUTION_ID != ''
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
@@ -113,3 +145,32 @@ jobs:
         run: |
           echo "❌ Production deployment failed!"
           exit 1
+
+  # 배포 상태 알림
+  notify:
+    runs-on: ubuntu-latest
+    name: Deployment Notification
+    needs: [deploy-vercel, deploy-aws]
+    if: always() && (needs.deploy-vercel.result != 'skipped' || needs.deploy-aws.result != 'skipped')
+
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.deploy-vercel.result }}" == "success" ]]; then
+            echo "✅ **Vercel Staging**: Success" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.deploy-vercel.result }}" == "failure" ]]; then
+            echo "❌ **Vercel Staging**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.deploy-aws.result }}" == "success" ]]; then
+            echo "✅ **AWS Production**: Success" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.deploy-aws.result }}" == "failure" ]]; then
+            echo "❌ **AWS Production**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

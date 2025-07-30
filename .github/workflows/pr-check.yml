@@ -1,0 +1,93 @@
+name: Pull Request Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: "18"
+
+jobs:
+  # 코드 품질 검사
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality Check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run type-check
+
+  # 빌드 테스트
+  build-test:
+    runs-on: ubuntu-latest
+    name: Build Test
+    needs: code-quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: http://localhost:8080
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files-pr
+          path: dist/
+          retention-days: 1
+
+  # PR 요약
+  pr-summary:
+    runs-on: ubuntu-latest
+    name: PR Summary
+    needs: [code-quality, build-test]
+    if: always()
+
+    steps:
+      - name: PR Summary
+        run: |
+          echo "## 🔍 Pull Request Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.code-quality.result }}" == "success" ]]; then
+            echo "✅ **Code Quality**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Code Quality**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.build-test.result }}" == "success" ]]; then
+            echo "✅ **Build Test**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Build Test**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**PR**: #${{ github.event.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: ${{ github.head_ref }}" >> $GITHUB_STEP_SUMMARY
