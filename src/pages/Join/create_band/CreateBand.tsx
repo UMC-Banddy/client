@@ -49,7 +49,24 @@ type SessionState = Record<SessionKey, boolean>;
 
 type age = "10대" | "20대" | "30대" | "40대" | "50대" | "60대" | "무관";
 type gender = "남녀무관" | "남자 선호" | "여자 선호";
-type sido = "서울" | "경기" | "인천";
+type sido =
+  | "서울"
+  | "경기"
+  | "인천"
+  | "부산"
+  | "대구"
+  | "광주"
+  | "대전"
+  | "울산"
+  | "세종"
+  | "강원"
+  | "충북"
+  | "충남"
+  | "전북"
+  | "전남"
+  | "경북"
+  | "경남"
+  | "제주";
 
 type WannaBuddy = {
   startAge: age;
@@ -63,7 +80,7 @@ type WannaBuddy = {
 
 const ages = ["10대", "20대", "30대", "40대", "50대", "60대", "무관"];
 const genders = ["남녀무관", "남자 선호", "여자 선호"];
-const sidoList = ["서울", "경기", "인천"];
+const sidoList = regions;
 
 interface ExistMember {
   averageAge: age;
@@ -476,19 +493,8 @@ const CreateBand = () => {
                   }
                   options={sidoList}
                 />
-                <SelectWithArrow
-                  value={wannaBuddy.location.sigungu}
-                  onChange={(e) =>
-                    setWannaBuddy({
-                      ...wannaBuddy,
-                      location: {
-                        ...wannaBuddy.location,
-                        sigungu: e.target.value as sido,
-                      },
-                    })
-                  }
-                  options={regions[wannaBuddy.location.sido]}
-                />
+
+                <p className="text-wanted-sb-13 text-[#CACACA]">에서 활동</p>
               </div>
             </div>
           </div>
