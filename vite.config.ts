@@ -11,6 +11,16 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
+      workbox: {
+        // Node.js 호환성을 위한 설정
+        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        skipWaiting: true,
+        clientsClaim: true,
+        // 큰 파일 크기 제한 증가 (10MB)
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        // 큰 파일은 캐시에서 제외
+        globIgnores: ["**/guitar-boy-*.svg"],
+      },
       manifest: {
         name: "Banddy",
         short_name: "Banddy",
