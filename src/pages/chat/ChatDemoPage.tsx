@@ -70,7 +70,7 @@ const ChatDemoPage = () => {
       setConnectionStatus("연결 중...");
       await webSocketService.connect();
       setConnectionStatus("연결 성공!");
-      
+
       // 채팅방 구독
       webSocketService.subscribeToRoom(roomId, (message) => {
         const newMessage: ChatMessage = {
@@ -81,7 +81,7 @@ const ChatDemoPage = () => {
           text: message.content,
           time: new Date(message.timestamp).toLocaleTimeString(),
         };
-        setTestMessages(prev => [...prev, newMessage]);
+        setTestMessages((prev) => [...prev, newMessage]);
       });
     } catch (error) {
       console.error("WebSocket 연결 실패:", error);
@@ -90,24 +90,27 @@ const ChatDemoPage = () => {
   }, [roomId]);
 
   // 메시지 전송 테스트
-  const sendTestMessage = useCallback((text: string) => {
-    if (webSocketService.isConnected()) {
-      webSocketService.sendMessage(roomId, text);
-      
-      // 로컬 메시지 추가 (낙관적 업데이트)
-      const newMessage: ChatMessage = {
-        id: Date.now().toString(),
-        type: "me",
-        name: "나",
-        avatar: "/api/placeholder/40/40",
-        text,
-        time: new Date().toLocaleTimeString(),
-      };
-      setTestMessages(prev => [...prev, newMessage]);
-    } else {
-      alert("WebSocket이 연결되지 않았습니다.");
-    }
-  }, [roomId]);
+  const sendTestMessage = useCallback(
+    (text: string) => {
+      if (webSocketService.isConnected()) {
+        webSocketService.sendMessage(roomId, text);
+
+        // 로컬 메시지 추가 (낙관적 업데이트)
+        const newMessage: ChatMessage = {
+          id: Date.now().toString(),
+          type: "me",
+          name: "나",
+          avatar: "/api/placeholder/40/40",
+          text,
+          time: new Date().toLocaleTimeString(),
+        };
+        setTestMessages((prev) => [...prev, newMessage]);
+      } else {
+        alert("WebSocket이 연결되지 않았습니다.");
+      }
+    },
+    [roomId]
+  );
 
   const handleConfirmLeave = () => {
     if (webSocketService.isConnected()) {
@@ -124,10 +127,15 @@ const ChatDemoPage = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <span className="text-sm">WebSocket 상태:</span>
-            <span className={`px-2 py-1 rounded text-xs ${
-              connectionStatus === "연결됨" ? "bg-green-600" : 
-              connectionStatus === "연결 중..." ? "bg-yellow-600" : "bg-red-600"
-            }`}>
+            <span
+              className={`px-2 py-1 rounded text-xs ${
+                connectionStatus === "연결됨"
+                  ? "bg-green-600"
+                  : connectionStatus === "연결 중..."
+                  ? "bg-yellow-600"
+                  : "bg-red-600"
+              }`}
+            >
               {connectionStatus}
             </span>
             <span className="text-sm">채팅방: {roomId}</span>
@@ -140,7 +148,9 @@ const ChatDemoPage = () => {
               연결 테스트
             </button>
             <button
-              onClick={() => setRoomId(prev => (parseInt(prev) + 1).toString())}
+              onClick={() =>
+                setRoomId((prev) => (parseInt(prev) + 1).toString())
+              }
               className="px-3 py-1 bg-gray-600 rounded text-sm hover:bg-gray-700"
             >
               채팅방 변경
@@ -148,9 +158,7 @@ const ChatDemoPage = () => {
           </div>
         </div>
         {error && (
-          <div className="mt-2 text-red-400 text-sm">
-            오류: {error}
-          </div>
+          <div className="mt-2 text-red-400 text-sm">오류: {error}</div>
         )}
       </div>
 

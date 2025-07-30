@@ -1,15 +1,15 @@
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
-import type { 
-  ChatRoomsResponse, 
-  CreateGroupChatRequest, 
+import type {
+  ChatRoomsResponse,
+  CreateGroupChatRequest,
   CreateDirectChatRequest,
   CreateChatResponse,
   MessagesResponse,
   JoinResponse,
   LeaveResponse,
   FriendRoomsResponse,
-  RoomMembersResponse
+  RoomMembersResponse,
 } from "@/types/chat";
 
 // 채팅방 목록 조회 (새로운 API 스펙)
@@ -19,13 +19,17 @@ export const getChatRooms = async (): Promise<ChatRoomsResponse> => {
 };
 
 // 그룹 채팅방 생성 (새로운 API 스펙)
-export const createGroupChat = async (data: CreateGroupChatRequest): Promise<CreateChatResponse> => {
+export const createGroupChat = async (
+  data: CreateGroupChatRequest
+): Promise<CreateChatResponse> => {
   const response = await API.post(API_ENDPOINTS.CHAT.CREATE_GROUP, data);
   return response.data;
 };
 
 // 1대1 채팅방 생성 (새로운 API 스펙)
-export const createDirectChat = async (data: CreateDirectChatRequest): Promise<{ roomId: number }> => {
+export const createDirectChat = async (
+  data: CreateDirectChatRequest
+): Promise<{ roomId: number }> => {
   const response = await API.post(API_ENDPOINTS.CHAT.PRIVATE, data);
   return response.data;
 };
@@ -46,21 +50,25 @@ export const createApplicationChat = async (bandId: string) => {
 
 // 채팅 메시지 조회 (새로운 API 스펙 - 무한 스크롤)
 export const getChatMessages = async (
-  roomId: string, 
-  cursor?: number, 
+  roomId: string,
+  cursor?: number,
   limit: number = 20
 ): Promise<MessagesResponse> => {
   const params: any = { limit };
   if (cursor !== undefined) {
     params.cursor = cursor;
   }
-  
-  const response = await API.get(`/api/chat/rooms/${roomId}/messages`, { params });
+
+  const response = await API.get(`/api/chat/rooms/${roomId}/messages`, {
+    params,
+  });
   return response.data;
 };
 
 // 채팅방 참가자 정보 조회 (새로운 API)
-export const getChatRoomMembers = async (roomId: string): Promise<RoomMembersResponse> => {
+export const getChatRoomMembers = async (
+  roomId: string
+): Promise<RoomMembersResponse> => {
   const response = await API.get(API_ENDPOINTS.CHAT.ROOM_MEMBERS(roomId));
   return response.data;
 };
@@ -112,7 +120,10 @@ export const createDirectChatLegacy = async (data: { friendId: number }) => {
   return response.data;
 };
 
-export const getChatMessagesLegacy = async (roomId: string, cursor?: string) => {
+export const getChatMessagesLegacy = async (
+  roomId: string,
+  cursor?: string
+) => {
   const url = cursor
     ? API_ENDPOINTS.CHAT.MESSAGES(roomId, cursor)
     : API_ENDPOINTS.CHAT.MESSAGES(roomId, "");

@@ -34,7 +34,8 @@ export const API_ENDPOINTS = {
     EDIT: "/api/profile",
     MEDIA_UPLOAD: "/api/profile/media",
     OTHER: (memberId: string) => `/api/member/${memberId}/profile`,
-    OTHER_TRACKS: (memberId: string) => `/api/member/${memberId}/profile/saved-tracks`,
+    OTHER_TRACKS: (memberId: string) =>
+      `/api/member/${memberId}/profile/saved-tracks`,
     OTHER_TAGS: (memberId: string) => `/api/member/${memberId}/tags`,
     NOTIFICATIONS: "/api/notifications",
   },
@@ -67,8 +68,11 @@ export const API_ENDPOINTS = {
     FRIENDS: "/api/chat/friends",
     CREATE_WITH_FRIEND: "/api/chat/friends",
     PRIVATE: "/api/chat/rooms/friends",
-    MESSAGES: (roomId: string | number, cursor: string | number = 0, limit: number = 20) =>
-      `/api/chat/rooms/${roomId}/messages?cursor=${cursor}&limit=${limit}`,
+    MESSAGES: (
+      roomId: string | number,
+      cursor: string | number = 0,
+      limit: number = 20
+    ) => `/api/chat/rooms/${roomId}/messages?cursor=${cursor}&limit=${limit}`,
     ROOM_MEMBERS: (roomId: string | number) => `/api/chat/rooms/${roomId}`,
     INVITE: (roomId: string) => `/api/chat/rooms/${roomId}/members/invite`,
     JOIN: (roomId: string) => `/api/chat/rooms/${roomId}/members/join`,
@@ -142,7 +146,8 @@ export const API_ENDPOINTS = {
       TOGGLE: "/api/albums/toggle",
       LIST: "/api/albums",
       DETAIL: (albumId: string) => `/api/albums/${albumId}`,
-      TOGGLE_VISIBILITY: (albumId: string) => `/api/albums/${albumId}/visibility`,
+      TOGGLE_VISIBILITY: (albumId: string) =>
+        `/api/albums/${albumId}/visibility`,
     },
 
     ALBUM_FOLDERS: {
@@ -157,4 +162,3 @@ export const API_ENDPOINTS = {
     },
   },
 };
-

@@ -42,7 +42,7 @@ export interface ManagedRoomInfo {
   bandId: number;
   bandName: string;
   profileImageUrl: string;
-  bandStatus: 'RECRUITING' | 'ACTIVE';
+  bandStatus: "RECRUITING" | "ACTIVE";
   recruitingSession: string[];
   rooms: RoomMemberInfo[];
 }
@@ -107,7 +107,7 @@ export interface CreateChatResponse {
   roomName: string;
   roomImageUrl: string;
   lastMessageTime: string;
-  roomtype: 'GROUP' | 'DIRECT';
+  roomtype: "GROUP" | "DIRECT";
   memberinfos: {
     userId: number;
     userName: string;
