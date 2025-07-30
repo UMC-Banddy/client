@@ -34,6 +34,7 @@ import GenreStatusBlackBtn from "../_components/create_band/genre/GenreStatusBla
 import { useNavigate } from "react-router-dom";
 import JoinHeader from "../_components/JoinHeader";
 import { API } from "@/api/API";
+import ToggleBtn from "../_components/ToggleBtn";
 
 const sessionList = [
   { key: "mic", Icon: MicImg },
@@ -280,27 +281,9 @@ const CreateBand = () => {
           <div className="flex w-full">
             <DateSelect setDate={setEndDate} />
           </div>
-          <div className="flex items-center gap-[8px]">
-            <button
-              className={clsx(
-                "flex justify-center items-center size-[22px] rounded-full cursor-pointer",
-                automaticClosing ? "bg-[#E9E9E9]" : "bg-[#959595] "
-              )}
-              onClick={() => setAutomaticClosing(!automaticClosing)}
-            >
-              {automaticClosing && (
-                <div className="size-[12px] rounded-full bg-[#D13D55]"></div>
-              )}
-            </button>
-            <p
-              className={clsx(
-                "text-wanted-sb-13",
-                automaticClosing ? "text-[#E9E9E9]" : "text-[#959595]"
-              )}
-            >
-              지정한 날이 되면 자동으로 모집 마감
-            </p>
-          </div>
+          <ToggleBtn toggle={automaticClosing} setToggle={setAutomaticClosing}>
+            지정한 날이 되면 자동으로 모집 마감
+          </ToggleBtn>
         </section>
 
         <section className="flex flex-col gap-[20px] w-full">
