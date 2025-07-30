@@ -1,27 +1,59 @@
-import { API } from "@/api/API";
 
-// 회원가입 API
+import { API } from "@/api/API";
+import { authStore } from "@/store/authStore";
+import { API_ENDPOINTS } from "@/constants";
+
+export const login = async (data: { email: string; password: string }) => {
+  try {
+    const res = await API.post(API_ENDPOINTS.AUTH.LOGIN, data);
+    const { accessToken, refreshToken } = res.data;
+
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+
+    authStore.accessToken = accessToken;
+    authStore.refreshToken = refreshToken;
+    authStore.isAuthenticated = true;
+    authStore.role = "USER";
+    authStore.errorMessage = "";
+
+    return res.data;
+  } catch (error: unknown) {
+  if (error instanceof Error) {
+    authStore.errorMessage = "아이디 또는 비밀번호가 맞지 않습니다.";
+  }
+  throw error;
+}
+
+};
+
 export const signupMember = async (data: {
   email: string;
   password: string;
   nickname: string;
   gender: string;
   region: string;
-  district: string;
   age: number;
 }) => {
-  const res = await API.post("/member", data);
+  const res = await API.post(API_ENDPOINTS.AUTH.SIGNUP, data);
   return res.data;
 };
 
-// 이메일 인증번호 발송 API
 export const sendEmailCode = async (email: string) => {
-  const res = await API.post("/auth/send", { email });
+  const res = await API.post(API_ENDPOINTS.AUTH.SEND_CODE, { email });
+  return res.data as string;
+};
+
+export const verifyEmailCode = async (code: string) => {
+  const res = await API.post(API_ENDPOINTS.AUTH.VERIFY_CODE, { code });
+  return res.data as { verified: boolean; message: string };
+};
+
+export const checkNickname = async (nickname: string) => {
+  const res = await API.get(
+    `${API_ENDPOINTS.AUTH.CHECK_NICKNAME}?nickname=${nickname}`
+  );
   return res.data;
 };
 
-// 닉네임 중복 확인
-export const checkNickname = async (nickname: string) => {
-  const res = await API.get(`/member/check-nickname?nickname=${nickname}`);
-  return res.data;
-};
+

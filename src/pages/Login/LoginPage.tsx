@@ -7,28 +7,51 @@ import toast from "react-hot-toast";
 import logo from "../../assets/logos/LOGO1.svg";
 import eyeOpen from "../../assets/icons/login/eye-open.svg";
 import eyeClosed from "../../assets/icons/login/eye-closed.svg";
-//import { login } from "././store/auth"; //연동시에 주석 해제
+import { login } from "@/store/auth";
 
 const LoginPage: React.FC = () => {
   const snap = useSnapshot(authStore);
   const navigate = useNavigate();
 
-  const handleLogin = () => { //const handleLogin = async () => { //연동시에 주석 해제
+  const handleLogin = async () => {
+  if (!snap.email || !snap.password) {
+    authStore.errorMessage = "이메일과 비밀번호를 모두 입력해주세요.";
+    return;
+  }
+
+  try {
+    await login({
+      email: snap.email,
+      password: snap.password,
+    });
+
+    toast.success("로그인 되었습니다.");
+    navigate("/");
+  } catch  {
+    // 에러 메시지는 login 함수 내에서 이미 authStore에 저장됨 밑 코드 삭제
+    //toast.error("로그인에 실패했습니다.");
+  }
+};
+  /*
+  const handleLogin = async () => {
     if (!snap.email || !snap.password) return;
 
-    if (snap.email === "admin@banddy.com" && snap.password === "admin123") {
-      authStore.role = "ADMIN";
+    try {
+      const res = await login({ email: snap.email, password: snap.password });
+
+      // 로그인 성공 후 토큰 저장 (localStorage 또는 상태관리)
+      localStorage.setItem("accessToken", res.accessToken);
+      localStorage.setItem("refreshToken", res.refreshToken);
+      authStore.role = "USER"; // 기본값, 실제 role 분기 있으면 처리 필요
+
       toast.success("로그인 되었습니다.");
-      navigate("/home");
-    } else if (snap.email === "user@banddy.com" && snap.password === "user123") {
-      authStore.role = "USER";
-      toast.success("로그인 되었습니다.");
-      navigate("/home");
-    } else {
+      navigate("/");
+    } catch (err: any) {
+      console.error("로그인 실패", err);
       authStore.errorMessage = "아이디 또는 비밀번호가 맞지 않습니다.";
     }
   };
-
+*/
   const handleSignUp = () => {
     navigate("/signup/email");
   };

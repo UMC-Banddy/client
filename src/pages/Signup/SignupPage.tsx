@@ -11,35 +11,28 @@ const SignupPage: React.FC = () => {
   const [email, setEmail] = useState(authStore.email);
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
-  /* 이전꺼
-  const handleSendCode = () => {
+
+  const handleSendCode = async () => {
     if (!email) return;
-    authStore.email = email; // 전역 상태에 저장
-    setShowPopup(true);
-    setTimeout(() => {
-      setShowPopup(false);
-      navigate("/signup/verify");
-    }, 1500);
+    try {
+      const message = await sendEmailCode(email); // 문자열 응답 처리
+      console.log("이메일 전송 응답:", message);
+
+      authStore.email = email; // 전역 상태 저장
+
+      setShowPopup(true);
+      setTimeout(() => {
+        setShowPopup(false);
+        navigate("/signup/verify");
+      }, 1500);
+    } catch (error) {
+      console.error("이메일 인증 요청 실패", error);
+    }
   };
-  */
- const handleSendCode = async () => {
-  if (!email) return;
-  try {
-    await sendEmailCode(email); 
-    setShowPopup(true);
-    setTimeout(() => {
-      setShowPopup(false);
-      navigate("/signup/verify");
-    }, 1500);
-  } catch (error) {
-    console.error("이메일 인증 요청 실패", error);
-    
-  }
-};
 
   return (
     <div className="relative w-full min-h-screen max-w-md mx-auto bg-black text-white overflow-hidden">
-      {/* Progress bar*/}
+      {/* 프로그레스바 */}
       <div className="w-full h-0.5 bg-[#959595]">
         <div className="w-1/4 h-full bg-[#C7242D]" />
       </div>
@@ -61,7 +54,7 @@ const SignupPage: React.FC = () => {
         />
       </div>
 
-      {/* 인증번호 발송 버튼*/}
+      {/* 인증번호 발송 버튼 */}
       <div className="px-6 pb-8 bottom-10 left-0 right-0 max-w-md mx-auto bg-black">
         <button
           onClick={handleSendCode}

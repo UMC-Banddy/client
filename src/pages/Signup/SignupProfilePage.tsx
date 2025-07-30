@@ -1,21 +1,60 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authStore } from "@/store/authStore";
+import { signupMember } from "@/store/auth";
 import whiteStar from "../../assets/logos/white-star.svg";
 
-/* 임시 하드 코딩. 수정 필요*/
-const regions = ["서울", "경기", "강원", "인천"];
-const seoulDistricts = ["노원구", "강남구", "마포구", "종로구"];
+/* 전체 지역 */
+const regions = [
+  "서울",
+  "경기",
+  "인천",
+  "부산",
+  "대구",
+  "광주",
+  "대전",
+  "울산",
+  "세종",
+  "강원",
+  "충북",
+  "충남",
+  "전북",
+  "전남",
+  "경북",
+  "경남",
+  "제주"
+];
 
 const SignupProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [age, setAge] = useState("");
   const [gender, setGender] = useState<"male" | "female" | null>(null);
   const [region, setRegion] = useState("");
-  const [district, setDistrict] = useState("");
   const [regionOpen, setRegionOpen] = useState(false);
-  const [districtOpen, setDistrictOpen] = useState(false);
 
   const isFormValid = !!(age && gender);
+
+  const handleSubmit = async () => {
+    if (!isFormValid) return;
+
+    authStore.age = Number(age);
+    authStore.gender = gender === "male" ? "남성" : "여성";
+    authStore.region = region;
+
+    try {
+      await signupMember({
+        email: authStore.email,
+        password: authStore.password,
+        nickname: authStore.nickname,
+        gender: authStore.gender,
+        region: authStore.region,
+        age: authStore.age,
+      });
+      navigate("/signup/complete");
+    } catch (err) {
+      console.error("회원가입 실패", err);
+    }
+  };
 
   return (
     <div className="relative w-full min-h-screen max-w-md mx-auto bg-black text-white overflow-hidden">
@@ -54,20 +93,22 @@ const SignupProfilePage: React.FC = () => {
             성별 <span className="text-red-500">*</span>
           </span>
           <div className="flex gap-6 mt-2">
-            {["남성", "여성"].map((label) => {
-              const value = label === "남성" ? "male" : "female";
+            {[
+              { label: "남성", value: "male" as const },
+              { label: "여성", value: "female" as const }
+            ].map(({ label, value }) => {
               const selected = gender === value;
               return (
                 <button
                   key={label}
                   type="button"
-                  onClick={() => setGender(value as "male" | "female")}
+                  onClick={() => setGender(value)}
                   className={`flex items-center gap-2 text-sm ${selected ? "text-white" : "text-[#CACACA]"}`}
                 >
                   <span
                     className={`w-4 h-4 rounded-full flex items-center justify-center ${
-      selected ? "bg-white" : "bg-[#CACACA]"
-    }`}
+                      selected ? "bg-white" : "bg-[#CACACA]"
+                    }`}
                   >
                     {selected && <div className="w-2 h-2 bg-[#292929] rounded-full" />}
                   </span>
@@ -83,14 +124,10 @@ const SignupProfilePage: React.FC = () => {
           <div className="mb-10">
             <span className="block mb-2">거주 지역</span>
             <div className="flex gap-2">
-              {/* 지역 선택 */}
-              <div className="relative w-[140px]">
+              <div className="relative w-[120px]">
                 <button
-                  onClick={() => {
-                    setRegionOpen(!regionOpen);
-                    setDistrictOpen(false);
-                  }}
-                  className="w-full border bg-[#CACACA] py-2 px-3 text-left text-[#292929] text-sm flex justify-between items-center"
+                  onClick={() => setRegionOpen(!regionOpen)}
+                  className="w-full border bg-[#121212]  border-[#E9E9E9] py-2 px-3 text-left text-[#E9E9E9] text-sm flex justify-between items-center"
                 >
                   {region || "선택"}
                   <svg
@@ -104,55 +141,17 @@ const SignupProfilePage: React.FC = () => {
                   </svg>
                 </button>
                 {regionOpen && (
-                  <div className="absolute z-10 w-full bg-[#FFFFFF] border border-[#CACACA] mt-1 max-h-40 overflow-y-auto">
+                  <div className="absolute z-10 w-full bg-[#555555] mt-1 max-h-40 overflow-y-auto">
                     {regions.map((r) => (
                       <button
                         key={r}
                         onClick={() => {
                           setRegion(r);
                           setRegionOpen(false);
-                          setDistrict("");
                         }}
-                        className="block w-full text-left px-3 py-2 text-[#292929] text-sm hover:bg-neutral-700"
+                        className="block w-full text-left px-3 py-2 text-[#E9E9E9] text-sm hover:bg-neutral-700"
                       >
                         {r}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* 구 선택 */}
-              <div className="relative w-[140px]">
-                <button
-                  onClick={() => {
-                    if (region) setDistrictOpen(!districtOpen);
-                  }}
-                  className="w-full border bg-[#CACACA] py-2 px-3 text-left text-[#292929] text-sm flex justify-between items-center"
-                >
-                  {district || "-"}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`h-4 w-4 transform transition-transform ${districtOpen ? "rotate-180" : ""}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {districtOpen && region === "서울" && (
-                  <div className="absolute z-10 w-full bg-[#FFFFFF] border border-[#CACACA] mt-1 max-h-40 overflow-y-auto">
-                    {seoulDistricts.map((d) => (
-                      <button
-                        key={d}
-                        onClick={() => {
-                          setDistrict(d);
-                          setDistrictOpen(false);
-                        }}
-                        className="block w-full text-left px-3 py-2 text-[#292929] text-sm hover:bg-neutral-700"
-                      >
-                        {d}
                       </button>
                     ))}
                   </div>
@@ -165,10 +164,10 @@ const SignupProfilePage: React.FC = () => {
         {/* 완료 버튼 */}
         <button
           disabled={!isFormValid}
-          onClick={() => navigate("/signup/complete")}
+          onClick={handleSubmit}
           className={`w-full py-3 mt-4 rounded-[24px] font-semibold transition ${
             isFormValid
-              ? "bg-[#C7242D] text-white"
+              ? "bg-[#C7242D] text-[#000000]"
               : "bg-[#959595] text-[#555555] cursor-default"
           }`}
         >

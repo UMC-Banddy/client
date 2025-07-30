@@ -3,15 +3,14 @@ import { useNavigate } from "react-router-dom";
 import whiteStar from "../../assets/logos/white-star.svg";
 import eyeOpen from "../../assets/icons/login/eye-open.svg";
 import eyeClosed from "../../assets/icons/login/eye-closed.svg";
-import { tempPassword } from "./SignupPasswordPage"; 
+import { authStore } from "../../store/authStore"; 
 
 const SignupPasswordConfirmStep: React.FC = () => {
   const navigate = useNavigate();
-  const [password, setPassword] = useState(tempPassword);
+  const [password, setPassword] = useState(authStore.password);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  
 
   const isMatch = confirmPassword.length > 0 && password === confirmPassword;
 
@@ -22,11 +21,8 @@ const SignupPasswordConfirmStep: React.FC = () => {
         <div className="w-2/4 h-full bg-[#C7242D]" />
       </div>
 
-      {/* 상단 아이콘 */}
-      
       <img src={whiteStar} alt="step" className="absolute right-6 top-[18px] w-8 h-8" />
 
-      {/* 콘텐츠 */}
       <div className="flex flex-col px-6 pt-[180px]">
         <p className="text-sm text-[#959595] mb-1">Step. 2</p>
         <h1 className="text-lg font-semibold mb-8">비밀번호를 설정해 주세요.</h1>
