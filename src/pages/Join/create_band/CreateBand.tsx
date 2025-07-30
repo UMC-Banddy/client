@@ -127,7 +127,7 @@ const CreateBand = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { genres: toggledGenre, artists } = useSnapshot(createBandStore);
+  const { genres: toggledGenre, artists, songs } = useSnapshot(createBandStore);
   const setToggledGenre = createBandActions.setGenres;
 
   const navigate = useNavigate();
@@ -362,6 +362,29 @@ const CreateBand = () => {
               수정
             </button>
           </div>
+          {songs.length > 0 && (
+            <div className="flex flex-nowrap gap-[12px] overflow-x-auto">
+              {songs.map((song) => (
+                <div
+                  key={song.spotifyId}
+                  className="flex flex-col items-center gap-[4px] flex-shrink-0"
+                >
+                  <div
+                    className="relative w-[50px] h-[50px] bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url(${song.imageUrl})`,
+                    }}
+                  />
+                  <p className="w-[55px] text-wanted-sb-12 text-white line-clamp-2">
+                    {song.title}
+                  </p>
+                  <p className="w-[55px] text-wanted-sb-10 text-[#959595] line-clamp-1">
+                    {song.artist}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section>

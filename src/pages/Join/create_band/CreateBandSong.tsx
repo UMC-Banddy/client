@@ -8,6 +8,8 @@ import playIcon from "@/assets/icons/join/ic_play.svg";
 import { API } from "@/api/API";
 import JoinHeader from "../_components/JoinHeader";
 import { useNavigate } from "react-router-dom";
+import { useSnapshot } from "valtio";
+import { createBandActions, createBandStore } from "@/store/createBandStore";
 
 export type Track = {
   spotifyId: string;
@@ -22,7 +24,9 @@ export type Track = {
 const CreateBandSong: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<Track[]>([]);
-  const [selectedSongs, setSelectedSongs] = useState<Track[]>([]);
+
+  const { songs: selectedSongs } = useSnapshot(createBandStore);
+  const setSongs = createBandActions.setSongs;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
 
@@ -54,13 +58,12 @@ const CreateBandSong: React.FC = () => {
   }, [searchTerm]);
 
   const toggleSong = (track: Track) => {
-    setSelectedSongs((prev) => {
-      const exists = prev.some((t) => t.spotifyId === track.spotifyId);
-      if (exists) {
-        return prev.filter((t) => t.spotifyId !== track.spotifyId);
-      }
-      return [...prev, track];
-    });
+    const exists = selectedSongs.some((t) => t.spotifyId === track.spotifyId);
+    if (exists) {
+      setSongs(selectedSongs.filter((t) => t.spotifyId !== track.spotifyId));
+    } else {
+      setSongs([...selectedSongs, track]);
+    }
   };
 
   return (
