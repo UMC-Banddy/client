@@ -107,23 +107,30 @@ class WebSocketService {
 
       this.isConnecting = true;
 
-      this.stompClient.connect(
-        {},
-        () => {
+      // @stomp/stompjs v7.1.1에서는 activate() 메서드 사용
+      this.stompClient.activate();
+
+      // 연결 성공을 기다림
+      const checkConnection = () => {
+        if (this.stompClient?.connected) {
           this.isConnecting = false;
           resolve();
-        },
-        (error: any) => {
+        } else if (this.stompClient?.active) {
+          // active 상태이지만 아직 connected가 아닌 경우
+          setTimeout(checkConnection, 100);
+        } else {
           this.isConnecting = false;
-          console.error("WebSocket 연결 실패:", error);
-          reject(error);
+          reject(new Error("WebSocket 연결에 실패했습니다."));
         }
-      );
+      };
+
+      // 초기 연결 체크
+      setTimeout(checkConnection, 100);
     });
   }
 
   disconnect(): void {
-    if (this.stompClient && this.stompClient.connected) {
+    if (this.stompClient && this.stompClient.active) {
       // 모든 구독 해제
       this.subscriptions.forEach((subscription) => {
         subscription.unsubscribe();
@@ -131,7 +138,7 @@ class WebSocketService {
       this.subscriptions.clear();
 
       // 연결 해제
-      this.stompClient.disconnect(() => {
+      this.stompClient.deactivate().then(() => {
         console.log("WebSocket 연결 해제 완료");
         chatActions.setWebSocketConnected(false);
       });
@@ -190,7 +197,10 @@ class WebSocketService {
       roomId: parseInt(roomId),
     };
 
-    this.stompClient.send(destination, {}, JSON.stringify(message));
+    this.stompClient.publish({
+      destination,
+      body: JSON.stringify(message),
+    });
     console.log("메시지 전송:", message);
   }
 

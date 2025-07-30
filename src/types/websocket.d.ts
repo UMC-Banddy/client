@@ -31,6 +31,10 @@ declare module "@stomp/stompjs" {
   export interface StompClient {
     connected: boolean;
     connectedVersion: string;
+    active: boolean;
+
+    activate(): void;
+    deactivate(): Promise<void>;
 
     connect(
       headers?: StompHeaders,
@@ -47,6 +51,7 @@ declare module "@stomp/stompjs" {
     ): StompSubscription;
 
     publish(destination: string, body?: string, headers?: StompHeaders): void;
+    publish(options: { destination: string; body?: string; headers?: StompHeaders }): void;
 
     send(destination: string, headers?: StompHeaders, body?: string): void;
   }
@@ -55,6 +60,10 @@ declare module "@stomp/stompjs" {
     constructor(config?: any);
     connected: boolean;
     connectedVersion: string;
+    active: boolean;
+
+    activate(): void;
+    deactivate(): Promise<void>;
 
     connect(
       headers?: StompHeaders,
@@ -71,6 +80,7 @@ declare module "@stomp/stompjs" {
     ): StompSubscription;
 
     publish(destination: string, body?: string, headers?: StompHeaders): void;
+    publish(options: { destination: string; body?: string; headers?: StompHeaders }): void;
 
     send(destination: string, headers?: StompHeaders, body?: string): void;
   }
