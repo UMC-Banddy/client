@@ -165,14 +165,15 @@ const CreateBand = () => {
     fileInputRef.current?.click();
   };
 
-  const toggleJobInfoBtn = (key: keyof typeof existMember.job) => () =>
-    setExistMember((prev) => ({
-      ...prev,
-      job: {
-        ...prev.job,
-        [key]: !prev.job[key],
-      },
-    }));
+  const toggleJobInfoBtn = (key: keyof typeof existMember.job) => () => {
+    setExistMember((prev) => {
+      const newJobState = { ...prev.job, [key]: !prev.job[key] };
+      return {
+        ...prev,
+        job: newJobState,
+      };
+    });
+  };
 
   return (
     <main className="relative min-h-screen w-[393px] mx-auto pb-[200px]">
