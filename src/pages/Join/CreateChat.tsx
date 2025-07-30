@@ -1,10 +1,10 @@
-import back from "@/assets/icons/join/ic_back.svg";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import RecruitChat from "./_components/band_recruit/RecruitChat";
 import SearchField from "./_components/SearchField";
 import { API } from "@/api/API";
 import { useNavigate } from "react-router-dom";
+import JoinHeader from "./_components/JoinHeader";
 
 type Friend = {
   friendId: number;
@@ -50,22 +50,12 @@ const CreateChat = () => {
 
   return (
     <main className="relative p-[16px] min-h-screen w-[393px] mx-auto">
-      <div className="flex justify-between mb-[16px] w-full">
-        <button className="p-[0] bg-transparent border-none cursor-pointer">
-          <img src={back} alt="back" />
-        </button>
-        <button
-          className={clsx(
-            "p-[0] bg-transparent border-none text-ibm-sb-16",
-            enableConfirmBtn ? "text-[#79D000] cursor-pointer" : "text-[#555]"
-          )}
-          onClick={() =>
-            navigate("/join/create-chat/2", { state: { checkedList } })
-          }
-        >
-          확인
-        </button>
-      </div>
+      <JoinHeader
+        enableConfirmBtn={enableConfirmBtn}
+        onClick={() =>
+          navigate("/join/create-chat/2", { state: { checkedList } })
+        }
+      />
 
       {checkedList.length > 0 && (
         <section className="flex gap-[20px]">
