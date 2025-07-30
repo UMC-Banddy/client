@@ -1,5 +1,3 @@
-import back from "@/assets/icons/join/ic_back.svg";
-import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 import happy from "@/assets/icons/join/ic_mood_happy.svg";
 import cameraBtn from "@/assets/icons/join/ic_camera_btn.svg";
@@ -7,6 +5,7 @@ import MuiDialog from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
 import { useLocation, useNavigate } from "react-router-dom";
 import { API } from "@/api/API";
+import JoinHeader from "./_components/JoinHeader";
 
 const CreateChat2 = () => {
   const [name, setName] = useState("");
@@ -50,20 +49,10 @@ const CreateChat2 = () => {
 
   return (
     <main className="flex flex-col items-center relative p-[16px] min-h-screen w-[393px] mx-auto">
-      <div className="flex justify-between mb-[16px] w-full">
-        <button className="p-[0] bg-transparent border-none cursor-pointer">
-          <img src={back} alt="back" />
-        </button>
-        <button
-          className={clsx(
-            "p-[0] bg-transparent border-none text-ibm-sb-16",
-            enableConfirmBtn ? "text-[#79D000] cursor-pointer" : "text-[#555]"
-          )}
-          onClick={handleCreateChat}
-        >
-          확인
-        </button>
-      </div>
+      <JoinHeader
+        enableConfirmBtn={enableConfirmBtn}
+        onClick={handleCreateChat}
+      />
 
       <div className="relative mt-[30px] mb-[40px] size-[162px] rounded-full bg-[#CACACA] flex items-center justify-center">
         <img src={imgSrc || happy} alt="happy mood" className="size-[112px]" />
