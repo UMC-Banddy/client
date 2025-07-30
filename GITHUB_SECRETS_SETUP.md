@@ -6,28 +6,28 @@ GitHub 저장소 → Settings → Secrets and variables → Actions에서 다음
 
 ### **🌐 환경 변수**
 
-| Secret 이름 | 설명 | 예시 값 |
-|------------|------|---------|
+| Secret 이름         | 설명          | 예시 값                  |
+| ------------------- | ------------- | ------------------------ |
 | `VITE_API_BASE_URL` | API 서버 주소 | `https://api.banddy.com` |
 
 ### **🚀 Vercel 배포**
 
-| Secret 이름 | 설명 | 설정 방법 |
-|------------|------|----------|
-| `VERCEL_TOKEN` | Vercel API 토큰 | [Vercel 토큰 생성](#vercel-토큰-생성) |
-| `VERCEL_ORG_ID` | Vercel 조직 ID | [Vercel 조직 ID 확인](#vercel-조직-id-확인) |
+| Secret 이름         | 설명               | 설정 방법                                           |
+| ------------------- | ------------------ | --------------------------------------------------- |
+| `VERCEL_TOKEN`      | Vercel API 토큰    | [Vercel 토큰 생성](#vercel-토큰-생성)               |
+| `VERCEL_ORG_ID`     | Vercel 조직 ID     | [Vercel 조직 ID 확인](#vercel-조직-id-확인)         |
 | `VERCEL_PROJECT_ID` | Vercel 프로젝트 ID | [Vercel 프로젝트 ID 확인](#vercel-프로젝트-id-확인) |
 
 ### **☁️ AWS 배포**
 
-| Secret 이름 | 설명 | 설정 방법 |
-|------------|------|----------|
-| `AWS_ACCESS_KEY_ID` | AWS 액세스 키 | [AWS IAM 사용자 생성](#aws-iam-사용자-생성) |
-| `AWS_SECRET_ACCESS_KEY` | AWS 시크릿 키 | [AWS IAM 사용자 생성](#aws-iam-사용자-생성) |
-| `AWS_REGION` | AWS 리전 | `ap-northeast-2` |
-| `S3_BUCKET_NAME` | S3 버킷 이름 | `banddy-client-production` |
+| Secret 이름                  | 설명               | 설정 방법                                     |
+| ---------------------------- | ------------------ | --------------------------------------------- |
+| `AWS_ACCESS_KEY_ID`          | AWS 액세스 키      | [AWS IAM 사용자 생성](#aws-iam-사용자-생성)   |
+| `AWS_SECRET_ACCESS_KEY`      | AWS 시크릿 키      | [AWS IAM 사용자 생성](#aws-iam-사용자-생성)   |
+| `AWS_REGION`                 | AWS 리전           | `ap-northeast-2`                              |
+| `S3_BUCKET_NAME`             | S3 버킷 이름       | `banddy-client-production`                    |
 | `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront 배포 ID | [CloudFront 배포 생성](#cloudfront-배포-생성) |
-| `DOMAIN_NAME` | 도메인 이름 | `app.banddy.com` |
+| `DOMAIN_NAME`                | 도메인 이름        | `app.banddy.com`                              |
 
 ## 🔧 설정 방법
 
@@ -150,4 +150,4 @@ aws logs describe-log-groups
 
 ---
 
-**마지막 업데이트**: 2024년 12월 
+**마지막 업데이트**: 2024년 12월

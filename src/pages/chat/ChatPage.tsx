@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ChatHeader from "./_components/ChatHeader";
+// import ChatHeader from "./_components/ChatHeader";
 import ChatDateDivider from "./_components/ChatDateDivider";
 import ChatMessageList from "./_components/ChatMessageList";
 import ChatInputBar from "./_components/ChatInputBar";
@@ -16,7 +16,6 @@ export default function ChatPage() {
   const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showSessionModal, setShowSessionModal] = useState(false);
-  const [showConnectionStatus, setShowConnectionStatus] = useState(false);
 
   const {
     messages,
@@ -50,15 +49,6 @@ export default function ChatPage() {
     }
   }, [roomId, currentRoomId, enterChatRoom, navigate]);
 
-  // 연결 상태 표시
-  useEffect(() => {
-    if (error) {
-      setShowConnectionStatus(true);
-      const timer = setTimeout(() => setShowConnectionStatus(false), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
-
   // 컴포넌트 언마운트 시 채팅방 나가기
   useEffect(() => {
     return () => {
@@ -71,8 +61,6 @@ export default function ChatPage() {
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
-
-  // ... existing code ...
 
   const handleConfirmLeave = useCallback(async () => {
     try {
@@ -110,25 +98,20 @@ export default function ChatPage() {
 
   const handleSendAudio = useCallback(
     (duration: number) => {
-      // 오디오 메시지 생성 및 전송
+      // 오디오 메시지 생성
       const audioMessage: ChatMessage = {
         id: Date.now().toString(),
         type: "me",
         name: "나",
-        avatar: "/src/assets/images/profile1.png",
+        avatar: "",
         audio: {
           duration: duration,
           isPlaying: false,
           onPlay: () => {
             console.log("내 오디오 재생 시작:", duration, "초");
-            // 실제 오디오 재생 로직은 여기에 구현
           },
         },
-        time: new Date().toLocaleTimeString("ko-KR", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        }),
+        time: new Date().toLocaleTimeString(),
         unreadCount: 0,
       };
 
@@ -147,15 +130,63 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#121212]">
-      <ChatHeader
-        roomName={currentRoom?.roomName || "채팅방"}
-        bandAvatar={currentRoom?.roomImage}
-        onBack={handleBack}
-        onMenuClick={() => setIsLeaveConfirmOpen(true)}
-      />
+      {/* 간단한 헤더 */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={handleBack}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <svg
+              className="w-6 h-6 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+          <div className="flex items-center space-x-2">
+            <img
+              src={currentRoom?.roomImage || ""}
+              alt="밴드"
+              className="w-8 h-8 rounded-full"
+            />
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">
+                {currentRoom?.roomName || "채팅방"}
+              </h2>
+              <p className="text-xs text-gray-500">멤버 수</p>
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={() => setIsLeaveConfirmOpen(true)}
+          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <svg
+            className="w-6 h-6 text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+            />
+          </svg>
+        </button>
+      </div>
 
       {/* 연결 상태 표시 */}
-      {showConnectionStatus && error && (
+      {error && (
         <div className="bg-red-500 text-white px-4 py-2 text-center text-sm">
           {error}
         </div>
