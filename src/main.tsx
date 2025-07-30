@@ -5,6 +5,11 @@ import "./index.css";
 import routes from "@/app/router"; // 라우트 배열 import
 import "@/shared/styles/fonts.css";
 
+// sockjs-client의 global 오류 해결
+if (typeof global === "undefined") {
+  (window as any).global = window;
+}
+
 function MainRoutes() {
   return useRoutes(routes);
 }
