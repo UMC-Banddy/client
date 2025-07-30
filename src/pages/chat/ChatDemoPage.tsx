@@ -253,14 +253,33 @@ export default function ChatDemoPage() {
         </div>
       </div>
 
-      <ChatHeader
-        bandName="WebSocket 데모 채팅"
-        bandAvatar="/src/assets/images/oasis.png"
-        onBack={handleBack}
-        onReport={handleReport}
-        onBlock={handleBlock}
-        onLeave={handleLeave}
-      />
+      {/* 데모용 간단한 헤더 */}
+      <div className="bg-[#121212] px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <button onClick={handleBack} className="text-white text-lg font-bold">
+            ←
+          </button>
+          <div className="flex items-center space-x-2">
+            <img
+              src="/src/assets/images/oasis.png"
+              alt="밴드"
+              className="w-8 h-8 rounded-full"
+            />
+            <span className="text-white font-medium">WebSocket 데모 채팅</span>
+          </div>
+        </div>
+        <div className="flex space-x-2">
+          <button onClick={handleReport} className="text-white text-sm">
+            신고
+          </button>
+          <button onClick={handleBlock} className="text-white text-sm">
+            차단
+          </button>
+          <button onClick={handleLeave} className="text-white text-sm">
+            나가기
+          </button>
+        </div>
+      </div>
 
       {/* 연결 상태 표시 */}
       {showConnectionStatus && error && (
