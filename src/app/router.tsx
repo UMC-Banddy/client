@@ -80,8 +80,8 @@ const routes = [
       { path: "/home/playlist", element: <PlaylistPage /> },
       { path: "/home/prefer", element: <PreferPage /> },
       { path: "/home/chat", element: <ChatPage /> },
-      { path: "/chat-demo", element: <ChatDemoPage /> },
-      
+      { path: "/home/chat-demo", element: <ChatDemoPage /> },
+
       { path: "/join", element: <Join /> },
       { path: "/join/band-recruit", element: <BandRecruit /> },
       { path: "/join/create-band", element: <CreateBand /> },

@@ -13,6 +13,7 @@ export default function Layout() {
     "/signup/profile",
     "/signup/complete",
     "/home/chat",
+    "/home/chat-demo",
     "/profile-detail",
     "/pre-test",
     "/chat-demo",
@@ -23,6 +24,7 @@ export default function Layout() {
       "/profile-detail",
       "/pre-test",
       "/home/chat",
+      "/home/chat-demo",
       "/my/setting",
       "/chat-demo",
     ].some((path) => location.pathname.startsWith(path)) ||

@@ -1,203 +1,238 @@
 import { useState, useCallback, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-// import ChatHeader from "./_components/ChatHeader";
+import { useNavigate } from "react-router-dom";
+import ChatHeader from "./_components/ChatHeader";
 import ChatDateDivider from "./_components/ChatDateDivider";
 import ChatMessageList from "./_components/ChatMessageList";
 import ChatInputBar from "./_components/ChatInputBar";
 import Modal from "@/shared/components/MuiDialog";
 import SessionSelectModal from "./_components/SessionSelectModal";
-import { useChat } from "./hooks/useChat";
-import { chatActions } from "@/store/chatStore";
-import type { ChatMessage } from "@/types/chat";
+import type { ChatRoom, ChatMessage } from "@/types/chat";
 
 export default function ChatPage() {
   const navigate = useNavigate();
-  const { roomId } = useParams<{ roomId: string }>();
   const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
   const [showActions, setShowActions] = useState(false);
-  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [showSessionModal, setShowSessionModal] = useState(true);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [currentRoom, setCurrentRoom] = useState<ChatRoom | null>(null);
+  const [isLoading] = useState(false);
 
-  const {
-    messages,
-    currentRoom,
-    isLoading,
-    isConnected,
-    currentRoomId,
-    error,
-    hasMoreMessages,
-    enterChatRoom,
-    exitChatRoom,
-    sendMessage,
-    sendImage,
-    sendCalendar,
-    loadMoreMessages,
-  } = useChat();
-
-  // URL 파라미터로 채팅방 입장
+  // Initialize current room and messages
   useEffect(() => {
-    if (roomId && roomId !== currentRoomId) {
-      const enterRoom = async () => {
-        try {
-          await enterChatRoom(roomId);
-        } catch (error) {
-          console.error("채팅방 입장 실패:", error);
-          // 에러 발생 시 이전 페이지로 이동
-          navigate(-1);
-        }
-      };
-      enterRoom();
-    }
-  }, [roomId, currentRoomId, enterChatRoom, navigate]);
+    const defaultRoom: ChatRoom = {
+      roomId: 1,
+      roomName: "우리밴드 정상영업합니다",
+      roomImage: "/src/assets/images/profile1.png",
+      lastMessage: `안녕하세요! 누룽지밴드입니다.
 
-  // 컴포넌트 언마운트 시 채팅방 나가기
-  useEffect(() => {
-    return () => {
-      if (currentRoomId) {
-        exitChatRoom();
-      }
+저희 밴드에 관심을 가져 주셔서 감사합니다. 아래 양식에 맞추어 메시지 보내주시면 감사드리겠습니다.
+
+📅 지원 마감: 7/30
+📅 합격자 발표: 8/1
+
+📝 지원 양식:
+• 이름, 나이, 연락처
+• 거주 지역(시군구)
+• 가능한 연습 요일
+• SNS(선택사항)
+• 지원 영상 or 녹음
+
+📧 지원 영상/녹음은 banddy79@gmail.com으로 보내주세요!
+
+❓ 문의사항이 있으면 이 채팅방에 남겨주시면 빠르게 확인하고 답장 드리겠습니다.
+
+🎤 보컬 지원자 분들은 아래 오디션 곡 영상/녹음을 보내주세요!
+⚠️ 노래방에서 부른 영상은 지양해주시면 감사드리겠습니다.
+
+🎵 여자보컬
+• (필수) 혜성 - 윤하
+• (선택) 본인의 매력이 잘 드러나는 자유곡 1곡
+
+🎵 남자보컬
+• (필수) 겁쟁이 - 버즈
+• (선택) 본인의 매력이 잘 드러나는 자유곡 1곡`,
+      member: [
+        {
+          userid: 1,
+          userName: "밴드 관리자",
+        },
+      ],
+      unreadCount: 0,
+      isOnline: true,
     };
-  }, [currentRoomId, exitChatRoom]);
+
+    setCurrentRoom(defaultRoom);
+
+    // Add initial message with unreadCount
+    const initialMessage: ChatMessage = {
+      id: "1",
+      type: "other",
+      name: "밴드",
+      avatar: "/src/assets/images/profile1.png",
+      text: `안녕하세요! 누룽지밴드입니다.
+
+저희 밴드에 관심을 가져 주셔서 감사합니다. 아래 양식에 맞추어 메시지 보내주시면 감사드리겠습니다.
+
+📅 지원 마감: 7/30
+📅 합격자 발표: 8/1
+
+📝 지원 양식:
+• 이름, 나이, 연락처
+• 거주 지역(시군구)
+• 가능한 연습 요일
+• SNS(선택사항)
+• 지원 영상 or 녹음
+
+📧 지원 영상/녹음은 banddy79@gmail.com으로 보내주세요!
+
+❓ 문의사항이 있으면 이 채팅방에 남겨주시면 빠르게 확인하고 답장 드리겠습니다.
+
+🎤 보컬 지원자 분들은 아래 오디션 곡 영상/녹음을 보내주세요!
+⚠️ 노래방에서 부른 영상은 지양해주시면 감사드리겠습니다.
+
+🎵 여자보컬
+• (필수) 혜성 - 윤하
+• (선택) 본인의 매력이 잘 드러나는 자유곡 1곡
+
+🎵 남자보컬
+• (필수) 겁쟁이 - 버즈
+• (선택) 본인의 매력이 잘 드러나는 자유곡 1곡`,
+      time: "오후 3:08",
+      unreadCount: 1,
+    };
+
+    setMessages([initialMessage]);
+  }, []);
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
 
-  const handleConfirmLeave = useCallback(async () => {
-    try {
-      await exitChatRoom();
-      navigate("/");
-    } catch (error) {
-      console.error("채팅방 나가기 실패:", error);
-      // 에러가 발생해도 페이지 이동
-      navigate("/");
-    }
-  }, [exitChatRoom, navigate]);
+  const handleReport = useCallback(() => {
+    console.log("신고하기");
+  }, []);
+
+  const handleBlock = useCallback(() => {
+    console.log("차단하기");
+  }, []);
+
+  const handleLeave = useCallback(() => {
+    setIsLeaveConfirmOpen(true);
+  }, []);
+
+  const handleConfirmLeave = useCallback(() => {
+    console.log("채팅방 나가기 확인");
+    navigate("/");
+  }, [navigate]);
 
   const handleSessionConfirm = useCallback((selectedSession: string) => {
     console.log("선택된 세션:", selectedSession);
     setShowSessionModal(false);
   }, []);
 
-  const handleSendMessage = useCallback(
-    (text: string) => {
-      sendMessage(text);
-    },
-    [sendMessage]
-  );
+  // 데모용 단방향 메시지 전송
+  const handleSendMessage = useCallback((text: string) => {
+    if (!text.trim()) return;
 
-  const handleSendImage = useCallback(
-    (imageFile: File) => {
-      sendImage(imageFile);
-    },
-    [sendImage]
-  );
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "나",
+      avatar: "/src/assets/images/profile1.png",
+      text: text,
+      time: new Date().toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      unreadCount: 0,
+    };
 
+    setMessages((prev) => [...prev, newMessage]);
+    console.log("메시지 전송됨:", text);
+  }, []);
+
+  // 데모용 이미지 전송
+  const handleSendImage = useCallback((imageFile: File) => {
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "나",
+      avatar: "/src/assets/images/profile1.png",
+      text: `📷 이미지: ${imageFile.name}`,
+      time: new Date().toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      unreadCount: 0,
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    console.log("이미지 전송됨:", imageFile.name);
+  }, []);
+
+  // 데모용 캘린더 전송
   const handleSendCalendar = useCallback(() => {
-    sendCalendar();
-  }, [sendCalendar]);
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "나",
+      avatar: "/src/assets/images/profile1.png",
+      text: "📅 연습 일정을 확인해주세요!",
+      time: new Date().toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      unreadCount: 0,
+    };
 
-  const handleSendAudio = useCallback(
-    (duration: number) => {
-      // 오디오 메시지 생성
-      const audioMessage: ChatMessage = {
-        id: Date.now().toString(),
-        type: "me",
-        name: "나",
-        avatar: "",
-        audio: {
-          duration: duration,
-          isPlaying: false,
-          onPlay: () => {
-            console.log("내 오디오 재생 시작:", duration, "초");
-          },
+    setMessages((prev) => [...prev, newMessage]);
+    console.log("캘린더 전송됨");
+  }, []);
+
+  // 데모용 오디오 전송
+  const handleSendAudio = useCallback((duration: number) => {
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "나",
+      avatar: "/src/assets/images/profile1.png",
+      audio: {
+        duration: duration,
+        isPlaying: false,
+        onPlay: () => {
+          console.log("내 오디오 재생 시작:", duration, "초");
         },
-        time: new Date().toLocaleTimeString(),
-        unreadCount: 0,
-      };
+      },
+      time: new Date().toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      unreadCount: 0,
+    };
 
-      // 메시지 목록에 추가
-      const currentMessages = messages || [];
-      chatActions.setMessages([...currentMessages, audioMessage]);
-    },
-    [messages]
-  );
+    setMessages((prev) => [...prev, newMessage]);
+    console.log("오디오 전송됨:", duration, "초");
+  }, []);
 
+  // 데모용 더 많은 메시지 로드 (실제로는 아무것도 하지 않음)
   const handleLoadMore = useCallback(() => {
-    if (hasMoreMessages) {
-      loadMoreMessages();
-    }
-  }, [hasMoreMessages, loadMoreMessages]);
+    console.log("더 많은 메시지 로드 시도 (데모에서는 아무것도 하지 않음)");
+  }, []);
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#121212]">
-      {/* 간단한 헤더 */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={handleBack}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <svg
-              className="w-6 h-6 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-          <div className="flex items-center space-x-2">
-            <img
-              src={currentRoom?.roomImage || ""}
-              alt="밴드"
-              className="w-8 h-8 rounded-full"
-            />
-            <div>
-              <h2 className="text-sm font-semibold text-gray-900">
-                {currentRoom?.roomName || "채팅방"}
-              </h2>
-              <p className="text-xs text-gray-500">멤버 수</p>
-            </div>
-          </div>
-        </div>
-        <button
-          onClick={() => setIsLeaveConfirmOpen(true)}
-          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-        >
-          <svg
-            className="w-6 h-6 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-            />
-          </svg>
-        </button>
-      </div>
-
-      {/* 연결 상태 표시 */}
-      {error && (
-        <div className="bg-red-500 text-white px-4 py-2 text-center text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* WebSocket 연결 상태 표시 */}
-      {!isConnected && (
-        <div className="bg-yellow-500 text-black px-4 py-2 text-center text-sm">
-          연결 중... 실시간 채팅이 제한됩니다.
-        </div>
-      )}
+      <ChatHeader
+        bandName={currentRoom?.roomName || "우리밴드 정상영업합니다"}
+        bandAvatar={currentRoom?.roomImage || "/src/assets/images/profile1.png"}
+        onBack={handleBack}
+        onReport={handleReport}
+        onBlock={handleBlock}
+        onLeave={handleLeave}
+      />
 
       <div className="flex-1 flex flex-col bg-[#F3F3F3] rounded-t-[40px] overflow-hidden relative">
         <ChatDateDivider />
@@ -222,7 +257,6 @@ export default function ChatPage() {
           onSendCalendar={handleSendCalendar}
           onSendAudio={handleSendAudio}
           onShowActionsChange={setShowActions}
-          disabled={!isConnected}
         />
       </div>
 
