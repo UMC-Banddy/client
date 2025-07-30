@@ -27,6 +27,7 @@ export default function Layout() {
       "/home/chat-demo",
       "/my/setting",
       "/chat-demo",
+      "/login",
     ].some((path) => location.pathname.startsWith(path)) ||
     location.pathname === "/my";
 

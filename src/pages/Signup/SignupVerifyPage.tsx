@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import whiteStar from "../../assets/logos/white-star.svg";
 import blackStar from "../../assets/logos/black-star.svg";
+import { verifyEmailCode } from "../../store/auth";
 
 const SignupVerifyPage: React.FC = () => {
   const navigate = useNavigate();
-  const [code, setCode] = useState(["", "", "", "", ""]); 
+  const [code, setCode] = useState(["", "", "", "", ""]);
   const [timeLeft, setTimeLeft] = useState(299);
   const [showPopup, setShowPopup] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -26,7 +28,6 @@ const SignupVerifyPage: React.FC = () => {
 
   const handleCodeChange = (index: number, value: string) => {
     if (!/^\d?$/.test(value)) return;
-
     const updated = [...code];
     updated[index] = value;
     setCode(updated);
@@ -37,32 +38,41 @@ const SignupVerifyPage: React.FC = () => {
     }
   };
 
-  const handleConfirm = () => {
-    if (code.join("").length === 5) {
-      setShowPopup(true);
+  const handleConfirm = async () => {
+    const finalCode = code.join("");
+    if (finalCode.length !== 5) return;
+
+    try {
+      const res = await verifyEmailCode(finalCode);
+      if (res.verified) {
+        setShowPopup(true);
+      } else {
+        setError(res.message || "인증에 실패했습니다.");
+      }
+    } catch (err) {
+      setError("서버 오류로 인증에 실패했습니다.");
+      console.error(err);
     }
   };
 
   return (
     <div className="relative w-full min-h-screen max-w-md mx-auto bg-black text-white overflow-hidden">
-      {/* 프로그레스 바 */}
+      {/* 프로그레스바 */}
       <div className="w-full h-0.5 bg-[#959595]">
         <div className="w-1/4 h-full bg-[#C7242D]" />
       </div>
 
-      {/* 별 아이콘 */}
+      {/* 별아이콘 */}
       <img
         src={whiteStar}
         alt="step"
         className="absolute right-6 top-[25px] w-8 h-8"
       />
 
-      {/* 상단 고정 콘텐츠 */}
       <div className="flex flex-col px-6 pt-[200px]">
         <p className="text-sm text-[#959595] mb-1">Step. 1</p>
         <h1 className="text-lg font-semibold mb-8">인증번호를 입력해 주세요.</h1>
 
-        {/* 인증번호 박스 */}
         <div className="flex justify-between mb-2 gap-[8px]">
           {code.map((digit, i) => (
             <input
@@ -78,21 +88,26 @@ const SignupVerifyPage: React.FC = () => {
           ))}
         </div>
 
-        {/* 타이머 */}
-        <div className={`text-right text-sm mt-1 ${timeLeft <= 10 ? "text-[#DF0001]" : "text-[#CACACA]"}`}>
+        <div
+          className={`text-right text-sm mt-1 ${
+            timeLeft <= 10 ? "text-[#DF0001]" : "text-[#CACACA]"
+          }`}
+        >
           {formatTime(timeLeft)}
         </div>
+
+        {/* 에러 메시지 */}
+        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
       </div>
 
-      {/* 하단 영역*/}
       <div className="flex flex-col items-center px-6 mt-20">
-        {/* 재전송 */}
         <div className="text-sm mt-6">
           <span className="text-[#666666]">인증번호가 오지 않았나요? </span>
           <button
             onClick={() => {
               setTimeLeft(299);
               setCode(["", "", "", "", ""]);
+              setError("");
               const firstInput = document.getElementById("code-0");
               if (firstInput) firstInput.focus();
             }}
@@ -102,7 +117,6 @@ const SignupVerifyPage: React.FC = () => {
           </button>
         </div>
 
-        {/* 확인 버튼 */}
         <button
           disabled={code.join("").length !== 5}
           onClick={handleConfirm}
@@ -116,7 +130,6 @@ const SignupVerifyPage: React.FC = () => {
         </button>
       </div>
 
-      {/* 팝업 */}
       <AnimatePresence>
         {showPopup && (
           <motion.div

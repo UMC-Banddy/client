@@ -4,8 +4,14 @@ import { BrowserRouter, useRoutes } from "react-router-dom";
 import "./index.css";
 import routes from "@/app/router"; // 라우트 배열 import
 import "@/shared/styles/fonts.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; 
+import { useUser } from "@/features/setting/hooks/useUser"; 
+
+// QueryClient 생성 
+const queryClient = new QueryClient(); 
 
 function MainRoutes() {
+  useUser(); // 유저 정보 불러오기 (로딩 트리거) 
   return useRoutes(routes);
 }
 
@@ -28,9 +34,11 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <StrictMode>
-      <BrowserRouter>
-        <MainRoutes />
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <MainRoutes />
+        </BrowserRouter>
+      </QueryClientProvider>
     </StrictMode>
   );
 }

@@ -26,7 +26,7 @@ const SignupCompletePage: React.FC = () => {
         </p>
 
         <button
-          onClick={() => navigate("/pretest")}
+          onClick={() => navigate("/pre-test/artist")}
           className="w-full py-3 rounded-[24px] bg-[#C7242D] hover:bg-[#b51f27] text-black font-semibold mb-4"
         >
           사전 테스트 하러 가기

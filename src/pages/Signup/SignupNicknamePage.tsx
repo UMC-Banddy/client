@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logos/white-star.svg";
 import { checkNickname } from "../../store/auth";
+import { authStore } from "../../store/authStore"; 
 
 const SignupNicknamePage: React.FC = () => {
   const navigate = useNavigate();
   const [nickname, setNickname] = useState("");
   const [isValidFormat, setIsValidFormat] = useState(false);
-  const [isAvailable, setIsAvailable] = useState<boolean | null>(null); // null: 초기, true: 사용 가능, false: 불가능
+  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [message, setMessage] = useState("");
 
   const validateFormat = (value: string) => {
@@ -19,13 +20,13 @@ const SignupNicknamePage: React.FC = () => {
     setNickname(value);
     const valid = validateFormat(value);
     setIsValidFormat(valid);
-    setIsAvailable(null); // 입력이 바뀌면 중복확인 다시 필요
+    setIsAvailable(null);
     if (value.length === 0) {
       setMessage("");
     } else if (!valid) {
       setMessage("영문/숫자 가능, 2~10자");
     } else {
-      setMessage(""); // 조건 통과 시 메시지 숨김, 중복확인 결과로 대체
+      setMessage("");
     }
   };
 
@@ -37,8 +38,9 @@ const SignupNicknamePage: React.FC = () => {
       if (res.available) {
         setIsAvailable(true);
         setMessage("사용 가능한 닉네임입니다.");
+        authStore.nickname = nickname; // 중복 확인 성공 시 저장
       } else {
-        setIsAvailable(true); // 원래 false임. 테스트땜에 잠깐 true
+        setIsAvailable(false);
         setMessage("사용 불가능한 닉네임입니다.");
       }
     } catch (err) {
@@ -48,24 +50,25 @@ const SignupNicknamePage: React.FC = () => {
     }
   };
 
+  const handleNext = () => {
+    authStore.nickname = nickname; // 마지막 방어
+    navigate("/signup/profile");
+  };
+
   const canSubmit = isValidFormat && isAvailable;
 
   return (
     <div className="relative w-full min-h-screen max-w-md mx-auto bg-black text-white overflow-hidden">
-      {/* 프로그레스 바 */}
       <div className="w-full h-0.5 bg-[#959595]">
         <div className="w-3/4 h-full bg-[#C7242D]" />
       </div>
 
-      {/* 별 아이콘 */}
       <img src={logo} alt="step" className="absolute right-6 top-[18px] w-8 h-8" />
 
-      {/* 콘텐츠 */}
       <div className="flex flex-col px-6 pt-[180px]">
         <p className="text-sm text-[#959595] mb-1">Step. 3</p>
         <h1 className="text-lg font-semibold mb-8">닉네임을 설정해 주세요.</h1>
 
-        {/* 닉네임 입력 */}
         <div className="relative">
           <input
             type="text"
@@ -87,7 +90,6 @@ const SignupNicknamePage: React.FC = () => {
           </button>
         </div>
 
-        {/* 메시지 */}
         {message && (
           <p
             className={`text-sm mt-2 text-right ${
@@ -105,11 +107,10 @@ const SignupNicknamePage: React.FC = () => {
         )}
       </div>
 
-      {/* 완료 버튼 */}
       <div className="px-6 mt-36">
         <button
           disabled={!canSubmit}
-          onClick={() => navigate("/signup/profile")}
+          onClick={handleNext}
           className={`w-full py-3 rounded-[24px] font-semibold transition ${
             canSubmit
               ? "bg-[#C7242D] text-[#000000]"

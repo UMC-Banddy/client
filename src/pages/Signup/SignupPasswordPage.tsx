@@ -1,15 +1,13 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import whiteStar from "../../assets/logos/white-star.svg";
 import eyeOpen from "../../assets/icons/login/eye-open.svg";
 import eyeClosed from "../../assets/icons/login/eye-closed.svg";
-
-// 전역 상태 저장
-export let tempPassword = "";
+import { authStore } from "../../store/authStore";
 
 const SignupPasswordPage: React.FC = () => {
   const navigate = useNavigate();
-  const [password, setPassword] = useState(tempPassword);
+  const [password, setPassword] = useState(authStore.password || "");
   const [showPassword, setShowPassword] = useState(false);
 
   const isValidPassword = (value: string) => {
@@ -20,7 +18,7 @@ const SignupPasswordPage: React.FC = () => {
   const valid = isValidPassword(password);
 
   const handleNext = () => {
-    tempPassword = password;
+    authStore.password = password;
     navigate("/signup/password-confirm");
   };
 
@@ -33,12 +31,10 @@ const SignupPasswordPage: React.FC = () => {
 
       <img src={whiteStar} alt="step" className="absolute right-6 top-[18px] w-8 h-8" />
 
-      {/* 콘텐츠 */}
       <div className="flex flex-col px-6 pt-[180px]">
         <p className="text-sm text-[#959595] mb-1">Step. 2</p>
         <h1 className="text-lg font-semibold mb-8">비밀번호를 설정해 주세요.</h1>
 
-        {/* 비밀번호 입력 */}
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
@@ -67,13 +63,14 @@ const SignupPasswordPage: React.FC = () => {
         )}
       </div>
 
-      {/* 다음 버튼 */}
       <div className="px-6 mt-35">
         <button
           disabled={!valid}
           onClick={handleNext}
           className={`w-full py-3 rounded-[24px] font-semibold transition ${
-            valid ? "bg-[#C7242D] text-black" : "bg-[#959595] text-[#555555] cursor-default"
+            valid
+              ? "bg-[#C7242D] text-black"
+              : "bg-[#959595] text-[#555555] cursor-default"
           }`}
         >
           다음
