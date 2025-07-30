@@ -32,6 +32,8 @@ import { useSnapshot } from "valtio";
 import { createBandActions, createBandStore } from "@/store/createBandStore";
 import GenreStatusBlackBtn from "../_components/create_band/genre/GenreStatusBlackBtn";
 import { useNavigate } from "react-router-dom";
+import JoinHeader from "../_components/JoinHeader";
+import { API } from "@/api/API";
 
 const sessionList = [
   { key: "mic", Icon: MicImg },
@@ -101,6 +103,7 @@ const CreateBand = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [automaticClosing, setAutomaticClosing] = useState(false);
+  const [endDate, setEndDate] = useState(new Date());
   const [bandIntro, setBandIntro] = useState("");
   const [recruitSession, setRecruitSession] = useState<SessionState>(
     sessionList.reduce(
@@ -175,8 +178,62 @@ const CreateBand = () => {
     });
   };
 
+  const handleSubmit = async () => {
+    try {
+      const session = Object.entries(recruitSession)
+        // eslint-disable-next-line
+        .filter(([_, on]) => on)
+        .map(([key]) => key);
+
+      const currentSessions = Object.entries(existMember.existSession)
+        // eslint-disable-next-line
+        .filter(([_, on]) => on)
+        .map(([key]) => key);
+
+      const job = Object.entries(existMember.job)
+        // eslint-disable-next-line
+        .filter(([_, on]) => on)
+        .map(([key]) => key);
+
+      const payload = {
+        status: "RECRUITING",
+        profileImageUrl: imgSrc,
+        representativeSong: songs[0]?.spotifyId.toString() ?? "",
+        name,
+        endDate: endDate.toISOString(),
+        autoClose: automaticClosing,
+        description: bandIntro,
+        session, // e.g. ["guitar","drum",…]
+        genre: toggledGenre, // e.g. [0,2,5]
+        artist: artists.map((a) => a.spotifyId),
+        track: songs.map((s) => s.spotifyId),
+        ageStart: parseInt(wannaBuddy.startAge), // convert "20대"→20
+        ageEnd: parseInt(wannaBuddy.endAge),
+        gender: wannaBuddy.gender,
+        region: wannaBuddy.location.sido,
+        district: wannaBuddy.location.sigungu, // ""
+        averageAge: existMember.averageAge,
+        job, // e.g. ["대학생","프리랜서"]
+        maleCount: Number(existMember.genderRatio.male) || 0,
+        femaleCount: Number(existMember.genderRatio.female) || 0,
+        currentSessions,
+        snsLinks: snsLink,
+      };
+
+      await API.post("/api/recruitments", payload);
+
+      // navigate("/join");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <main className="relative min-h-screen w-[393px] mx-auto pb-[200px]">
+      <div className="px-[16px] pt-[16px]">
+        <JoinHeader enableConfirmBtn onClick={handleSubmit} />
+      </div>
+
       <div className="flex flex-col gap-[48px] px-[24px] pt-[8px]">
         <section>
           <IOSSwitch defaultChecked />
@@ -221,7 +278,7 @@ const CreateBand = () => {
         <section className="flex flex-col gap-[20px]">
           <p className="text-hakgyo-b-17 text-[#E9E9E9]">모집 마감일</p>
           <div className="flex w-full">
-            <DateSelect />
+            <DateSelect setDate={setEndDate} />
           </div>
           <div className="flex items-center gap-[8px]">
             <button

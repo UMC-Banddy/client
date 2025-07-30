@@ -1,4 +1,4 @@
-import React, { useState, useMemo, type ChangeEvent } from "react";
+import React, { useState, useMemo, type ChangeEvent, useEffect } from "react";
 import SelectWithArrow from "./SelectWithArrow";
 
 interface DateSelectProps {
@@ -6,17 +6,21 @@ interface DateSelectProps {
   minYear?: number;
   /** 최대 연도 (기본: 30년 후) */
   maxYear?: number;
-  onChange?: (date: Date) => void;
+  setDate?: (date: Date) => void;
 }
 
 const DateSelect: React.FC<DateSelectProps> = ({
   minYear = new Date().getFullYear(),
   maxYear = minYear + 30,
-  onChange,
+  setDate,
 }) => {
   const [year, setYear] = useState<number>(minYear);
   const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
   const [day, setDay] = useState<number>(new Date().getDate());
+
+  useEffect(() => {
+    setDate?.(new Date(year, month - 1, day));
+  }, [year, month, day]);
 
   // 연도 리스트
   const years = useMemo(
@@ -41,7 +45,9 @@ const DateSelect: React.FC<DateSelectProps> = ({
 
   // 연·월·일 중 하나라도 바뀌면 부모에 날짜 전달
   const triggerChange = (y: number, m: number, d: number) => {
-    if (onChange) onChange(new Date(y, m - 1, d));
+    if (setDate) {
+      setDate(new Date(y, m - 1, d));
+    }
   };
 
   const handleYearChange = (e: ChangeEvent<HTMLSelectElement>) => {

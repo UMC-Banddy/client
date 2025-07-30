@@ -18,6 +18,7 @@ const nonHeaderRouteNames = [
   "/join",
   "/join/create-chat",
   "/join/create-chat/2",
+  "/join/create-band",
   "/join/create-band/genre",
   "/join/create-band/artist",
   "/join/create-band/song",
