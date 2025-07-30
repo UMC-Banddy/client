@@ -84,7 +84,7 @@ const ButtonSection = ({
               className="flex-1 bg-red-600 text-white font-bold py-3 rounded-full text-lg"
               onClick={() => {
                 setOpen(false);
-                navigate("/home/chat");
+                navigate("/home/chat-demo");
               }}
             >
               예

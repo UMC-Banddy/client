@@ -6,7 +6,6 @@ import ChatMessageList from "./_components/ChatMessageList";
 import ChatInputBar from "./_components/ChatInputBar";
 import Modal from "@/shared/components/MuiDialog";
 import SessionSelectModal from "./_components/SessionSelectModal";
-import { useChat } from "./hooks/useChat";
 import { chatActions } from "@/store/chatStore";
 import type { ChatRoom, ChatMessage } from "@/types/chat";
 
@@ -15,16 +14,9 @@ export default function ChatPage() {
   const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showSessionModal, setShowSessionModal] = useState(true);
-
-  const {
-    messages,
-    currentRoom,
-    isLoading,
-    sendMessage,
-    sendImage,
-    sendCalendar,
-    loadMoreMessages,
-  } = useChat();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [currentRoom, setCurrentRoom] = useState<ChatRoom | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Initialize current room and messages
   useEffect(() => {
@@ -70,7 +62,7 @@ export default function ChatPage() {
       isOnline: true,
     };
 
-    chatActions.setCurrentRoom(defaultRoom);
+    setCurrentRoom(defaultRoom);
 
     // Add initial message with unreadCount
     const initialMessage: ChatMessage = {
@@ -110,7 +102,7 @@ export default function ChatPage() {
       unreadCount: 1,
     };
 
-    chatActions.setMessages([initialMessage]);
+    setMessages([initialMessage]);
   }, []);
 
   const handleBack = useCallback(() => {
@@ -139,58 +131,98 @@ export default function ChatPage() {
     setShowSessionModal(false);
   }, []);
 
-  const handleSendMessage = useCallback(
-    (text: string) => {
-      sendMessage(text);
-    },
-    [sendMessage]
-  );
+  // 데모용 단방향 메시지 전송
+  const handleSendMessage = useCallback((text: string) => {
+    if (!text.trim()) return;
 
-  const handleSendImage = useCallback(
-    (imageFile: File) => {
-      sendImage(imageFile);
-    },
-    [sendImage]
-  );
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "나",
+      avatar: "/src/assets/images/profile1.png",
+      text: text,
+      time: new Date().toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      unreadCount: 0,
+    };
 
+    setMessages((prev) => [...prev, newMessage]);
+    console.log("메시지 전송됨:", text);
+  }, []);
+
+  // 데모용 이미지 전송
+  const handleSendImage = useCallback((imageFile: File) => {
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "나",
+      avatar: "/src/assets/images/profile1.png",
+      text: `📷 이미지: ${imageFile.name}`,
+      time: new Date().toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      unreadCount: 0,
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    console.log("이미지 전송됨:", imageFile.name);
+  }, []);
+
+  // 데모용 캘린더 전송
   const handleSendCalendar = useCallback(() => {
-    sendCalendar();
-  }, [sendCalendar]);
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "나",
+      avatar: "/src/assets/images/profile1.png",
+      text: "📅 연습 일정을 확인해주세요!",
+      time: new Date().toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      unreadCount: 0,
+    };
 
-  const handleSendAudio = useCallback(
-    (duration: number) => {
-      // 오디오 메시지 생성 및 전송
-      const audioMessage: ChatMessage = {
-        id: Date.now().toString(),
-        type: "me",
-        name: "나",
-        avatar: "/src/assets/images/profile1.png",
-        audio: {
-          duration: duration,
-          isPlaying: false,
-          onPlay: () => {
-            console.log("내 오디오 재생 시작:", duration, "초");
-            // 실제 오디오 재생 로직은 여기에 구현
-          },
+    setMessages((prev) => [...prev, newMessage]);
+    console.log("캘린더 전송됨");
+  }, []);
+
+  // 데모용 오디오 전송
+  const handleSendAudio = useCallback((duration: number) => {
+    const newMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: "me",
+      name: "나",
+      avatar: "/src/assets/images/profile1.png",
+      audio: {
+        duration: duration,
+        isPlaying: false,
+        onPlay: () => {
+          console.log("내 오디오 재생 시작:", duration, "초");
         },
-        time: new Date().toLocaleTimeString("ko-KR", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        }),
-        unreadCount: 0,
-      };
+      },
+      time: new Date().toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      unreadCount: 0,
+    };
 
-      // 메시지 목록에 추가
-      const currentMessages = messages || [];
-      chatActions.setMessages([...currentMessages, audioMessage]);
-    },
-    [messages]
-  );
+    setMessages((prev) => [...prev, newMessage]);
+    console.log("오디오 전송됨:", duration, "초");
+  }, []);
 
+  // 데모용 더 많은 메시지 로드 (실제로는 아무것도 하지 않음)
   const handleLoadMore = useCallback(() => {
-    loadMoreMessages();
-  }, [loadMoreMessages]);
+    console.log("더 많은 메시지 로드 시도 (데모에서는 아무것도 하지 않음)");
+  }, []);
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#121212]">
