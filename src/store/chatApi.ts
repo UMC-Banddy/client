@@ -59,9 +59,12 @@ export const getChatMessages = async (
     params.cursor = cursor;
   }
 
-  const response = await API.get(`/api/chat/rooms/${roomId}/messages`, {
-    params,
-  });
+  const response = await API.get(
+    API_ENDPOINTS.CHAT.MESSAGES(roomId, cursor || 0, limit),
+    {
+      params,
+    }
+  );
   return response.data;
 };
 

@@ -24,7 +24,12 @@ class WebSocketService {
     const wsUrl = baseUrl + "/ws";
 
     this.stompClient = new Client({
-      webSocketFactory: () => new SockJS(wsUrl),
+      webSocketFactory: () =>
+        new SockJS(wsUrl, null, {
+          transports: ["websocket", "xhr-streaming", "xhr-polling"],
+          timeout: 5000,
+          heartbeat: 25000,
+        }),
       debug: (str: string) => {
         if (import.meta.env.DEV) {
           console.log("STOMP Debug:", str);
