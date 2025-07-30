@@ -20,7 +20,8 @@ class WebSocketService {
   private initClient() {
     const baseUrl =
       import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-    const wsUrl = baseUrl.replace(/^http/, "ws") + "/ws";
+    // SockJS는 HTTP URL을 사용해야 함 (ws://로 변환하지 않음)
+    const wsUrl = baseUrl + "/ws";
 
     this.stompClient = new Client({
       webSocketFactory: () => new SockJS(wsUrl),
