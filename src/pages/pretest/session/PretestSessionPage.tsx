@@ -138,7 +138,7 @@ const PretestSessionPage = () => {
             // 서버가 기대하는 영문 세션 타입으로 변환
             const sessionTypeMapping: Record<string, string> = {
               "🎤 보컬 🎤": "vocal",
-              "🎸 일렉 기타 🎸": "electric_guitar", 
+              "🎸 일렉 기타 🎸": "electric_guitar",
               "🪕 어쿠스틱 기타 🪕": "acoustic_guitar",
               "🪕 베이스 🪕": "bass",
               "🥁 드럼 🥁": "drums",
@@ -165,6 +165,10 @@ const PretestSessionPage = () => {
         );
 
         console.log("전송할 세션 데이터:", availableSessions);
+        console.log(
+          "전송할 세션 데이터 (JSON):",
+          JSON.stringify(availableSessions, null, 2)
+        );
 
         // 기존 프로필 정보를 가져와서 availableSessions만 업데이트
         try {
