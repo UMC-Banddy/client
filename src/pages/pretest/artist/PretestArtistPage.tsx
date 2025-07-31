@@ -1,46 +1,266 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PretestHeader from "./_components/PretestHeader";
 import SearchBar from "./_components/SearchBar";
 import ArtistGrid from "./_components/ArtistGrid";
+import { musicAPI, artistSaveAPI } from "@/api/API";
+import type { AutocompleteResult } from "@/api/API";
 import oasisImage from "@/assets/images/oasis.png";
 
+// 아티스트 타입 정의 (API에서 import가 안 될 경우를 대비)
+interface Artist {
+  id: number;
+  spotifyId: string;
+  name: string;
+  genre: string;
+  imageUrl: string;
+  externalUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // 아티스트 데이터 (피그마 이미지에 맞춤) - 더 많은 아티스트 추가
-const ARTISTS = [
-  { id: "beck", name: "BECK", image: oasisImage },
-  { id: "tyler", name: "Tyler, the creator", image: oasisImage },
-  { id: "oasis", name: "Oasis", image: oasisImage },
-  { id: "steve", name: "Steve Lacy", image: oasisImage },
-  { id: "blur", name: "Blur", image: oasisImage },
-  { id: "thornapple", name: "쏜애플", image: oasisImage },
-  { id: "blackskirts", name: "검정치마", image: oasisImage },
-  { id: "eve", name: "eve", image: oasisImage },
-  { id: "caodong", name: "草東沒有派對", image: oasisImage },
-  { id: "radiohead", name: "Radiohead", image: oasisImage },
-  { id: "arctic", name: "Arctic Monkeys", image: oasisImage },
-  { id: "strokes", name: "The Strokes", image: oasisImage },
-  { id: "interpol", name: "Interpol", image: oasisImage },
-  { id: "muse", name: "Muse", image: oasisImage },
-  { id: "coldplay", name: "Coldplay", image: oasisImage },
-  { id: "u2", name: "U2", image: oasisImage },
-  { id: "pink", name: "Pink Floyd", image: oasisImage },
-  { id: "beatles", name: "The Beatles", image: oasisImage },
-  { id: "rolling", name: "The Rolling Stones", image: oasisImage },
-  { id: "led", name: "Led Zeppelin", image: oasisImage },
+const ARTISTS: Artist[] = [
+  {
+    id: 1,
+    spotifyId: "beck",
+    name: "BECK",
+    genre: "rock",
+    imageUrl: oasisImage,
+    externalUrl: "https://open.spotify.com/artist/beck",
+    createdAt: "2025-01-01T00:00:00",
+    updatedAt: "2025-01-01T00:00:00",
+  },
+  {
+    id: 2,
+    spotifyId: "tyler",
+    name: "Tyler, the creator",
+    genre: "hip-hop",
+    imageUrl: oasisImage,
+    externalUrl: "https://open.spotify.com/artist/tyler",
+    createdAt: "2025-01-01T00:00:00",
+    updatedAt: "2025-01-01T00:00:00",
+  },
+  {
+    id: 3,
+    spotifyId: "oasis",
+    name: "Oasis",
+    genre: "rock",
+    imageUrl: oasisImage,
+    externalUrl: "https://open.spotify.com/artist/oasis",
+    createdAt: "2025-01-01T00:00:00",
+    updatedAt: "2025-01-01T00:00:00",
+  },
+  {
+    id: 4,
+    spotifyId: "steve",
+    name: "Steve Lacy",
+    genre: "r&b",
+    imageUrl: oasisImage,
+    externalUrl: "https://open.spotify.com/artist/steve",
+    createdAt: "2025-01-01T00:00:00",
+    updatedAt: "2025-01-01T00:00:00",
+  },
+  {
+    id: 5,
+    spotifyId: "blur",
+    name: "Blur",
+    genre: "rock",
+    imageUrl: "https://example.com/blur.jpg",
+    externalUrl: "https://open.spotify.com/artist/blur",
+    createdAt: "2025-01-01T00:00:00",
+    updatedAt: "2025-01-01T00:00:00",
+  },
+  {
+    id: 6,
+    spotifyId: "thornapple",
+    name: "쏜애플",
+    genre: "k-indie",
+    imageUrl: "https://example.com/thornapple.jpg",
+    externalUrl: "https://open.spotify.com/artist/thornapple",
+    createdAt: "2025-01-01T00:00:00",
+    updatedAt: "2025-01-01T00:00:00",
+  },
+  {
+    id: 7,
+    spotifyId: "blackskirts",
+    name: "검정치마",
+    genre: "k-indie",
+    imageUrl: "https://example.com/blackskirts.jpg",
+    externalUrl: "https://open.spotify.com/artist/blackskirts",
+    createdAt: "2025-01-01T00:00:00",
+    updatedAt: "2025-01-01T00:00:00",
+  },
+  {
+    id: 8,
+    spotifyId: "eve",
+    name: "eve",
+    genre: "j-pop",
+    imageUrl: "https://example.com/eve.jpg",
+    externalUrl: "https://open.spotify.com/artist/eve",
+    createdAt: "2025-01-01T00:00:00",
+    updatedAt: "2025-01-01T00:00:00",
+  },
+  {
+    id: 9,
+    spotifyId: "caodong",
+    name: "草東沒有派對",
+    genre: "rock",
+    imageUrl: "https://example.com/caodong.jpg",
+    externalUrl: "https://open.spotify.com/artist/caodong",
+    createdAt: "2025-01-01T00:00:00",
+    updatedAt: "2025-01-01T00:00:00",
+  },
+  {
+    id: 10,
+    spotifyId: "radiohead",
+    name: "Radiohead",
+    genre: "rock",
+    imageUrl: "https://example.com/radiohead.jpg",
+    externalUrl: "https://open.spotify.com/artist/radiohead",
+    createdAt: "2025-01-01T00:00:00",
+    updatedAt: "2025-01-01T00:00:00",
+  },
 ];
 
 const PretestArtistPage = () => {
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [artists, setArtists] = useState<Artist[]>([]);
+  // const [autocompleteResults, setAutocompleteResults] = useState<
+  //   AutocompleteResult[]
+  // >([]);
+  const [searchResults, setSearchResults] = useState<Artist[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  // 검색 필터링된 아티스트 목록
+  // 아티스트 데이터 로드 - SEARCH_ALL API 사용
+  useEffect(() => {
+    const loadArtists = async () => {
+      try {
+        setLoading(true);
+
+        // 빈 쿼리로 SEARCH_ALL API 호출하여 기본 아티스트 목록 가져오기
+        let searchResults = await musicAPI.searchAll("", 30, 0);
+
+        // 빈 쿼리 결과가 없으면 "artist"로 시도
+        if (!searchResults || searchResults.length === 0) {
+          searchResults = await musicAPI.searchAll("artist", 30, 0);
+        }
+
+        // 검색 결과를 Artist 형식으로 변환 (API 문서에 따른 구조)
+        console.log("API 응답 데이터:", searchResults); // 디버깅용
+
+        // searchResults가 배열인지 확인
+        if (!Array.isArray(searchResults)) {
+          console.warn("searchResults가 배열이 아닙니다:", searchResults);
+          setArtists(ARTISTS);
+          setError(null);
+          return;
+        }
+
+        // 유효한 아티스트만 필터링 (name이 "ARTIST"이거나 imageUrl이 null인 경우 제외)
+        const validArtists = searchResults.filter(
+          (item) => item.name !== "ARTIST" && item.imageUrl !== null
+        );
+
+        const artistResults = validArtists.map((item, index) => ({
+          id: index + 1,
+          spotifyId: item.spotifyId,
+          name: item.name,
+          genre: item.genres || "unknown",
+          imageUrl: item.imageUrl || oasisImage,
+          externalUrl:
+            item.externalUrl ||
+            `https://open.spotify.com/artist/${item.spotifyId}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }));
+
+        // API에서 결과가 있으면 사용, 없으면 기본 데이터 사용
+        if (artistResults.length > 0) {
+          setArtists(artistResults);
+          setError(null);
+        } else {
+          console.warn(
+            "API에서 아티스트 데이터를 가져올 수 없어 기본 데이터를 사용합니다."
+          );
+          setArtists(ARTISTS);
+          setError(null);
+        }
+      } catch (err) {
+        console.error("아티스트 데이터 로드 실패:", err);
+        setError("아티스트 데이터를 불러오는데 실패했습니다.");
+        // API 실패 시 mock 데이터 사용
+        setArtists(ARTISTS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadArtists();
+  }, []);
+
+  // 검색어 변경 시 SEARCH_ALL API 호출
+  useEffect(() => {
+    const searchArtists = async () => {
+      // 빈 검색어인 경우 기본 아티스트 목록 표시
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      try {
+        const searchResponse = await musicAPI.searchAll(searchQuery, 30, 0);
+
+        // 검색 결과를 Artist 형식으로 변환 (API 문서에 따른 구조)
+        console.log("검색 API 응답:", searchResponse); // 디버깅용
+
+        // searchResponse가 배열인지 확인
+        if (!Array.isArray(searchResponse)) {
+          console.warn("searchResponse가 배열이 아닙니다:", searchResponse);
+          setSearchResults([]);
+          return;
+        }
+
+        // 유효한 아티스트만 필터링 (name이 "ARTIST"이거나 imageUrl이 null인 경우 제외)
+        const validArtists = searchResponse.filter(
+          (item) => item.name !== "ARTIST" && item.imageUrl !== null
+        );
+
+        const artistResults = validArtists.map((item, index) => ({
+          id: index + 1000,
+          spotifyId: item.spotifyId,
+          name: item.name,
+          genre: item.genres || "unknown",
+          imageUrl: item.imageUrl || oasisImage,
+          externalUrl:
+            item.externalUrl ||
+            `https://open.spotify.com/artist/${item.spotifyId}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }));
+        setSearchResults(artistResults);
+      } catch (error) {
+        console.error("음악 검색 실패:", error);
+        setSearchResults([]);
+      }
+    };
+
+    // 디바운스 적용 (300ms)
+    const timeoutId = setTimeout(searchArtists, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  // 검색 필터링된 아티스트 목록 (기본 아티스트 목록용)
   const filteredArtists = useMemo(() => {
-    if (!searchQuery.trim()) return ARTISTS;
-    return ARTISTS.filter((artist) =>
+    if (!searchQuery.trim()) return artists;
+    return artists.filter((artist) =>
       artist.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery]);
+  }, [artists, searchQuery]);
 
   // 아티스트 선택/해제 처리
   const handleArtistSelect = (artistId: string) => {
@@ -59,20 +279,70 @@ const PretestArtistPage = () => {
   };
 
   // 다음 단계 처리
-  const handleNext = () => {
+  const handleNext = async () => {
     if (selectedArtists.length > 0) {
-      navigate("/pre-test/session");
+      try {
+        setSubmitting(true);
+
+        // 선택된 아티스트 정보 가져오기
+        const selectedArtistData = selectedArtists.map((id) => {
+          // 검색 결과에서 찾기
+          const searchResult = searchResults.find(
+            (artist) => artist.id.toString() === id
+          );
+          if (searchResult) {
+            return searchResult.spotifyId;
+          }
+          // 기본 아티스트 목록에서 찾기
+          const artist = artists.find((artist) => artist.id.toString() === id);
+          return artist ? artist.spotifyId : id;
+        });
+
+        console.log("전송할 아티스트 데이터:", selectedArtistData);
+
+        // 선택된 아티스트 정보를 localStorage에 저장 (세션 페이지에서 사용)
+        localStorage.setItem(
+          "selectedArtists",
+          JSON.stringify(selectedArtistData)
+        );
+
+        // 각 아티스트를 개별적으로 저장
+        const savePromises = selectedArtistData.map(async (spotifyId) => {
+          try {
+            const result = await artistSaveAPI.saveArtist(spotifyId);
+            console.log(`아티스트 ${spotifyId} 저장 성공:`, result);
+            return result;
+          } catch (error) {
+            console.error(`아티스트 ${spotifyId} 저장 실패:`, error);
+            throw error;
+          }
+        });
+
+        // 모든 아티스트 저장 완료 대기
+        await Promise.all(savePromises);
+        console.log("모든 아티스트 저장 완료");
+
+        // 성공 시 다음 페이지로 이동
+        navigate("/pre-test/session");
+      } catch (error) {
+        console.error("아티스트 저장 실패:", error);
+        // 에러가 발생해도 다음 페이지로 이동 (선택사항)
+        navigate("/pre-test/session");
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#181818] text-white font-inherit">
+    <div className="w-full h-full flex flex-col text-white font-inherit">
       {/* 헤더 */}
       <PretestHeader
         onSkip={handleSkip}
         onNext={handleNext}
         showNext={selectedArtists.length > 0}
-        nextDisabled={selectedArtists.length === 0}
+        nextDisabled={selectedArtists.length === 0 || submitting}
+        nextText={submitting ? "저장 중..." : "다음"}
         progress={30} // 첫 번째 단계이므로 30% 진행
       />
 
@@ -92,18 +362,131 @@ const PretestArtistPage = () => {
           {/* 검색바 */}
           <div className="mb-8 sm:mb-10 md:mb-12 lg:mb-16 xl:mb-20 max-w-2xl">
             <SearchBar
-              placeholder="아티스트 검색하기"
+              placeholder="음악 검색하기"
               onSearch={setSearchQuery}
+              onSelect={(item) => {
+                console.log("선택된 아이템:", item);
+                // 선택된 아이템에 대한 추가 처리 로직
+              }}
+              onAutocompleteResults={async (results) => {
+                // setAutocompleteResults(results);
+
+                // 검색어가 있으면 SEARCH_ALL API로 검색 결과 가져오기
+                if (searchQuery.trim().length > 0) {
+                  try {
+                    // SEARCH_ALL API 호출
+                    const searchResponse = await musicAPI.searchAll(
+                      searchQuery,
+                      results.length || 20
+                    );
+
+                    // 검색 결과를 Artist 형식으로 변환 (API 문서에 따른 구조)
+                    // 유효한 아티스트만 필터링 (name이 "ARTIST"이거나 imageUrl이 null인 경우 제외)
+                    const validArtists = searchResponse.filter(
+                      (item) => item.name !== "ARTIST" && item.imageUrl !== null
+                    );
+
+                    const artistResults = validArtists.map((item, index) => ({
+                      id: index + 1000,
+                      spotifyId: item.spotifyId,
+                      name: item.name,
+                      genre: item.genres || "unknown",
+                      imageUrl: item.imageUrl || oasisImage,
+                      externalUrl:
+                        item.externalUrl ||
+                        `https://open.spotify.com/artist/${item.spotifyId}`,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                    }));
+                    setSearchResults(artistResults);
+                  } catch (error) {
+                    console.error("음악 검색 실패:", error);
+                    // 실패 시 자동완성 결과를 기본 이미지로 표시
+                    const fallbackResults = results.map((item, index) => ({
+                      id: index + 1000,
+                      spotifyId: item.id,
+                      name: item.name,
+                      genre: "unknown",
+                      imageUrl: oasisImage,
+                      externalUrl: `https://open.spotify.com/artist/${item.id}`,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                    }));
+                    setSearchResults(fallbackResults);
+                  }
+                } else {
+                  setSearchResults([]);
+                }
+              }}
             />
           </div>
 
-          {/* 아티스트 그리드 */}
+          {/* 검색 결과 또는 아티스트 그리드 */}
           <div className="mb-8 sm:mb-10 md:mb-12 lg:mb-16 xl:mb-20">
-            <ArtistGrid
-              artists={filteredArtists}
-              selectedArtists={selectedArtists}
-              onArtistSelect={handleArtistSelect}
-            />
+            {searchResults.length > 0 ? (
+              // SEARCH_ALL API 결과를 동그라미 그리드 형태로 표시 (실제 이미지 사용)
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-x-4 gap-y-8 sm:gap-x-5 sm:gap-y-10 md:gap-x-6 md:gap-y-12 lg:gap-x-8 lg:gap-y-14 xl:gap-x-10 xl:gap-y-16 2xl:gap-x-12 2xl:gap-y-20">
+                {searchResults.map((artist, index) => (
+                  <div
+                    key={`search-${artist.id}-${index}`}
+                    className="flex flex-col items-center cursor-pointer transition-all duration-200 hover:scale-105"
+                    onClick={() => handleArtistSelect(artist.id.toString())}
+                  >
+                    <div className="relative">
+                      <img
+                        src={artist.imageUrl}
+                        alt={artist.name}
+                        className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40 xl:w-44 xl:h-44 2xl:w-48 2xl:h-48 rounded-full object-cover transition-all duration-200 opacity-100"
+                        onError={(e) => {
+                          // 이미지 로드 실패 시 기본 이미지 사용
+                          const target = e.target as HTMLImageElement;
+                          target.src = oasisImage;
+                        }}
+                      />
+                      {/* 선택 상태 표시 */}
+                      {selectedArtists.includes(artist.id.toString()) && (
+                        <div className="absolute inset-0 bg-red-500 bg-opacity-50 rounded-full flex items-center justify-center">
+                          <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm">✓</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <span className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 xl:mt-7 2xl:mt-8 text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl text-white text-center max-w-[112px] sm:max-w-[128px] md:max-w-[144px] lg:max-w-[160px] xl:max-w-[176px] 2xl:max-w-[192px] font-medium leading-tight">
+                      {artist.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : searchQuery.trim().length > 0 && searchResults.length === 0 ? (
+              // 검색 결과가 없는 경우
+              <div className="flex justify-center items-center py-12">
+                <div className="text-white text-lg">검색 결과가 없습니다.</div>
+              </div>
+            ) : (
+              // 기본 아티스트 그리드 (빈 검색 시 SEARCH_ALL API 결과 표시)
+              <>
+                {loading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="text-white text-lg">
+                      아티스트 목록을 불러오는 중...
+                    </div>
+                  </div>
+                ) : error ? (
+                  <div className="text-red-400 text-center py-4">
+                    {error}
+                    <div className="text-sm text-gray-400 mt-2">
+                      (기본 아티스트 목록을 표시합니다)
+                    </div>
+                  </div>
+                ) : null}
+                <ArtistGrid
+                  artists={filteredArtists}
+                  selectedArtists={selectedArtists.map((id) => parseInt(id))}
+                  onArtistSelect={(id) => handleArtistSelect(id.toString())}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

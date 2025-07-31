@@ -1,7 +1,16 @@
 @import "tailwindcss";
 @import "tailwind-scrollbar-hide/v4";
 
-/* === Font Face: IBM Plex Sans KR === */
+/* Custom scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+/* === Font Face: IM Plex Sans KR === */
 @font-face {
   font-family: "IBMPlexSansKR";
   src: url("/fonts/IBMPlexSansKR-Thin.ttf") format("truetype");

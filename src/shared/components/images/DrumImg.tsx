@@ -16,23 +16,23 @@ const DrumImg = ({ size = 68, color }: ImgSrcProps) => {
           stroke={
             color === "gray" || color === "gray-700" ? "#555555" : "#ffffff"
           }
-          stroke-width="3"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
         <path
           d="M24.5 28C35.5457 28 44.5 23.5228 44.5 18C44.5 12.4772 35.5457 8 24.5 8C13.4543 8 4.5 12.4772 4.5 18C4.5 23.5228 13.4543 28 24.5 28Z"
           stroke={color === "gray" ? "#555555" : "#ffffff"}
-          stroke-width="3"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
         <path
           d="M14.5 26.8V42.6M24.5 28V44M24.5 44C19.1957 44 14.1086 42.9464 10.3579 41.0711C6.60714 39.1957 4.5 36.6522 4.5 34V18M24.5 44C29.8043 44 34.8914 42.9464 38.6421 41.0711C42.3929 39.1957 44.5 36.6522 44.5 34V18M34.5 26.8V42.6"
           stroke={color === "gray" ? "#555555" : "#ffffff"}
-          stroke-width="3"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
       </svg>
     </ImgCircle>

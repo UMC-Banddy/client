@@ -2,11 +2,11 @@ import React from "react";
 import oasisImage from "@/assets/images/oasis.png";
 
 interface ArtistCardProps {
-  id: string;
+  id: number;
   name: string;
   image?: string;
   isSelected?: boolean;
-  onSelect?: (id: string) => void;
+  onSelect?: (id: number) => void;
   className?: string;
 }
 
@@ -34,6 +34,11 @@ const ArtistCard: React.FC<ArtistCardProps> = ({
           className={`w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40 xl:w-44 xl:h-44 2xl:w-48 2xl:h-48 rounded-full object-cover transition-all duration-200 ${
             isSelected ? "opacity-30" : "opacity-100"
           }`}
+          onError={(e) => {
+            // 이미지 로드 실패 시 기본 이미지 사용
+            const target = e.target as HTMLImageElement;
+            target.src = oasisImage;
+          }}
         />
         {isSelected && (
           <div className="absolute inset-0 flex items-center justify-center">

@@ -4,10 +4,11 @@ import backIcon from "@/assets/icons/back.svg";
 
 interface PretestHeaderProps {
   onSkip?: () => void;
-  onNext?: () => void;
+  onNext?: (() => void) | (() => Promise<void>);
   showNext?: boolean;
   nextDisabled?: boolean;
   progress?: number; // 0-100 사이의 진행률
+  nextText?: string; // 다음 버튼 텍스트 커스터마이징
 }
 
 const PretestHeader: React.FC<PretestHeaderProps> = ({
@@ -16,6 +17,7 @@ const PretestHeader: React.FC<PretestHeaderProps> = ({
   showNext = false,
   nextDisabled = false,
   progress = 0,
+  nextText = "다음",
 }) => {
   const navigate = useNavigate();
 
@@ -50,7 +52,7 @@ const PretestHeader: React.FC<PretestHeaderProps> = ({
               nextDisabled ? "text-[#444]" : "text-[#7ED957]"
             }`}
           >
-            다음
+            {nextText}
           </button>
         )}
       </div>

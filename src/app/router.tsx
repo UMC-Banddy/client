@@ -43,63 +43,383 @@ import ArtistPage from "@/pages/Archive/Artist/ArtistPage";
 import AlbumPage from "@/pages/Archive/Album/AlbumPage";
 import OtherProfile from "@/pages/Profile/OtherProfile";
 import ProfileDetailPage from "@/pages/Profile/ProfileDetailPage";
+import ProtectedRoute from "@/shared/components/ProtectedRoute";
 
 const routes = [
   {
     element: <Layout />,
     children: [
-      { path: "/", element: <HomePage /> },
-      { path: "/login", element: <LoginPage /> },
-      { path: "/signup/email", element: <SignupPage /> },
-      { path: "/signup/verify", element: <SignupVerifyPage /> },
+      {
+        path: "/",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <HomePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/login",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <LoginPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/signup/email",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SignupPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/signup/verify",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SignupVerifyPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "/signup/password-confirm",
-        element: <SignupPasswordConfirmStep />,
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SignupPasswordConfirmStep />
+          </ProtectedRoute>
+        ),
       },
-      { path: "/signup/password", element: <SignupPasswordPage /> },
-      { path: "/signup/nickname", element: <SignupNicknamePage /> },
-      { path: "/signup/profile", element: <SignupProfilePage /> },
-      { path: "/signup/complete", element: <SignupCompletePage /> },
-      { path: "/artists", element: <ArtistsPage /> },
-      { path: "/artists/:id", element: <ArtistDetailPage /> },
-      { path: "/bands/:id", element: <BandDetailPage /> },
-      { path: "/bands/:id/chat", element: <BandChatPage /> },
-      { path: "/manual", element: <ManualPage /> },
+      {
+        path: "/signup/password",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SignupPasswordPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/signup/nickname",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SignupNicknamePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/signup/profile",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SignupProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/signup/complete",
+        element: (
+          <ProtectedRoute requireAuth={false}>
+            <SignupCompletePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/artists",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <ArtistsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/artists/:id",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <ArtistDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/bands/:id",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <BandDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/bands/:id/chat",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <BandChatPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/manual",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <ManualPage />
+          </ProtectedRoute>
+        ),
+      },
 
-      { path: "/my", element: <MyPage /> },
-      { path: "/my/setting", element: <SettingsPage /> },
-      { path: "/my/notifications", element: <NotificationPage /> },
-      { path: "/my/notifications/:id", element: <NotificationDetailPage /> },
-      { path: "/my/archive", element: <ArchivePage /> },
-      { path: "/my/archive/add", element: <AddPage /> },
-      { path: "/my/archive/artist", element: <ArtistPage /> },
-      { path: "/my/archive/album", element: <AlbumPage /> },
-      { path: "/profile-other/:id", element: <OtherProfile /> },
-      { path: "/profile-detail/:id", element: <ProfileDetailPage /> },
-      { path: "/home/people", element: <PeoplePage /> },
-      { path: "/home/playlist", element: <PlaylistPage /> },
-      { path: "/home/prefer", element: <PreferPage /> },
-      { path: "/home/chat", element: <ChatPage /> },
-      { path: "/home/chat-demo", element: <ChatDemoPage /> },
+      {
+        path: "/my",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <MyPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/my/setting",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <SettingsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/my/notifications",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <NotificationPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/my/notifications/:id",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <NotificationDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/my/archive",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <ArchivePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/my/archive/add",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <AddPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/my/archive/artist",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <ArtistPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/my/archive/album",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <AlbumPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/profile-other/:id",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <OtherProfile />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/profile-detail/:id",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <ProfileDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/people",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PeoplePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/people/:bandId",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PeoplePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/playlist",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PlaylistPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/playlist/:bandId",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PlaylistPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/prefer",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PreferPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/prefer/:bandId",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PreferPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/chat",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <ChatPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/chat-demo",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <ChatDemoPage />
+          </ProtectedRoute>
+        ),
+      },
 
-      { path: "/join", element: <Join /> },
-      { path: "/join/band-recruit", element: <BandRecruit /> },
-      { path: "/join/create-band", element: <CreateBand /> },
-      { path: "/join/create-band/song", element: <CreateBandSong /> },
-      { path: "/join/create-band/genre", element: <CreateBandGenre /> },
-      { path: "/join/create-band/artist", element: <CreateBandArtist /> },
-      { path: "/join/create-chat", element: <CreateChat /> },
-      { path: "/join/create-chat/2", element: <CreateChat2 /> },
-      { path: "/join/saved-band", element: <SavedBand /> },
-      { path: "/join/saved-band/:id", element: <SavedBandDetail /> },
+      {
+        path: "/join",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <Join />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/join/band-recruit",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <BandRecruit />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/join/create-band",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <CreateBand />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/join/create-band/song",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <CreateBandSong />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/join/create-band/genre",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <CreateBandGenre />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/join/create-band/artist",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <CreateBandArtist />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/join/create-chat",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <CreateChat />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/join/create-chat/2",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <CreateChat2 />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/join/saved-band",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <SavedBand />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/join/saved-band/:id",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <SavedBandDetail />
+          </ProtectedRoute>
+        ),
+      },
 
-      { path: "/pre-test/artist", element: <PretestArtistPage /> },
-      { path: "/pre-test/session", element: <PretestSessionPage /> },
+      {
+        path: "/pre-test/artist",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PretestArtistPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/pre-test/session",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PretestSessionPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "/pre-test/profile/complete",
-        element: <PretestProfileCompletePage />,
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PretestProfileCompletePage />
+          </ProtectedRoute>
+        ),
       },
-      { path: "/pre-test/profile/edit", element: <PretestProfileEditPage /> },
+      {
+        path: "/pre-test/profile/edit",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PretestProfileEditPage />
+          </ProtectedRoute>
+        ),
+      },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

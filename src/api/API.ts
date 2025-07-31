@@ -1,7 +1,85 @@
-
 import axios from "axios";
 import { API_ENDPOINTS } from "@/constants";
 import { authStore } from "@/store/authStore";
+
+// 아티스트 타입 정의
+export interface Artist {
+  id: number;
+  spotifyId: string;
+  name: string;
+  genre: string;
+  imageUrl: string;
+  externalUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Survey 제출 데이터 타입 정의
+export interface SurveyData {
+  selectedArtists: string[];
+  profileImage?: File;
+  mediaFile?: File;
+}
+
+// Session 타입 정의 (API 응답)
+export interface Session {
+  id: number;
+  name: string;
+}
+
+// Session with levels (UI용)
+export interface SessionWithLevels {
+  id: string;
+  name: string;
+  levels?: {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+  }[];
+}
+
+// Session 선택 데이터 타입 정의
+export interface SessionData {
+  selectedSessions: Record<string, string>; // sessionId: levelId
+}
+
+// 음악 검색 결과 타입 정의
+export interface MusicSearchResult {
+  id: string;
+  title: string;
+  artist: string;
+  album?: string;
+  imageUrl?: string;
+  type: "track" | "artist" | "album";
+}
+
+// API 문서에 따른 아티스트 검색 결과 타입
+export interface ArtistSearchResult {
+  spotifyId: string;
+  name: string;
+  genres: string;
+  imageUrl: string;
+  externalUrl: string;
+}
+
+// 자동완성 결과 타입 정의
+export interface AutocompleteResult {
+  id: string;
+  name: string;
+  type: "track" | "artist" | "album";
+  imageUrl?: string;
+}
+
+// API 응답 타입 정의
+export interface AutocompleteResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    results: string[];
+  };
+}
 
 // Axios 인스턴스 생성
 export const API = axios.create({
@@ -36,7 +114,9 @@ API.interceptors.response.use(
 
       try {
         const res = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`,
+          `${import.meta.env.VITE_API_BASE_URL}${
+            API_ENDPOINTS.AUTH.REFRESH_TOKEN
+          }`,
           {
             refreshToken: authStore.refreshToken,
           }
@@ -61,3 +141,303 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// 아티스트 관련 API 함수들
+export const artistAPI = {
+  // 아티스트 목록 조회
+  getArtists: async (): Promise<Artist[]> => {
+    try {
+      const response = await API.get(API_ENDPOINTS.SURVEY.ARTIST);
+      return response.data;
+    } catch (error) {
+      console.error("아티스트 목록 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // 아티스트 검색
+  searchArtists: async (query: string): Promise<Artist[]> => {
+    try {
+      const response = await API.get(
+        `${API_ENDPOINTS.SURVEY.ARTIST_SEARCH}?query=${encodeURIComponent(
+          query
+        )}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("아티스트 검색 실패:", error);
+      throw error;
+    }
+  },
+};
+
+// 음악 검색 관련 API 함수들
+export const musicAPI = {
+  // 전체 음악 검색 (SEARCH_ALL 엔드포인트 사용)
+  searchAll: async (
+    query: string = "",
+    limit: number = 20,
+    offset: number = 0
+  ): Promise<ArtistSearchResult[]> => {
+    try {
+      // 빈 쿼리인 경우 기본 검색어 사용
+      const searchQuery = query.trim() || "artist";
+
+      const response = await API.get(
+        `${API_ENDPOINTS.MUSIC.SEARCH_ALL}?q=${encodeURIComponent(
+          searchQuery
+        )}&limit=${limit}&offset=${offset}`
+      );
+
+      // API 문서에 따른 응답 구조 처리
+      if (response.data && response.data.isSuccess && response.data.result) {
+        return response.data.result;
+      } else if (response.data && Array.isArray(response.data)) {
+        return response.data;
+      } else {
+        console.warn("예상치 못한 API 응답 구조:", response.data);
+        return [];
+      }
+    } catch (error) {
+      console.error("전체 음악 검색 실패:", error);
+      // 에러 발생 시 빈 배열 반환하여 앱이 중단되지 않도록 함
+      return [];
+    }
+  },
+
+  // 아티스트 검색
+  searchArtists: async (
+    query: string,
+    limit: number = 10,
+    offset: number = 0
+  ): Promise<MusicSearchResult[]> => {
+    try {
+      const response = await API.get(
+        `${API_ENDPOINTS.MUSIC.SEARCH_ARTISTS}?q=${encodeURIComponent(
+          query
+        )}&limit=${limit}&offset=${offset}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("아티스트 검색 실패:", error);
+      throw error;
+    }
+  },
+
+  // 자동완성
+  getAutocomplete: async (
+    query: string,
+    limit: number = 20
+  ): Promise<AutocompleteResult[]> => {
+    try {
+      const response = await API.get<AutocompleteResponse>(
+        `${API_ENDPOINTS.MUSIC.AUTOCOMPLETE_ARTISTS}?query=${encodeURIComponent(
+          query
+        )}&limit=${limit}`
+      );
+
+      // API 응답 구조에 맞게 변환
+      const results = response.data.result.results;
+      return results.map((name, index) => ({
+        id: `artist-${index}`,
+        name: name,
+        type: "artist" as const,
+        imageUrl: undefined,
+      }));
+    } catch (error) {
+      console.error("자동완성 조회 실패:", error);
+      throw error;
+    }
+  },
+};
+
+// 아티스트 저장 API 함수
+export const artistSaveAPI = {
+  // 아티스트 저장
+  saveArtist: async (
+    spotifyId: string
+  ): Promise<{ isSuccess: boolean; result: any }> => {
+    try {
+      const response = await API.post(
+        API_ENDPOINTS.ARTISTS.SAVE,
+        {
+          spotifyId: spotifyId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error: unknown) {
+      console.error("아티스트 저장 실패:", error);
+      throw error;
+    }
+  },
+};
+
+// 프로필 수정 API 함수
+export const profileAPI = {
+  // 프로필 조회
+  getProfile: async (): Promise<{ isSuccess: boolean; result: any }> => {
+    try {
+      const response = await API.get(API_ENDPOINTS.PROFILE.SELF);
+      return response.data;
+    } catch (error: unknown) {
+      console.error("프로필 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // 프로필 수정
+  updateProfile: async (profileData: {
+    nickname?: string;
+    age?: number;
+    gender?: string;
+    region?: string;
+    district?: string;
+    bio?: string;
+    profileImage?: string | FormData;
+    mediaUrl?: string;
+    availableSessions?: Array<{
+      sessionType: string;
+      level: string;
+    }>;
+    genres?: string[];
+    artists?: string[];
+    keywords?: string[];
+  }): Promise<{ isSuccess: boolean; result: any }> => {
+    try {
+      // FormData인 경우와 일반 데이터인 경우를 구분
+      const isFormData = profileData.profileImage instanceof FormData;
+
+      // profileImage가 FormData인 경우 별도 처리
+      if (isFormData) {
+        const response = await API.put(
+          API_ENDPOINTS.PROFILE.UPDATE,
+          profileData.profileImage,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        return response.data;
+      } else {
+        // profileImage가 문자열이거나 없는 경우 JSON으로 전송
+        const { profileImage: _, ...jsonData } = profileData;
+
+        const response = await API.put(API_ENDPOINTS.PROFILE.UPDATE, jsonData, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        return response.data;
+      }
+    } catch (error: unknown) {
+      console.error("프로필 수정 실패:", error);
+      throw error;
+    }
+  },
+};
+
+// Survey 관련 API 함수들
+export const surveyAPI = {
+  // Survey 제출
+  submitSurvey: async (data: SurveyData): Promise<void> => {
+    try {
+      // 파일이 있는 경우에만 FormData 사용, 없으면 JSON 사용
+      if (data.profileImage || data.mediaFile) {
+        const formData = new FormData();
+
+        // 서버가 요구하는 'request' 필드에 JSON 데이터를 담아서 전송
+        const requestData = {
+          selectedArtists: data.selectedArtists,
+        };
+
+        console.log("Survey 제출 데이터 (FormData):", requestData);
+        formData.append("request", JSON.stringify(requestData));
+
+        // 파일이 있는 경우에만 추가
+        if (data.profileImage) {
+          formData.append("profileImage", data.profileImage);
+        }
+
+        if (data.mediaFile) {
+          formData.append("mediaFile", data.mediaFile);
+        }
+
+        console.log("FormData 내용:");
+        for (const [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
+
+        const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        return response.data;
+      } else {
+        // 파일이 없으면 JSON 형식으로 전송
+        const requestData = {
+          selectedArtists: data.selectedArtists,
+        };
+
+        console.log("Survey 제출 데이터 (JSON):", requestData);
+
+        const response = await API.post(
+          API_ENDPOINTS.SURVEY.SUBMIT,
+          requestData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        return response.data;
+      }
+    } catch (error: unknown) {
+      console.error("Survey 제출 실패:", error);
+      console.error("에러 상세 정보:", (error as any).response?.data);
+      throw error;
+    }
+  },
+
+  // Session 목록 조회
+  getSessions: async (): Promise<Session[]> => {
+    try {
+      const response = await API.get(API_ENDPOINTS.SURVEY.SESSION);
+      return response.data;
+    } catch (error) {
+      console.error("Session 목록 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // Session 데이터 제출
+  submitSessionData: async (data: SessionData): Promise<void> => {
+    try {
+      const formData = new FormData();
+
+      // 서버가 요구하는 'request' 필드에 JSON 데이터를 담아서 전송
+      const requestData = {
+        selectedSessions: data.selectedSessions,
+      };
+      formData.append("request", JSON.stringify(requestData));
+
+      const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Session 데이터 제출 실패:", error);
+      throw error;
+    }
+  },
+};

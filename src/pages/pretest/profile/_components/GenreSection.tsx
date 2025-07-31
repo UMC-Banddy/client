@@ -10,12 +10,14 @@ interface GenreSectionProps {
   genres: Genre[];
   onEdit?: () => void;
   onRemoveGenre?: (genreId: string) => void;
+  isEditing?: boolean;
 }
 
 const GenreSection: React.FC<GenreSectionProps> = ({
   genres,
   onEdit,
   onRemoveGenre,
+  isEditing = false,
 }) => {
   return (
     <div className="mb-6 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
@@ -25,12 +27,16 @@ const GenreSection: React.FC<GenreSectionProps> = ({
         </h3>
         <button
           onClick={onEdit}
-          className="text-[#B71C1C] text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-medium hover:text-red-400 transition-colors"
+          className={`text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-medium transition-colors ${
+            isEditing
+              ? "text-green-500 hover:text-green-400"
+              : "text-[#B71C1C] hover:text-red-400"
+          }`}
         >
-          수정
+          {isEditing ? "완료" : "수정"}
         </button>
       </div>
-      <div className="flex flex-wrap gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-7">
+      <div className="flex flex-wrap gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-7 pb-4">
         {genres.map((genre) => (
           <div
             key={genre.id}
@@ -40,24 +46,26 @@ const GenreSection: React.FC<GenreSectionProps> = ({
               {genre.icon}
             </span>
             <span>{genre.name}</span>
-            <button
-              onClick={() => onRemoveGenre?.(genre.id)}
-              className="ml-1 sm:ml-2 md:ml-3 lg:ml-4 xl:ml-5 2xl:ml-6 hover:text-gray-300 transition-colors"
-            >
-              <svg
-                className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 xl:w-7 xl:h-7 2xl:w-8 2xl:h-8"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {isEditing && (
+              <button
+                onClick={() => onRemoveGenre?.(genre.id)}
+                className="ml-2 sm:ml-3 md:ml-4 lg:ml-5 xl:ml-6 2xl:ml-7 hover:text-gray-300 transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 2xl:w-9 2xl:h-9"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
         ))}
       </div>

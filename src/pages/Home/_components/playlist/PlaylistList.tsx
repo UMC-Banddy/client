@@ -2,7 +2,21 @@ import React from "react";
 import PlaylistItem from "./PlaylistItem";
 import theCabs from "@/assets/images/the-cabs.svg";
 
-const playlistData = [
+interface Track {
+  id: number;
+  title: string;
+  artist: string;
+  image?: string;
+  albumImage?: string;
+  duration?: string;
+}
+
+interface PlaylistListProps {
+  tracks?: Track[];
+}
+
+// 기본 데이터 (API 연결 전까지 사용)
+const defaultPlaylistData: Track[] = [
   {
     id: 1,
     title: "いらないもの",
@@ -40,10 +54,17 @@ const playlistData = [
   },
 ];
 
-const PlaylistList: React.FC = () => (
+const PlaylistList: React.FC<PlaylistListProps> = ({
+  tracks = defaultPlaylistData,
+}) => (
   <div className="flex-1 flex flex-col w-full px-2 overflow-y-auto scrollbar-hide">
-    {playlistData.map((item) => (
-      <PlaylistItem key={item.id} {...item} />
+    {tracks.map((item) => (
+      <PlaylistItem
+        key={item.id}
+        title={item.title}
+        artist={item.artist}
+        image={item.albumImage || item.image || theCabs}
+      />
     ))}
   </div>
 );

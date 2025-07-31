@@ -1,8 +1,9 @@
 import React from "react";
 
 interface Artist {
+  id: number;
   name: string;
-  img: string;
+  image: string;
 }
 
 interface PreferArtistGridProps {
@@ -19,10 +20,10 @@ const PreferArtistGrid: React.FC<PreferArtistGridProps> = ({
   gapX = "gap-x-4",
 }) => (
   <div className={`grid grid-cols-3 ${gapY} ${gapX} w-full max-w-md mx-auto`}>
-    {artists.map((artist, idx) => (
-      <div key={artist.name + idx} className="flex flex-col items-center">
+    {artists.map((artist) => (
+      <div key={artist.id} className="flex flex-col items-center">
         <img
-          src={artist.img}
+          src={artist.image}
           alt={artist.name}
           className={`${thumbSize} rounded-full object-cover mb-2`}
         />
