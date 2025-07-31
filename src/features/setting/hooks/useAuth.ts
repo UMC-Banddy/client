@@ -14,6 +14,9 @@ export const logout = () => {
   authStore.role = null;
   authStore.email = "";
   authStore.password = "";
+
+  // 로그아웃 후 로그인 페이지로 리다이렉트
+  window.location.href = "/login";
 };
 
 export const refreshAccessToken = async (): Promise<string> => {
