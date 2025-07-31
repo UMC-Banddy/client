@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PretestHeader from "../artist/_components/PretestHeader";
 import SessionList from "./_components/SessionList";
 import SkillGuideModal from "./_components/SkillGuideModal";
+import { surveyAPI } from "@/api/API";
 import { SESSIONS } from "./_components/sessionData";
 
 const PretestSessionPage = () => {
@@ -10,7 +11,43 @@ const PretestSessionPage = () => {
   const [selectedSessions, setSelectedSessions] = useState<
     Record<string, string>
   >({});
+  const [sessions, setSessions] = useState(SESSIONS);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [showSkillModal, setShowSkillModal] = useState(false);
+
+  // Session 데이터 로드
+  useEffect(() => {
+    const loadSessions = async () => {
+      try {
+        setLoading(true);
+        const apiData = await surveyAPI.getSessions();
+
+        // API 데이터와 mock 데이터의 levels를 결합
+        const combinedSessions = apiData.map((apiSession) => {
+          const mockSession = SESSIONS.find((s) => s.name === apiSession.name);
+          return {
+            ...apiSession,
+            id: apiSession.id.toString(), // API는 number, UI는 string 사용
+            levels: mockSession?.levels || SESSIONS[0].levels, // 기본값으로 첫 번째 세션의 levels 사용
+          };
+        });
+
+        setSessions(combinedSessions);
+        setError(null);
+      } catch (err) {
+        console.error("Session 데이터 로드 실패:", err);
+        setError("Session 데이터를 불러오는데 실패했습니다.");
+        // API 실패 시 mock 데이터 사용
+        setSessions(SESSIONS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSessions();
+  }, []);
 
   // 세션 선택 처리
   const handleSessionSelect = (sessionId: string) => {
@@ -42,9 +79,24 @@ const PretestSessionPage = () => {
   };
 
   // 다음 단계 처리
-  const handleNext = () => {
+  const handleNext = async () => {
     if (Object.keys(selectedSessions).length > 0) {
-      navigate("/pre-test/profile/complete");
+      try {
+        setSubmitting(true);
+        // Session 데이터 제출
+        await surveyAPI.submitSessionData({
+          selectedSessions: selectedSessions,
+        });
+
+        // 성공 시 다음 페이지로 이동
+        navigate("/pre-test/profile/complete");
+      } catch (error) {
+        console.error("Session 데이터 제출 실패:", error);
+        // 에러가 발생해도 다음 페이지로 이동 (선택사항)
+        navigate("/pre-test/profile/complete");
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -60,7 +112,8 @@ const PretestSessionPage = () => {
         onSkip={handleSkip}
         onNext={handleNext}
         showNext={Object.keys(selectedSessions).length > 0}
-        nextDisabled={Object.keys(selectedSessions).length === 0}
+        nextDisabled={Object.keys(selectedSessions).length === 0 || submitting}
+        nextText={submitting ? "저장 중..." : "다음"}
         progress={60} // 두 번째 단계이므로 60% 진행
       />
 
@@ -89,8 +142,22 @@ const PretestSessionPage = () => {
 
           {/* 세션 리스트 */}
           <div className="mb-8 sm:mb-10 md:mb-12 lg:mb-16 xl:mb-20">
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="text-white text-lg">
+                  세션 목록을 불러오는 중...
+                </div>
+              </div>
+            ) : error ? (
+              <div className="text-red-400 text-center py-4">
+                {error}
+                <div className="text-sm text-gray-400 mt-2">
+                  (기본 세션 목록을 표시합니다)
+                </div>
+              </div>
+            ) : null}
             <SessionList
-              sessions={SESSIONS}
+              sessions={sessions}
               selectedSessions={selectedSessions}
               onSessionSelect={handleSessionSelect}
               onLevelSelect={handleLevelSelect}

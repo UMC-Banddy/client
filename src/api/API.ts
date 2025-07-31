@@ -21,6 +21,29 @@ export interface SurveyData {
   mediaFile?: File;
 }
 
+// Session 타입 정의 (API 응답)
+export interface Session {
+  id: number;
+  name: string;
+}
+
+// Session with levels (UI용)
+export interface SessionWithLevels {
+  id: string;
+  name: string;
+  levels?: {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+  }[];
+}
+
+// Session 선택 데이터 타입 정의
+export interface SessionData {
+  selectedSessions: Record<string, string>; // sessionId: levelId
+}
+
 // Axios 인스턴스 생성
 export const API = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -118,8 +141,11 @@ export const surveyAPI = {
     try {
       const formData = new FormData();
 
-      // 선택된 아티스트 ID들을 JSON 문자열로 변환하여 추가
-      formData.append("selectedArtists", JSON.stringify(data.selectedArtists));
+      // 서버가 요구하는 'request' 필드에 JSON 데이터를 담아서 전송
+      const requestData = {
+        selectedArtists: data.selectedArtists,
+      };
+      formData.append("request", JSON.stringify(requestData));
 
       // 파일이 있는 경우에만 추가
       if (data.profileImage) {
@@ -139,6 +165,40 @@ export const surveyAPI = {
       return response.data;
     } catch (error) {
       console.error("Survey 제출 실패:", error);
+      throw error;
+    }
+  },
+
+  // Session 목록 조회
+  getSessions: async (): Promise<Session[]> => {
+    try {
+      const response = await API.get(API_ENDPOINTS.SURVEY.SESSION);
+      return response.data;
+    } catch (error) {
+      console.error("Session 목록 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // Session 데이터 제출
+  submitSessionData: async (data: SessionData): Promise<void> => {
+    try {
+      const formData = new FormData();
+
+      // 서버가 요구하는 'request' 필드에 JSON 데이터를 담아서 전송
+      const requestData = {
+        selectedSessions: data.selectedSessions,
+      };
+      formData.append("request", JSON.stringify(requestData));
+
+      const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Session 데이터 제출 실패:", error);
       throw error;
     }
   },
