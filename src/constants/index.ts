@@ -94,14 +94,14 @@ export const API_ENDPOINTS = {
   },
 
   MUSIC: {
-    SEARCH_ALL: "/music/search",
-    SEARCH_TRACKS: "/music/search/tracks",
-    SEARCH_ARTISTS: "/music/search/artists",
-    SEARCH_ALBUMS: "/music/search/albums",
-    AUTOCOMPLETE_TRACKS: "/autocomplete/tracks",
-    AUTOCOMPLETE_MUSIC: "/autocomplete/music",
-    AUTOCOMPLETE_ARTISTS: "/autocomplete/artists",
-    AUTOCOMPLETE_ALBUMS: "/autocomplete/albums",
+    SEARCH_ALL: "/api/music/search",
+    SEARCH_TRACKS: "/api/music/search/tracks",
+    SEARCH_ARTISTS: "/api/music/search/artists",
+    SEARCH_ALBUMS: "/api/music/search/albums",
+    AUTOCOMPLETE_TRACKS: "/api/autocomplete/tracks",
+    AUTOCOMPLETE_MUSIC: "/api/autocomplete/music",
+    AUTOCOMPLETE_ARTISTS: "/api/autocomplete/artists",
+    AUTOCOMPLETE_ALBUMS: "/api/autocomplete/albums",
   },
 
   TRACKS: {

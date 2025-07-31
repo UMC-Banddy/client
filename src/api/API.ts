@@ -44,6 +44,34 @@ export interface SessionData {
   selectedSessions: Record<string, string>; // sessionId: levelId
 }
 
+// 음악 검색 결과 타입 정의
+export interface MusicSearchResult {
+  id: string;
+  title: string;
+  artist: string;
+  album?: string;
+  imageUrl?: string;
+  type: "track" | "artist" | "album";
+}
+
+// 자동완성 결과 타입 정의
+export interface AutocompleteResult {
+  id: string;
+  name: string;
+  type: "track" | "artist" | "album";
+  imageUrl?: string;
+}
+
+// API 응답 타입 정의
+export interface AutocompleteResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    results: string[];
+  };
+}
+
 // Axios 인스턴스 생성
 export const API = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -129,6 +157,54 @@ export const artistAPI = {
       return response.data;
     } catch (error) {
       console.error("아티스트 검색 실패:", error);
+      throw error;
+    }
+  },
+};
+
+// 음악 검색 관련 API 함수들
+export const musicAPI = {
+  // 아티스트 검색
+  searchArtists: async (
+    query: string,
+    limit: number = 10,
+    offset: number = 0
+  ): Promise<MusicSearchResult[]> => {
+    try {
+      const response = await API.get(
+        `${API_ENDPOINTS.MUSIC.SEARCH_ARTISTS}?q=${encodeURIComponent(
+          query
+        )}&limit=${limit}&offset=${offset}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("아티스트 검색 실패:", error);
+      throw error;
+    }
+  },
+
+  // 자동완성
+  getAutocomplete: async (
+    query: string,
+    limit: number = 20
+  ): Promise<AutocompleteResult[]> => {
+    try {
+      const response = await API.get<AutocompleteResponse>(
+        `${API_ENDPOINTS.MUSIC.AUTOCOMPLETE_ARTISTS}?query=${encodeURIComponent(
+          query
+        )}&limit=${limit}`
+      );
+
+      // API 응답 구조에 맞게 변환
+      const results = response.data.result.results;
+      return results.map((name, index) => ({
+        id: `artist-${index}`,
+        name: name,
+        type: "artist" as const,
+        imageUrl: undefined,
+      }));
+    } catch (error) {
+      console.error("자동완성 조회 실패:", error);
       throw error;
     }
   },
