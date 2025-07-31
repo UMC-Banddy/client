@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import profileImage from "@/assets/images/profile1.png";
 import pencilIcon from "@/assets/icons/pencil.svg";
 import ProfileTag from "./_components/ProfileTag";
-import ArtistCard from "./_components/ArtistCard";
 import SessionIcon from "./_components/SessionIcon";
 import { profileAPI } from "@/api/API";
 
@@ -169,29 +168,70 @@ const PretestProfileCompletePage: React.FC = () => {
 
               {/* 관심 아티스트 */}
               <div className="mb-6 sm:mb-8 md:mb-10 lg:mb-12">
-                <h3 className="inline-block bg-black text-white px-4 py-2 sm:px-5 sm:py-3 md:px-6 md:py-4 lg:px-8 lg:py-5 xl:px-10 xl:py-6 2xl:px-12 2xl:py-7 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-medium mb-3 sm:mb-4 md:mb-5 lg:mb-6">
-                  관심 아티스트
-                </h3>
-                <div className="flex gap-4 sm:gap-5 md:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 overflow-x-auto scrollbar-hide">
+                <div className="flex items-center justify-between mb-3 sm:mb-4 md:mb-5 lg:mb-6">
+                  <h3 className="inline-block bg-black text-white px-4 py-2 sm:px-5 sm:py-3 md:px-6 md:py-4 lg:px-8 lg:py-5 xl:px-10 xl:py-6 2xl:px-12 2xl:py-7 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-medium">
+                    관심 아티스트
+                  </h3>
+                  <button
+                    onClick={() => navigate("/pre-test/profile/edit")}
+                    className="text-[#B71C1C] text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-medium hover:text-red-400 transition-colors"
+                  >
+                    수정
+                  </button>
+                </div>
+                <div className="flex gap-6 sm:gap-7 md:gap-8 lg:gap-9 xl:gap-10 2xl:gap-11 overflow-x-auto scrollbar-hide">
                   {profileData?.savedTracks?.length > 0 ? (
                     profileData.savedTracks.map((track: any, index: number) => (
-                      <div key={index} className="flex-shrink-0">
-                        <ArtistCard
-                          name={track.title}
-                          image={track.imageUrl || profileImage}
-                        />
+                      <div key={index} className="flex-shrink-0 text-center">
+                        <div className="relative inline-block">
+                          <img
+                            src={track.imageUrl || profileImage}
+                            alt={track.title}
+                            className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 2xl:w-44 2xl:h-44 rounded-full object-cover mx-auto mb-3 sm:mb-4 md:mb-5 lg:mb-6 xl:mb-7 2xl:mb-8"
+                          />
+                        </div>
+                        <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-black font-medium">
+                          {track.title}
+                        </p>
                       </div>
                     ))
                   ) : (
                     <>
-                      <div className="flex-shrink-0">
-                        <ArtistCard name="Gorillaz" image={profileImage} />
+                      <div className="flex-shrink-0 text-center">
+                        <div className="relative inline-block">
+                          <img
+                            src={profileImage}
+                            alt="Gorillaz"
+                            className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 2xl:w-44 2xl:h-44 rounded-full object-cover mx-auto mb-3 sm:mb-4 md:mb-5 lg:mb-6 xl:mb-7 2xl:mb-8"
+                          />
+                        </div>
+                        <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-black font-medium">
+                          Gorillaz
+                        </p>
                       </div>
-                      <div className="flex-shrink-0">
-                        <ArtistCard name="Sheena ringo" image={profileImage} />
+                      <div className="flex-shrink-0 text-center">
+                        <div className="relative inline-block">
+                          <img
+                            src={profileImage}
+                            alt="Sheena ringo"
+                            className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 2xl:w-44 2xl:h-44 rounded-full object-cover mx-auto mb-3 sm:mb-4 md:mb-5 lg:mb-6 xl:mb-7 2xl:mb-8"
+                          />
+                        </div>
+                        <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-black font-medium">
+                          Sheena ringo
+                        </p>
                       </div>
-                      <div className="flex-shrink-0">
-                        <ArtistCard name="The cabs" image={profileImage} />
+                      <div className="flex-shrink-0 text-center">
+                        <div className="relative inline-block">
+                          <img
+                            src={profileImage}
+                            alt="The cabs"
+                            className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 2xl:w-44 2xl:h-44 rounded-full object-cover mx-auto mb-3 sm:mb-4 md:mb-5 lg:mb-6 xl:mb-7 2xl:mb-8"
+                          />
+                        </div>
+                        <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-black font-medium">
+                          The cabs
+                        </p>
                       </div>
                     </>
                   )}

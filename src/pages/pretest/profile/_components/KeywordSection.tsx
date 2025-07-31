@@ -9,11 +9,15 @@ interface Keyword {
 interface KeywordSectionProps {
   keywords: Keyword[];
   onRemoveKeyword?: (keywordId: string) => void;
+  isEditing?: boolean;
+  onEdit?: () => void;
 }
 
 const KeywordSection: React.FC<KeywordSectionProps> = ({
   keywords,
   onRemoveKeyword,
+  isEditing = false,
+  onEdit,
 }) => {
   const [showKeywordModal, setShowKeywordModal] = useState(false);
   const [inputKeyword, setInputKeyword] = useState("");
@@ -33,7 +37,11 @@ const KeywordSection: React.FC<KeywordSectionProps> = ({
   };
 
   const handleEdit = () => {
-    setShowKeywordModal(true);
+    if (onEdit) {
+      onEdit();
+    } else {
+      setShowKeywordModal(true);
+    }
   };
 
   const handleKeywordToggle = (keywordText: string, category: string) => {
@@ -81,35 +89,49 @@ const KeywordSection: React.FC<KeywordSectionProps> = ({
 
   return (
     <div className="mb-6 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
-      <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-medium text-white mb-4 sm:mb-5 md:mb-6 lg:mb-7 xl:mb-8 2xl:mb-9">
-        나를 표현하는 키워드
-      </h3>
+      <div className="flex items-center justify-between mb-4 sm:mb-5 md:mb-6 lg:mb-7 xl:mb-8 2xl:mb-9">
+        <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-medium text-white">
+          나를 표현하는 키워드
+        </h3>
+        <button
+          onClick={handleEdit}
+          className={`text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-medium transition-colors ${
+            isEditing
+              ? "text-green-500 hover:text-green-400"
+              : "text-[#B71C1C] hover:text-red-400"
+          }`}
+        >
+          {isEditing ? "완료" : "수정"}
+        </button>
+      </div>
       <div className="flex items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-7 2xl:gap-8">
-        <div className="flex flex-wrap gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-7 flex-1">
+        <div className="flex flex-wrap gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-7 flex-1 pb-4">
           {keywords.map((keyword) => (
             <div
               key={keyword.id}
               className="flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-7 px-3 py-1 sm:px-4 sm:py-2 md:px-5 md:py-3 lg:px-6 lg:py-4 xl:px-7 xl:py-5 2xl:px-8 2xl:py-6 bg-black text-white rounded-full text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl border border-white"
             >
               <span>{keyword.text}</span>
-              <button
-                onClick={() => onRemoveKeyword?.(keyword.id)}
-                className="hover:text-gray-300 transition-colors"
-              >
-                <svg
-                  className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 xl:w-7 xl:h-7 2xl:w-8 2xl:h-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              {isEditing && (
+                <button
+                  onClick={() => onRemoveKeyword?.(keyword.id)}
+                  className="hover:text-gray-300 transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 2xl:w-9 2xl:h-9"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
             </div>
           ))}
         </div>

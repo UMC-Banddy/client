@@ -296,7 +296,7 @@ export const profileAPI = {
     region?: string;
     district?: string;
     bio?: string;
-    profileImage?: string;
+    profileImage?: string | FormData;
     mediaUrl?: string;
     availableSessions?: Array<{
       sessionType: string;
@@ -307,12 +307,17 @@ export const profileAPI = {
     keywords?: string[];
   }): Promise<any> => {
     try {
+      // FormData인 경우와 일반 데이터인 경우를 구분
+      const isFormData = profileData.profileImage instanceof FormData;
+
       const response = await API.put(
         API_ENDPOINTS.PROFILE.UPDATE,
         profileData,
         {
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": isFormData
+              ? "multipart/form-data"
+              : "application/json",
           },
         }
       );

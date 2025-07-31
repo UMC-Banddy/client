@@ -207,12 +207,12 @@ const SessionRow: React.FC<SessionRowProps> = ({
   onLevelChange,
 }) => {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-row items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-7 2xl:gap-8">
       <SessionIcon icon={session.icon} />
-      <span className="text-white text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-medium whitespace-nowrap min-w-[60px] sm:min-w-[70px] md:min-w-[80px] lg:min-w-[90px] xl:min-w-[100px] 2xl:min-w-[110px]">
+      <span className="text-white text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-medium whitespace-nowrap min-w-[60px] sm:min-w-[70px] md:min-w-[80px] lg:min-w-[90px] xl:min-w-[100px] 2xl:min-w-[110px] flex-shrink-0">
         {session.name}
       </span>
-      <div className="flex justify-start gap-7 sm:gap-5 md:gap-6 lg:gap-7 xl:gap-8 2xl:gap-9 ml-auto">
+      <div className="flex flex-row items-center gap-4 sm:gap-5 md:gap-6 lg:gap-7 xl:gap-8 2xl:gap-9 ml-auto">
         {session.levels.map((level) => (
           <LevelButton
             key={level.id}
@@ -254,10 +254,10 @@ const LevelButton: React.FC<LevelButtonProps> = ({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-7 transition-colors"
+      className="flex flex-row items-center gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-7 transition-colors whitespace-nowrap"
     >
       <div
-        className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 2xl:w-10 2xl:h-10 rounded-full flex items-center justify-center ${
+        className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 2xl:w-10 2xl:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
           isSelected ? "border-2 border-white bg-transparent" : "bg-gray-400"
         }`}
       >

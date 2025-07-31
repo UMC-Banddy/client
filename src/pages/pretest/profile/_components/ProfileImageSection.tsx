@@ -11,6 +11,8 @@ const ProfileImageSection: React.FC<ProfileImageSectionProps> = ({
   onImageChange,
   onImageUpload,
 }) => {
+  console.log("ProfileImageSection 렌더링, imageUrl:", imageUrl);
+
   return (
     <div className="flex items-center justify-center gap-4 mb-6">
       <div className="relative">
