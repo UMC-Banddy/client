@@ -7,6 +7,15 @@ import Playlist from "@/shared/components/images/Playlist";
 import Prefer from "@/shared/components/images/Prefer";
 import Tictok from "@/shared/components/images/Tictok";
 import Youtube from "@/shared/components/images/Youtube";
+import {
+  MicImg,
+  GuitarImg,
+  BassImg,
+  DrumImg,
+  PianoImg,
+  ViolinImg,
+  TrumpetImg,
+} from "@/shared/components/images";
 
 interface BandInfoModalProps {
   title: string;
@@ -31,6 +40,37 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
   instagramUrl,
   bandId, // 추가
 }) => {
+  // 세션별 아이콘 매핑 함수
+  const getSessionIcon = (tagName: string) => {
+    const cleanName = tagName.toLowerCase();
+
+    if (cleanName.includes("보컬") || cleanName.includes("vocal"))
+      return MicImg;
+    if (cleanName.includes("기타") || cleanName.includes("guitar"))
+      return GuitarImg;
+    if (cleanName.includes("베이스") || cleanName.includes("bass"))
+      return BassImg;
+    if (cleanName.includes("드럼") || cleanName.includes("drum"))
+      return DrumImg;
+    if (cleanName.includes("피아노") || cleanName.includes("piano"))
+      return PianoImg;
+    if (cleanName.includes("바이올린") || cleanName.includes("violin"))
+      return ViolinImg;
+    if (cleanName.includes("트럼펫") || cleanName.includes("trumpet"))
+      return TrumpetImg;
+
+    // 기본값
+    return MicImg;
+  };
+
+  // 디버깅용 로그
+  console.log("BandInfoModal props:", {
+    title,
+    subtitle,
+    youtubeUrl,
+    instagramUrl,
+    bandId,
+  });
   return (
     <div
       className="relative bg-[#F5E9EA] rounded-[28px] w-full max-w-[410px] min-w-[320px] min-h-[420px] max-h-[95vh] flex flex-col px-8 pt-10 pb-8"
@@ -56,39 +96,71 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
             Comp: Prefer,
             color: "red-400",
             link: bandId ? `/home/prefer/${bandId}` : "/home/prefer",
+            hasLink: true,
           },
           {
             Comp: Playlist,
             color: "red-400",
             link: bandId ? `/home/playlist/${bandId}` : "/home/playlist",
+            hasLink: true,
           },
           {
             Comp: People,
             color: "red-400",
             link: bandId ? `/home/people/${bandId}` : "/home/people",
+            hasLink: true,
           },
-          { Comp: Youtube, color: "gray-700", link: youtubeUrl },
-          { Comp: Instagram, color: "gray-700", link: instagramUrl },
-          { Comp: Tictok, color: "gray-700", link: "https://tiktok.com" },
-        ].map(({ Comp, color, link }, idx) =>
-          link && link.startsWith("/") ? (
-            <Link key={idx} to={link} style={{ display: "inline-block" }}>
-              <Comp size={36} color={color as "red-400" | "gray-700"} />
-            </Link>
-          ) : link ? (
-            <a
-              key={idx}
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: "inline-block" }}
-            >
-              <Comp size={36} color={color as "red-400" | "gray-700"} />
-            </a>
-          ) : (
-            <Comp key={idx} size={36} color={color as "red-400" | "gray-700"} />
-          )
-        )}
+          {
+            Comp: Youtube,
+            color: "gray-700",
+            link: youtubeUrl,
+            hasLink: !!youtubeUrl,
+          },
+          {
+            Comp: Instagram,
+            color: "gray-700",
+            link: instagramUrl,
+            hasLink: !!instagramUrl,
+          },
+          {
+            Comp: Tictok,
+            color: "gray-700",
+            link: "https://tiktok.com",
+            hasLink: true,
+          },
+        ].map(({ Comp, color, link, hasLink }, idx) => {
+          const iconElement = (
+            <Comp size={40} color={color as "red-400" | "gray-700"} />
+          );
+
+          if (hasLink && link) {
+            if (link.startsWith("/")) {
+              return (
+                <Link key={idx} to={link} style={{ display: "inline-block" }}>
+                  {iconElement}
+                </Link>
+              );
+            } else {
+              return (
+                <a
+                  key={idx}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: "inline-block" }}
+                >
+                  {iconElement}
+                </a>
+              );
+            }
+          } else {
+            return (
+              <div key={idx} style={{ display: "inline-block" }}>
+                {iconElement}
+              </div>
+            );
+          }
+        })}
       </div>
       {/* 태그/정보 + 세로 구분선 */}
       <div
@@ -105,12 +177,41 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
           <polygon points="0,0 10,5 0,10" fill="#B42127" />
         </svg>
         <div className="flex items-center gap-3 flex-nowrap min-w-0">
-          {tags.map((tag, idx) => (
-            <React.Fragment key={tag}>
-              {idx !== 0 && <span className="text-gray-400">|</span>}
-              <span className="whitespace-nowrap">{tag}</span>
-            </React.Fragment>
-          ))}
+          {tags.map((tag, idx) => {
+            // 세션 태그인지 확인 (첫 번째 태그만)
+            const isSessionTag =
+              idx === 0 &&
+              (tag.toLowerCase().includes("보컬") ||
+                tag.toLowerCase().includes("기타") ||
+                tag.toLowerCase().includes("베이스") ||
+                tag.toLowerCase().includes("드럼") ||
+                tag.toLowerCase().includes("피아노") ||
+                tag.toLowerCase().includes("바이올린") ||
+                tag.toLowerCase().includes("트럼펫") ||
+                tag.toLowerCase().includes("vocal") ||
+                tag.toLowerCase().includes("guitar") ||
+                tag.toLowerCase().includes("bass") ||
+                tag.toLowerCase().includes("drum") ||
+                tag.toLowerCase().includes("piano") ||
+                tag.toLowerCase().includes("violin") ||
+                tag.toLowerCase().includes("trumpet"));
+
+            const SessionIcon = isSessionTag ? getSessionIcon(tag) : null;
+
+            return (
+              <React.Fragment key={tag}>
+                {idx !== 0 && <span className="text-gray-400">|</span>}
+                <span className="whitespace-nowrap flex items-center">
+                  {isSessionTag && SessionIcon && (
+                    <div className="w-3 h-3 mr-1">
+                      <SessionIcon size={12} color="gray-700" />
+                    </div>
+                  )}
+                  {tag}
+                </span>
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
       {/* 본문/설명 스크롤 영역 */}

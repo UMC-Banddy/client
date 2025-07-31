@@ -31,7 +31,14 @@ const ImgCircle = ({
       className={clsx(
         "flex items-center justify-center rounded-full relative overflow-hidden"
       )}
-      style={{ width: size, height: size, backgroundColor: bgColor }}
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: bgColor,
+        minWidth: size,
+        minHeight: size,
+        flexShrink: 0,
+      }}
       {...props}
     >
       {React.Children.map(props.children, (child) =>
@@ -47,6 +54,7 @@ const ImgCircle = ({
                   display: "block",
                   margin: "auto",
                   aspectRatio: "1/1",
+                  flexShrink: 0,
                   ...((child.props as { style?: React.CSSProperties }).style ||
                     {}),
                 },

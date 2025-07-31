@@ -1,23 +1,23 @@
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: "/member/login",
-    SIGNUP: "/member",
-    VERIFY_CODE: "/auth/verify",
-    SEND_CODE: "/auth/send",
-    CHECK_NICKNAME: "/member/check-nickname",
-    LOGOUT: "/auth/logout",
-    INACTIVE: "/auth/inactive",
-    REFRESH_TOKEN: "/auth/refreshToken",
+    LOGIN: "/api/member/login",
+    SIGNUP: "/api/member",
+    VERIFY_CODE: "/api/auth/verify",
+    SEND_CODE: "/api/auth/send",
+    CHECK_NICKNAME: "/api/member/check-nickname",
+    LOGOUT: "/api/auth/logout",
+    INACTIVE: "/api/auth/inactive",
+    REFRESH_TOKEN: "/api/auth/refreshToken",
   },
 
   SURVEY: {
-    SUBMIT: "/member/survey",
-    KEYWORD: "/member/survey/keyword",
-    ARTIST: "/member/survey/artist",
-    ARTIST_SEARCH: "/member/survey/artists/search",
-    GENRE: "/member/survey/genre",
-    SESSION: "/member/survey/session",
-    GENRE_SEARCH: "/member/survey/genres/search",
+    SUBMIT: "/api/member/survey",
+    KEYWORD: "/api/member/survey/keyword",
+    ARTIST: "/api/member/survey/artist",
+    ARTIST_SEARCH: "/api/member/survey/artists/search",
+    GENRE: "/api/member/survey/genre",
+    SESSION: "/api/member/survey/session",
+    GENRE_SEARCH: "/api/member/survey/genres/search",
   },
 
   FRIEND: {
@@ -34,17 +34,17 @@ export const API_ENDPOINTS = {
     EDIT: "/api/profile",
     UPDATE: "/api/profile",
     MEDIA_UPLOAD: "/api/profile/media",
-    OTHER: (memberId: string) => `/member/${memberId}/profile`,
+    OTHER: (memberId: string) => `/api/member/${memberId}/profile`,
     OTHER_TRACKS: (memberId: string) =>
-      `/member/${memberId}/profile/saved-tracks`,
-    OTHER_TAGS: (memberId: string) => `/member/${memberId}/tags`,
+      `/api/member/${memberId}/profile/saved-tracks`,
+    OTHER_TAGS: (memberId: string) => `/api/member/${memberId}/tags`,
     NOTIFICATIONS: "/api/notifications",
   },
 
   ALBUM_TRACKS: {
-    SIMILAR_TRACKS: "/tracks/similar",
-    SIMILAR_ARTISTS: "/artists/similar",
-    PREFERENCE: "/tracks/preferences",
+    SIMILAR_TRACKS: "/api/tracks/similar",
+    SIMILAR_ARTISTS: "/api/artists/similar",
+    PREFERENCE: "/api/tracks/preferences",
   },
 
   BANDS: {

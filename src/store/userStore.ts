@@ -167,7 +167,8 @@ export const getBandProfile = async (bandId: string) => {
       console.log("밴드 프로필 조회 성공:", response.data);
     }
 
-    return response.data;
+    // API 응답 구조에 따라 result 필드에서 데이터 추출
+    return response.data.result || response.data;
   } catch (error) {
     console.error("밴드 프로필 조회 실패:", error);
     throw error;
@@ -342,7 +343,8 @@ export const getRecommendedBandsFromAPI = async () => {
     if (import.meta.env.DEV) {
       console.log("추천 밴드 목록 조회 성공:", response.data);
     }
-    return response.data;
+    // API 응답 구조에 따라 result 필드에서 데이터 추출
+    return response.data.result || response.data;
   } catch (error) {
     console.error("추천 밴드 목록 조회 실패:", error);
     throw error;

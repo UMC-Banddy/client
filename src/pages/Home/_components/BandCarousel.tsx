@@ -16,6 +16,17 @@ const BandCarousel: React.FC<{
   bands: Band[];
   onJoinClick?: (band: Band) => void;
 }> = ({ bands, onJoinClick }) => {
+  // 빈 배열 처리
+  if (!bands || bands.length === 0) {
+    return (
+      <div className="relative w-full max-w-[420px] flex items-center justify-center">
+        <div className="text-white text-center">
+          <p>밴드 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
   const extendedBands = [bands[bands.length - 1], ...bands, bands[0]];
 
   const [index, setIndex] = useState(1); // 처음은 진짜 첫 번째 밴드 (복제 앞에 있음)

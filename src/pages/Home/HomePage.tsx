@@ -3,6 +3,15 @@ import BandCarousel from "./_components/BandCarousel";
 import MuiDialog from "@/shared/components/MuiDialog";
 import BandInfoModal from "./_components/BandInfoModal";
 import { getRecommendedBands } from "@/store/userStore";
+import {
+  MicImg,
+  GuitarImg,
+  BassImg,
+  DrumImg,
+  PianoImg,
+  ViolinImg,
+  TrumpetImg,
+} from "@/shared/components/images";
 
 interface TrackDto {
   title: string;
@@ -43,6 +52,32 @@ interface Band {
   tags: string[];
   profileData?: BandProfileData; // 원본 프로필 데이터 저장
 }
+
+// 세션 이름 정리 및 아이콘 매핑 함수
+const cleanSessionName = (sessionName: string): string => {
+  // 이모지 제거
+  return sessionName.replace(/[🪕🎤🥁🎹🎻🎺🎸]/g, "").trim();
+};
+
+const getSessionIcon = (sessionName: string) => {
+  const cleanName = cleanSessionName(sessionName).toLowerCase();
+
+  if (cleanName.includes("보컬") || cleanName.includes("vocal")) return MicImg;
+  if (cleanName.includes("기타") || cleanName.includes("guitar"))
+    return GuitarImg;
+  if (cleanName.includes("베이스") || cleanName.includes("bass"))
+    return BassImg;
+  if (cleanName.includes("드럼") || cleanName.includes("drum")) return DrumImg;
+  if (cleanName.includes("피아노") || cleanName.includes("piano"))
+    return PianoImg;
+  if (cleanName.includes("바이올린") || cleanName.includes("violin"))
+    return ViolinImg;
+  if (cleanName.includes("트럼펫") || cleanName.includes("trumpet"))
+    return TrumpetImg;
+
+  // 기본값
+  return MicImg;
+};
 
 // 임시 데이터 (API 연결 전까지 사용)
 const fallbackBandData: Band[] = [
@@ -174,26 +209,89 @@ const HomePage = () => {
         return;
       }
 
-      // 밴드 프로필 데이터를 캐러셀 형식으로 변환
-      const bands: Band[] = profiles.map(
-        (profile: BandProfileData, index: number) => {
-          // 첫 번째 곡을 대표 이미지로 사용
-          const representativeTrack = profile.goalTracks[0];
-          const representativeArtist = profile.preferredArtists[0];
-
-          return {
-            id: index + 1, // 임시 ID
-            image:
-              representativeTrack?.imageUrl ||
-              "/src/assets/images/home-album3.png",
-            title: representativeTrack?.title || "그래요 저 왜색 짙어요",
-            subtitle:
-              representativeTrack?.artist || "혼또니 아리가또 고자이마스",
-            tags: profile.sessions || ["기타 모집", "YOASOBI", "J-POP", "aiko"],
-            profileData: profile, // 원본 데이터 저장
-          };
-        }
+      // API 응답이 있지만 유효하지 않은 경우도 fallback 사용
+      const validProfiles = profiles.filter(
+        (profile: any) =>
+          profile &&
+          (profile.goalTracks || profile.preferredArtists || profile.sessions)
       );
+
+      if (validProfiles.length === 0) {
+        if (import.meta.env.DEV) {
+          console.log("유효한 밴드 데이터가 없어서 기본 데이터 사용");
+        }
+        setMyBands(fallbackBandData);
+        return;
+      }
+
+      // 밴드 프로필 데이터를 캐러셀 형식으로 변환
+      const bands: Band[] = validProfiles.map((profile: any, index: number) => {
+        // API 응답 구조에 따라 안전하게 접근
+        const goalTracks = profile.goalTracks || [];
+        const preferredArtists = profile.preferredArtists || [];
+        const sessions = profile.sessions || [];
+
+        // 디버깅용 로그
+        console.log(`밴드 ${index + 1} 데이터:`, {
+          goalTracks,
+          preferredArtists,
+          sessions,
+          profile,
+        });
+
+        // 첫 번째 곡을 대표 이미지로 사용
+        const representativeTrack = goalTracks[0];
+        const representativeArtist = preferredArtists[0];
+
+        // 세션이 비어있으면 기본 태그 사용
+        const tags =
+          sessions.length > 0
+            ? sessions.map((session: string) => cleanSessionName(session))
+            : fallbackBandData[index]?.tags || [
+                "기타 모집",
+                "YOASOBI",
+                "J-POP",
+                "aiko",
+              ];
+
+        console.log(`밴드 ${index + 1} 최종 태그:`, tags);
+
+        // 모든 데이터가 비어있으면 fallback 데이터 사용
+        const hasValidData =
+          goalTracks.length > 0 ||
+          preferredArtists.length > 0 ||
+          sessions.length > 0;
+        const fallbackBand = fallbackBandData[index];
+
+        if (!hasValidData && fallbackBand) {
+          console.log(
+            `밴드 ${index + 1} 데이터가 비어있어 fallback 사용:`,
+            fallbackBand
+          );
+          return fallbackBand;
+        }
+
+        return {
+          id: index + 1, // 임시 ID
+          image:
+            representativeTrack?.imageUrl ||
+            representativeArtist?.imageUrl ||
+            fallbackBandData[index]?.image ||
+            "/src/assets/images/home-album3.png",
+          title:
+            representativeTrack?.title ||
+            representativeArtist?.name ||
+            fallbackBandData[index]?.title ||
+            "그래요 저 왜색 짙어요",
+          subtitle:
+            representativeTrack?.artist ||
+            representativeArtist?.name ||
+            fallbackBandData[index]?.subtitle ||
+            "혼또니 아리가또 고자이마스",
+          tags,
+          profileData: profile, // 원본 데이터 저장
+        };
+      });
 
       setMyBands(bands);
     } catch (error) {
@@ -228,9 +326,7 @@ const HomePage = () => {
         <div className="w-full flex flex-col items-center overflow-hidden">
           {/* 캐러셀 */}
           <div className="w-full overflow-hidden">
-            {myBands.length > 0 && (
-              <BandCarousel bands={myBands} onJoinClick={handleJoinClick} />
-            )}
+            <BandCarousel bands={myBands} onJoinClick={handleJoinClick} />
           </div>
         </div>
       </main>
@@ -248,7 +344,9 @@ const HomePage = () => {
           }
           onClose={() => setOpen(false)}
           tags={
-            selectedBand?.profileData?.sessions ||
+            selectedBand?.profileData?.sessions?.map((session: string) =>
+              cleanSessionName(session)
+            ) ||
             selectedBand?.tags || [
               "20대 이상",
               "성별 무관",
@@ -270,12 +368,12 @@ const HomePage = () => {
           youtubeUrl={
             selectedBand?.profileData?.sns?.find(
               (s) => s.platform === "youtube"
-            )?.url
+            )?.url || "https://youtube.com"
           }
           instagramUrl={
             selectedBand?.profileData?.sns?.find(
               (s) => s.platform === "instagram"
-            )?.url
+            )?.url || "https://instagram.com"
           }
           bandId={selectedBand?.id?.toString()} // 추가
         />
