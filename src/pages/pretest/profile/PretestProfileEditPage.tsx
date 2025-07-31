@@ -56,10 +56,19 @@ const PretestProfileEditPage: React.FC = () => {
         if (response.isSuccess && response.result) {
           const data = response.result;
 
+          // 성별을 UI 표시용으로 변환
+          const genderDisplayMap: Record<string, string> = {
+            MALE: "남성",
+            FEMALE: "여성",
+            OTHER: "기타",
+          };
+
+          const displayGender = genderDisplayMap[data.gender] || "여성";
+
           // 기본 정보 설정
           setName(data.nickname || "BECK");
           setAge(data.age ? `${data.age}세` : "23세");
-          setGender(data.gender || "여성");
+          setGender(displayGender);
           setCity(data.region || "서울특별시");
           setDistrict(data.district || "노원구");
           setIntroduction(data.bio || "");
@@ -125,10 +134,28 @@ const PretestProfileEditPage: React.FC = () => {
     try {
       // 세션 데이터를 API 형식으로 변환
       const availableSessions = Object.entries(selectedSessions).map(
-        ([sessionType, level]) => ({
-          sessionType,
-          level,
-        })
+        ([sessionType, level]) => {
+          // 세션 타입을 서버가 기대하는 형식으로 변환
+          let serverSessionType = sessionType;
+
+          // 세션 타입 매핑 (필요한 경우)
+          const sessionTypeMap: Record<string, string> = {
+            vocal: "vocal",
+            guitar: "guitar",
+            bass: "bass",
+            drum: "drum",
+            piano: "piano",
+            violin: "violin",
+            trumpet: "trumpet",
+          };
+
+          serverSessionType = sessionTypeMap[sessionType] || sessionType;
+
+          return {
+            sessionType: serverSessionType,
+            level: level,
+          };
+        }
       );
 
       // 장르 데이터 변환
@@ -140,11 +167,20 @@ const PretestProfileEditPage: React.FC = () => {
       // 키워드 데이터 변환
       const keywordsData = keywords.map((keyword) => keyword.text);
 
+      // 성별을 서버가 기대하는 형식으로 변환
+      const genderMap: Record<string, string> = {
+        남성: "MALE",
+        여성: "FEMALE",
+        기타: "OTHER",
+      };
+
+      const serverGender = genderMap[gender] || "OTHER";
+
       // API로 프로필 업데이트
       const updateData = {
         nickname: name,
         age: parseInt(age.replace("세", "")) || 23,
-        gender: gender,
+        gender: serverGender,
         region: city,
         district: district,
         bio: introduction,
@@ -157,6 +193,22 @@ const PretestProfileEditPage: React.FC = () => {
       };
 
       console.log("업데이트할 데이터:", updateData);
+
+      // 필수 필드 검증
+      if (!name || name.trim() === "") {
+        setError("닉네임을 입력해주세요.");
+        return;
+      }
+
+      if (!age || age.trim() === "") {
+        setError("나이를 입력해주세요.");
+        return;
+      }
+
+      if (!gender || gender.trim() === "") {
+        setError("성별을 선택해주세요.");
+        return;
+      }
 
       const response = await profileAPI.updateProfile(updateData);
       console.log("프로필 업데이트 결과:", response);

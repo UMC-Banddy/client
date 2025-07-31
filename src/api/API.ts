@@ -310,18 +310,29 @@ export const profileAPI = {
       // FormData인 경우와 일반 데이터인 경우를 구분
       const isFormData = profileData.profileImage instanceof FormData;
 
-      const response = await API.put(
-        API_ENDPOINTS.PROFILE.UPDATE,
-        profileData,
-        {
+      // profileImage가 FormData인 경우 별도 처리
+      if (isFormData) {
+        const response = await API.put(
+          API_ENDPOINTS.PROFILE.UPDATE,
+          profileData.profileImage,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        return response.data;
+      } else {
+        // profileImage가 문자열이거나 없는 경우 JSON으로 전송
+        const { profileImage, ...jsonData } = profileData;
+
+        const response = await API.put(API_ENDPOINTS.PROFILE.UPDATE, jsonData, {
           headers: {
-            "Content-Type": isFormData
-              ? "multipart/form-data"
-              : "application/json",
+            "Content-Type": "application/json",
           },
-        }
-      );
-      return response.data;
+        });
+        return response.data;
+      }
     } catch (error: any) {
       console.error("프로필 수정 실패:", error);
       throw error;
