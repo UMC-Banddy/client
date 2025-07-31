@@ -1,7 +1,25 @@
-
 import axios from "axios";
 import { API_ENDPOINTS } from "@/constants";
 import { authStore } from "@/store/authStore";
+
+// 아티스트 타입 정의
+export interface Artist {
+  id: number;
+  spotifyId: string;
+  name: string;
+  genre: string;
+  imageUrl: string;
+  externalUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Survey 제출 데이터 타입 정의
+export interface SurveyData {
+  selectedArtists: string[];
+  profileImage?: File;
+  mediaFile?: File;
+}
 
 // Axios 인스턴스 생성
 export const API = axios.create({
@@ -36,7 +54,9 @@ API.interceptors.response.use(
 
       try {
         const res = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`,
+          `${import.meta.env.VITE_API_BASE_URL}${
+            API_ENDPOINTS.AUTH.REFRESH_TOKEN
+          }`,
           {
             refreshToken: authStore.refreshToken,
           }
@@ -61,3 +81,65 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// 아티스트 관련 API 함수들
+export const artistAPI = {
+  // 아티스트 목록 조회
+  getArtists: async (): Promise<Artist[]> => {
+    try {
+      const response = await API.get(API_ENDPOINTS.SURVEY.ARTIST);
+      return response.data;
+    } catch (error) {
+      console.error("아티스트 목록 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // 아티스트 검색
+  searchArtists: async (query: string): Promise<Artist[]> => {
+    try {
+      const response = await API.get(
+        `${API_ENDPOINTS.SURVEY.ARTIST_SEARCH}?query=${encodeURIComponent(
+          query
+        )}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("아티스트 검색 실패:", error);
+      throw error;
+    }
+  },
+};
+
+// Survey 관련 API 함수들
+export const surveyAPI = {
+  // Survey 제출
+  submitSurvey: async (data: SurveyData): Promise<void> => {
+    try {
+      const formData = new FormData();
+
+      // 선택된 아티스트 ID들을 JSON 문자열로 변환하여 추가
+      formData.append("selectedArtists", JSON.stringify(data.selectedArtists));
+
+      // 파일이 있는 경우에만 추가
+      if (data.profileImage) {
+        formData.append("profileImage", data.profileImage);
+      }
+
+      if (data.mediaFile) {
+        formData.append("mediaFile", data.mediaFile);
+      }
+
+      const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error("Survey 제출 실패:", error);
+      throw error;
+    }
+  },
+};

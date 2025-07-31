@@ -2,15 +2,20 @@ import React from "react";
 import ArtistCard from "./ArtistCard";
 
 interface Artist {
-  id: string;
+  id: number;
+  spotifyId: string;
   name: string;
-  image?: string;
+  genre: string;
+  imageUrl: string;
+  externalUrl: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ArtistGridProps {
   artists: Artist[];
-  selectedArtists: string[];
-  onArtistSelect: (id: string) => void;
+  selectedArtists: number[];
+  onArtistSelect: (id: number) => void;
   className?: string;
 }
 
@@ -29,7 +34,7 @@ const ArtistGrid: React.FC<ArtistGridProps> = ({
           key={artist.id}
           id={artist.id}
           name={artist.name}
-          image={artist.image}
+          image={artist.imageUrl}
           isSelected={selectedArtists.includes(artist.id)}
           onSelect={onArtistSelect}
         />

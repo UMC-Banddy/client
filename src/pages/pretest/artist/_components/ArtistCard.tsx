@@ -2,11 +2,11 @@ import React from "react";
 import oasisImage from "@/assets/images/oasis.png";
 
 interface ArtistCardProps {
-  id: string;
+  id: number;
   name: string;
   image?: string;
   isSelected?: boolean;
-  onSelect?: (id: string) => void;
+  onSelect?: (id: number) => void;
   className?: string;
 }
 
