@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import PretestHeader from "../artist/_components/PretestHeader";
 import SessionList from "./_components/SessionList";
 import SkillGuideModal from "./_components/SkillGuideModal";
-import { surveyAPI } from "@/api/API";
+import { surveyAPI, profileAPI, API } from "@/api/API";
+import { API_ENDPOINTS } from "@/constants";
 import { SESSIONS } from "./_components/sessionData";
 
 const PretestSessionPage = () => {
@@ -23,6 +24,7 @@ const PretestSessionPage = () => {
       try {
         setLoading(true);
         const apiData = await surveyAPI.getSessions();
+        console.log("서버 세션 데이터:", apiData);
 
         // API 데이터와 mock 데이터의 levels를 결합
         const combinedSessions = apiData.map((apiSession) => {
@@ -83,15 +85,72 @@ const PretestSessionPage = () => {
     if (Object.keys(selectedSessions).length > 0) {
       try {
         setSubmitting(true);
-        // Session 데이터 제출
-        await surveyAPI.submitSessionData({
-          selectedSessions: selectedSessions,
-        });
+
+        // selectedSessions를 availableSessions 형식으로 변환
+        const availableSessions = Object.entries(selectedSessions).map(
+          ([sessionId, levelId]) => {
+            // sessionId를 실제 세션 정보에서 찾아서 올바른 sessionType으로 변환
+            const session = sessions.find((s) => s.id === sessionId);
+
+            // 서버에서 가져온 세션 데이터를 기반으로 sessionType 결정
+            // session.name을 그대로 사용 (서버가 기대하는 형식)
+            const sessionType = session ? session.name : sessionId;
+
+            // levelId를 level로 변환 (예: "beginner" -> "beginner")
+            const level = levelId;
+
+            console.log(
+              `세션 변환: ${sessionId} -> ${sessionType}, 레벨: ${level}`
+            );
+
+            return {
+              sessionType,
+              level,
+            };
+          }
+        );
+
+        console.log("전송할 세션 데이터:", availableSessions);
+
+        // 기존 프로필 정보를 가져와서 availableSessions만 업데이트
+        try {
+          const currentProfile = await profileAPI.getProfile();
+          console.log("현재 프로필 정보:", currentProfile);
+
+          // 기존 프로필 정보와 새로운 세션 정보를 병합
+          const updatedProfile = {
+            ...currentProfile.result, // 기존 프로필 정보 유지
+            availableSessions: availableSessions, // 세션 정보만 업데이트
+          };
+
+          console.log("업데이트할 프로필 정보:", updatedProfile);
+
+          // 프로필 API로 세션 데이터 저장
+          await profileAPI.updateProfile(updatedProfile);
+        } catch (profileError) {
+          console.error("프로필 조회 실패, 기본값으로 저장:", profileError);
+
+          // 프로필 조회 실패 시 기본값으로 저장
+          await profileAPI.updateProfile({
+            availableSessions: availableSessions,
+            nickname: "",
+            age: 0,
+            gender: "",
+            region: "",
+            district: "",
+            bio: "",
+            profileImage: "",
+            mediaUrl: "",
+            genres: [],
+            artists: [],
+            keywords: [],
+          });
+        }
 
         // 성공 시 다음 페이지로 이동
         navigate("/pre-test/profile/complete");
       } catch (error) {
-        console.error("Session 데이터 제출 실패:", error);
+        console.error("세션 데이터 제출 실패:", error);
         // 에러가 발생해도 다음 페이지로 이동 (선택사항)
         navigate("/pre-test/profile/complete");
       } finally {

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PretestHeader from "./_components/PretestHeader";
 import SearchBar from "./_components/SearchBar";
 import ArtistGrid from "./_components/ArtistGrid";
-import { artistAPI, surveyAPI, musicAPI } from "@/api/API";
+import { artistAPI, surveyAPI, musicAPI, artistSaveAPI } from "@/api/API";
 import type { AutocompleteResult, ArtistSearchResult } from "@/api/API";
 import oasisImage from "@/assets/images/oasis.png";
 
@@ -283,15 +283,43 @@ const PretestArtistPage = () => {
     if (selectedArtists.length > 0) {
       try {
         setSubmitting(true);
-        // Survey 데이터 제출
-        await surveyAPI.submitSurvey({
-          selectedArtists: selectedArtists,
+
+        // 선택된 아티스트 정보 가져오기
+        const selectedArtistData = selectedArtists.map((id) => {
+          // 검색 결과에서 찾기
+          const searchResult = searchResults.find(
+            (artist) => artist.id.toString() === id
+          );
+          if (searchResult) {
+            return searchResult.spotifyId;
+          }
+          // 기본 아티스트 목록에서 찾기
+          const artist = artists.find((artist) => artist.id.toString() === id);
+          return artist ? artist.spotifyId : id;
         });
+
+        console.log("전송할 아티스트 데이터:", selectedArtistData);
+
+        // 각 아티스트를 개별적으로 저장
+        const savePromises = selectedArtistData.map(async (spotifyId) => {
+          try {
+            const result = await artistSaveAPI.saveArtist(spotifyId);
+            console.log(`아티스트 ${spotifyId} 저장 성공:`, result);
+            return result;
+          } catch (error) {
+            console.error(`아티스트 ${spotifyId} 저장 실패:`, error);
+            throw error;
+          }
+        });
+
+        // 모든 아티스트 저장 완료 대기
+        await Promise.all(savePromises);
+        console.log("모든 아티스트 저장 완료");
 
         // 성공 시 다음 페이지로 이동
         navigate("/pre-test/session");
       } catch (error) {
-        console.error("Survey 제출 실패:", error);
+        console.error("아티스트 저장 실패:", error);
         // 에러가 발생해도 다음 페이지로 이동 (선택사항)
         navigate("/pre-test/session");
       } finally {
@@ -301,7 +329,7 @@ const PretestArtistPage = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col  text-white font-inherit">
+    <div className="w-full h-full flex flex-col text-white font-inherit">
       {/* 헤더 */}
       <PretestHeader
         onSkip={handleSkip}

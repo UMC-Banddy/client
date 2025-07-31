@@ -251,37 +251,140 @@ export const musicAPI = {
   },
 };
 
+// 아티스트 저장 API 함수
+export const artistSaveAPI = {
+  // 아티스트 저장
+  saveArtist: async (spotifyId: string): Promise<any> => {
+    try {
+      const response = await API.post(
+        API_ENDPOINTS.ARTISTS.SAVE,
+        {
+          spotifyId: spotifyId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("아티스트 저장 실패:", error);
+      throw error;
+    }
+  },
+};
+
+// 프로필 수정 API 함수
+export const profileAPI = {
+  // 프로필 조회
+  getProfile: async (): Promise<any> => {
+    try {
+      const response = await API.get(API_ENDPOINTS.PROFILE.SELF);
+      return response.data;
+    } catch (error: any) {
+      console.error("프로필 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // 프로필 수정
+  updateProfile: async (profileData: {
+    nickname?: string;
+    age?: number;
+    gender?: string;
+    region?: string;
+    district?: string;
+    bio?: string;
+    profileImage?: string;
+    mediaUrl?: string;
+    availableSessions?: Array<{
+      sessionType: string;
+      level: string;
+    }>;
+    genres?: string[];
+    artists?: string[];
+    keywords?: string[];
+  }): Promise<any> => {
+    try {
+      const response = await API.put(
+        API_ENDPOINTS.PROFILE.UPDATE,
+        profileData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("프로필 수정 실패:", error);
+      throw error;
+    }
+  },
+};
+
 // Survey 관련 API 함수들
 export const surveyAPI = {
   // Survey 제출
   submitSurvey: async (data: SurveyData): Promise<void> => {
     try {
-      const formData = new FormData();
+      // 파일이 있는 경우에만 FormData 사용, 없으면 JSON 사용
+      if (data.profileImage || data.mediaFile) {
+        const formData = new FormData();
 
-      // 서버가 요구하는 'request' 필드에 JSON 데이터를 담아서 전송
-      const requestData = {
-        selectedArtists: data.selectedArtists,
-      };
-      formData.append("request", JSON.stringify(requestData));
+        // 서버가 요구하는 'request' 필드에 JSON 데이터를 담아서 전송
+        const requestData = {
+          selectedArtists: data.selectedArtists,
+        };
 
-      // 파일이 있는 경우에만 추가
-      if (data.profileImage) {
-        formData.append("profileImage", data.profileImage);
+        console.log("Survey 제출 데이터 (FormData):", requestData);
+        formData.append("request", JSON.stringify(requestData));
+
+        // 파일이 있는 경우에만 추가
+        if (data.profileImage) {
+          formData.append("profileImage", data.profileImage);
+        }
+
+        if (data.mediaFile) {
+          formData.append("mediaFile", data.mediaFile);
+        }
+
+        console.log("FormData 내용:");
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
+
+        const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        return response.data;
+      } else {
+        // 파일이 없으면 JSON 형식으로 전송
+        const requestData = {
+          selectedArtists: data.selectedArtists,
+        };
+
+        console.log("Survey 제출 데이터 (JSON):", requestData);
+
+        const response = await API.post(
+          API_ENDPOINTS.SURVEY.SUBMIT,
+          requestData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        return response.data;
       }
-
-      if (data.mediaFile) {
-        formData.append("mediaFile", data.mediaFile);
-      }
-
-      const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Survey 제출 실패:", error);
+      console.error("에러 상세 정보:", error.response?.data);
       throw error;
     }
   },
