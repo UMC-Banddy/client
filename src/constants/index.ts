@@ -30,13 +30,14 @@ export const API_ENDPOINTS = {
   },
 
   PROFILE: {
-    SELF: "/profile",
-    EDIT: "/profile",
-    MEDIA_UPLOAD: "/profile/media",
-    OTHER: (memberId: string) => `/members/${memberId}/profile`,
-    OTHER_TRACKS: (memberId: string) => `/members/${memberId}/saved-tracks`,
-    OTHER_TAGS: (memberId: string) => `/members/${memberId}/tags`,
-    NOTIFICATIONS: "/notifications",
+    SELF: "/api/profile",
+    EDIT: "/api/profile",
+    MEDIA_UPLOAD: "/api/profile/media",
+    OTHER: (memberId: string) => `/member/${memberId}/profile`,
+    OTHER_TRACKS: (memberId: string) =>
+      `/member/${memberId}/profile/saved-tracks`,
+    OTHER_TAGS: (memberId: string) => `/member/${memberId}/tags`,
+    NOTIFICATIONS: "/api/notifications",
   },
 
   ALBUM_TRACKS: {
