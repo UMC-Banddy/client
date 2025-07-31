@@ -40,7 +40,7 @@ export interface OtherProfileData {
   traits: string[];
   youtubeUrl: string | null;
   instagramUrl: string | null;
-  mediaUrl: string | null;
+  genres: string[];
   canRequestChat: boolean;
   friend: boolean;
   blocked: boolean;

@@ -10,6 +10,7 @@ interface Artist {
   id: number;
   name: string;
   image: string;
+  imageUrl?: string;
 }
 
 interface BandInfo {
@@ -76,7 +77,8 @@ export default function PreferPage() {
 
       // API 응답을 Artist 형식으로 변환
       const transformedArtists: Artist[] = artistsData.map(
-        (artist: any, index: number) => ({
+        // (artist: any, index: number) => ({
+        (artist: Artist, index: number) => ({
           id: artist.id || index + 1,
           name: artist.name || `아티스트 ${index + 1}`,
           image: artist.imageUrl || artist.image || guitarBoy,

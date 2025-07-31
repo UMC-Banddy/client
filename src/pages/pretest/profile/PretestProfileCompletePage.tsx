@@ -8,6 +8,7 @@ import { profileAPI } from "@/api/API";
 
 const PretestProfileCompletePage: React.FC = () => {
   const navigate = useNavigate();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -181,6 +182,7 @@ const PretestProfileCompletePage: React.FC = () => {
                 </div>
                 <div className="flex gap-6 sm:gap-7 md:gap-8 lg:gap-9 xl:gap-10 2xl:gap-11 overflow-x-auto scrollbar-hide">
                   {profileData?.savedTracks?.length > 0 ? (
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     profileData.savedTracks.map((track: any, index: number) => (
                       <div key={index} className="flex-shrink-0 text-center">
                         <div className="relative inline-block">

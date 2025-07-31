@@ -82,7 +82,8 @@ export default function PeoplePage() {
 
       // API 응답을 BandMember 형식으로 변환
       const transformedMembers: BandMember[] = membersData.map(
-        (member: any, index: number) => ({
+        // (member: any, index: number) => ({
+        (member: BandMember, index: number) => ({
           id: member.id || index + 1,
           name: member.name || `멤버 ${index + 1}`,
           role: member.role || "guitar",
