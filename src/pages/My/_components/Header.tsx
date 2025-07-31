@@ -13,8 +13,6 @@ interface HeaderProps {
 
 export default function Header({
   title,
-  leftIcon,
-  leftLink,
   className = "",
   hasNotification = false,
 }: HeaderProps) {
@@ -23,11 +21,6 @@ export default function Header({
       className={`absolute top-[0vh] left-[0vw] w-full h-[13vh] flex items-center justify-between px-[4vw] ${className}`}
     >
       <div className="flex items-center">
-        {leftIcon && leftLink ? (
-          <Link to={leftLink} className="mr-2 flex items-center justify-center" aria-label="left icon">
-            {leftIcon}
-          </Link>
-        ) : null}
         <span
           className="text-hel-26 text-[#FFFFFF] select-none"
         >
@@ -39,14 +32,14 @@ export default function Header({
           <img 
             src={hasNotification ? bell : no_bell} 
             alt="bell" 
-            className="text-[#FFFFFF] w-[12vw] h-[12vw]" 
+            className="text-[#FFFFFF] w-[12vw] h-[12vw] max-w-[48px] max-h-[48px]" 
           />
         </Link>
         <Link to="/my/setting" className="flex items-center justify-center" aria-label="settings">
           <img 
             src={settings} 
             alt="settings" 
-            className="text-[#FFFFFF] w-[12vw] h-[12vw]" 
+            className="text-[#FFFFFF] w-[12vw] h-[12vw] max-w-[48px] max-h-[48px]" 
           />
         </Link>
       </div>
