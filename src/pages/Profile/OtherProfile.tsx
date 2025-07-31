@@ -6,11 +6,7 @@ import HashtagList from "@/pages/My/_components/HashTagList";
 import ArtistGrid from "@/pages/Archive/Artist/ArtistGrid";
 import MusicList from "@/pages/Archive/Music/MusicList";
 import MyArchiveItem from "@/pages/My/_components/Archive/MyArchiveItem";
-import {
-  getOtherProfile,
-  getOtherSavedTracks,
-  getOtherTags,
-} from "@/store/userStore";
+import { getOtherProfile, getOtherSavedTracks } from "@/store/userStore";
 
 interface OtherProfileData {
   memberId: number;
@@ -61,10 +57,11 @@ export default function OtherProfile() {
       // 상대방 저장한 곡도 함께 조회
       const tracksData = await getOtherSavedTracks(id);
       setSavedTracks(tracksData.result || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("상대방 프로필 조회 실패:", error);
       setError(
-        error.response?.data?.message || "프로필을 불러오는데 실패했습니다."
+        (error as any).response?.data?.message ||
+          "프로필을 불러오는데 실패했습니다."
       );
     } finally {
       setLoading(false);

@@ -212,11 +212,11 @@ export const getRecommendedBands = async () => {
         console.log("백엔드 추천 API 성공:", response);
       }
       return response;
-    } catch (apiError: any) {
+    } catch (apiError: unknown) {
       if (import.meta.env.DEV) {
         console.log(
           "백엔드 추천 API 실패, fallback 방식 사용:",
-          apiError.message
+          (apiError as Error).message
         );
       }
 
@@ -244,10 +244,13 @@ export const getRecommendedBands = async () => {
           if (import.meta.env.DEV) {
             console.log(`밴드 ${id} 조회 성공`);
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           // 모든 에러를 무시하고 계속 진행
           if (import.meta.env.DEV) {
-            console.log(`밴드 ${id} 조회 실패 (무시됨):`, error.message);
+            console.log(
+              `밴드 ${id} 조회 실패 (무시됨):`,
+              (error as Error).message
+            );
           }
           continue;
         }

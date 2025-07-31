@@ -1,6 +1,5 @@
 import React from "react";
 import CustomButton from "@/shared/ui/atoms/CustomButton";
-import micIcon from "@/assets/icons/home/mic.svg";
 import {
   MicImg,
   GuitarImg,

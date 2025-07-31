@@ -77,9 +77,11 @@ const PretestProfileEditPage: React.FC = () => {
           // 세션 데이터 변환
           if (data.availableSessions && Array.isArray(data.availableSessions)) {
             const sessionsMap: Record<string, string> = {};
-            data.availableSessions.forEach((session: any) => {
-              sessionsMap[session.sessionType] = session.level;
-            });
+            data.availableSessions.forEach(
+              (session: { sessionType: string; level: string }) => {
+                sessionsMap[session.sessionType] = session.level;
+              }
+            );
             setSelectedSessions(sessionsMap);
           }
 
@@ -96,7 +98,7 @@ const PretestProfileEditPage: React.FC = () => {
           // 저장된 트랙을 아티스트로 변환
           if (data.savedTracks && Array.isArray(data.savedTracks)) {
             const artistsData = data.savedTracks.map(
-              (track: any, index: number) => ({
+              (track: { title: string; imageUrl?: string }, index: number) => ({
                 id: index.toString(),
                 name: track.title,
                 imageUrl: track.imageUrl || profileImage,

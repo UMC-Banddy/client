@@ -254,7 +254,9 @@ export const musicAPI = {
 // 아티스트 저장 API 함수
 export const artistSaveAPI = {
   // 아티스트 저장
-  saveArtist: async (spotifyId: string): Promise<{ isSuccess: boolean; result: any }> => {
+  saveArtist: async (
+    spotifyId: string
+  ): Promise<{ isSuccess: boolean; result: any }> => {
     try {
       const response = await API.post(
         API_ENDPOINTS.ARTISTS.SAVE,
@@ -282,7 +284,7 @@ export const profileAPI = {
     try {
       const response = await API.get(API_ENDPOINTS.PROFILE.SELF);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("프로필 조회 실패:", error);
       throw error;
     }
@@ -305,7 +307,7 @@ export const profileAPI = {
     genres?: string[];
     artists?: string[];
     keywords?: string[];
-  }): Promise<any> => {
+  }): Promise<{ isSuccess: boolean; result: any }> => {
     try {
       // FormData인 경우와 일반 데이터인 경우를 구분
       const isFormData = profileData.profileImage instanceof FormData;
@@ -324,7 +326,7 @@ export const profileAPI = {
         return response.data;
       } else {
         // profileImage가 문자열이거나 없는 경우 JSON으로 전송
-        const { profileImage, ...jsonData } = profileData;
+        const { profileImage: _, ...jsonData } = profileData;
 
         const response = await API.put(API_ENDPOINTS.PROFILE.UPDATE, jsonData, {
           headers: {
@@ -333,7 +335,7 @@ export const profileAPI = {
         });
         return response.data;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("프로필 수정 실패:", error);
       throw error;
     }
@@ -367,7 +369,7 @@ export const surveyAPI = {
         }
 
         console.log("FormData 내용:");
-        for (let [key, value] of formData.entries()) {
+        for (const [key, value] of formData.entries()) {
           console.log(`${key}:`, value);
         }
 
@@ -398,9 +400,9 @@ export const surveyAPI = {
 
         return response.data;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Survey 제출 실패:", error);
-      console.error("에러 상세 정보:", error.response?.data);
+      console.error("에러 상세 정보:", (error as any).response?.data);
       throw error;
     }
   },

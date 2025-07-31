@@ -48,19 +48,19 @@ const PretestProfileCompletePage: React.FC = () => {
   };
 
   // 세션 타입에 따른 아이콘 반환
-  const getSessionIcon = (sessionType: string) => {
-    const iconMapping: Record<string, string> = {
-      vocal: "🎤",
-      electric_guitar: "🎸",
-      acoustic_guitar: "🪕",
-      bass: "🪕",
-      drums: "🥁",
-      keyboard: "🎹",
-      violin: "🎻",
-      trumpet: "🎺",
-    };
-    return iconMapping[sessionType] || "🎤";
-  };
+  // const getSessionIcon = (sessionType: string) => {
+  //   const iconMapping: Record<string, string> = {
+  //     vocal: "🎤",
+  //     electric_guitar: "🎸",
+  //     acoustic_guitar: "🪕",
+  //     bass: "🪕",
+  //     drums: "🥁",
+  //     keyboard: "🎹",
+  //     violin: "🎻",
+  //     trumpet: "🎺",
+  //   };
+  //   return iconMapping[sessionType] || "🎤";
+  // };
 
   return (
     <div className="w-full h-full flex flex-col text-white font-inherit">

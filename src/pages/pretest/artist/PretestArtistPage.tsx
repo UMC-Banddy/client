@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import PretestHeader from "./_components/PretestHeader";
 import SearchBar from "./_components/SearchBar";
 import ArtistGrid from "./_components/ArtistGrid";
-import { artistAPI, surveyAPI, musicAPI, artistSaveAPI } from "@/api/API";
-import type { AutocompleteResult, ArtistSearchResult } from "@/api/API";
+import { musicAPI, artistSaveAPI } from "@/api/API";
+import type { AutocompleteResult } from "@/api/API";
 import oasisImage from "@/assets/images/oasis.png";
 
 // 아티스트 타입 정의 (API에서 import가 안 될 경우를 대비)
@@ -127,9 +127,9 @@ const PretestArtistPage = () => {
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [artists, setArtists] = useState<Artist[]>([]);
-  const [autocompleteResults, setAutocompleteResults] = useState<
-    AutocompleteResult[]
-  >([]);
+  // const [autocompleteResults, setAutocompleteResults] = useState<
+  //   AutocompleteResult[]
+  // >([]);
   const [searchResults, setSearchResults] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -369,7 +369,7 @@ const PretestArtistPage = () => {
                 // 선택된 아이템에 대한 추가 처리 로직
               }}
               onAutocompleteResults={async (results) => {
-                setAutocompleteResults(results);
+                // setAutocompleteResults(results);
 
                 // 검색어가 있으면 SEARCH_ALL API로 검색 결과 가져오기
                 if (searchQuery.trim().length > 0) {

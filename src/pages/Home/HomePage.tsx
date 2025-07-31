@@ -56,28 +56,28 @@ interface Band {
 // 세션 이름 정리 및 아이콘 매핑 함수
 const cleanSessionName = (sessionName: string): string => {
   // 이모지 제거
-  return sessionName.replace(/[🪕🎤🥁🎹🎻🎺🎸]/g, "").trim();
+  return sessionName.replace(/[🪕🎤🥁🎹🎻🎺🎸]/gu, "").trim();
 };
 
-const getSessionIcon = (sessionName: string) => {
-  const cleanName = cleanSessionName(sessionName).toLowerCase();
+// const getSessionIcon = (sessionName: string) => {
+//   const cleanName = cleanSessionName(sessionName).toLowerCase();
 
-  if (cleanName.includes("보컬") || cleanName.includes("vocal")) return MicImg;
-  if (cleanName.includes("기타") || cleanName.includes("guitar"))
-    return GuitarImg;
-  if (cleanName.includes("베이스") || cleanName.includes("bass"))
-    return BassImg;
-  if (cleanName.includes("드럼") || cleanName.includes("drum")) return DrumImg;
-  if (cleanName.includes("피아노") || cleanName.includes("piano"))
-    return PianoImg;
-  if (cleanName.includes("바이올린") || cleanName.includes("violin"))
-    return ViolinImg;
-  if (cleanName.includes("트럼펫") || cleanName.includes("trumpet"))
-    return TrumpetImg;
+//   if (cleanName.includes("보컬") || cleanName.includes("vocal")) return MicImg;
+//   if (cleanName.includes("기타") || cleanName.includes("guitar"))
+//     return GuitarImg;
+//   if (cleanName.includes("베이스") || cleanName.includes("bass"))
+//     return BassImg;
+//   if (cleanName.includes("드럼") || cleanName.includes("drum")) return DrumImg;
+//   if (cleanName.includes("피아노") || cleanName.includes("piano"))
+//     return PianoImg;
+//   if (cleanName.includes("바이올린") || cleanName.includes("violin"))
+//     return ViolinImg;
+//   if (cleanName.includes("트럼펫") || cleanName.includes("trumpet"))
+//     return TrumpetImg;
 
-  // 기본값
-  return MicImg;
-};
+//   // 기본값
+//   return MicImg;
+// };
 
 // 임시 데이터 (API 연결 전까지 사용)
 const fallbackBandData: Band[] = [

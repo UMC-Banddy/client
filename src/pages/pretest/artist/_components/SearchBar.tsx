@@ -18,37 +18,37 @@ const SearchBar: React.FC<SearchBarProps> = ({
   className = "",
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [autocompleteResults, setAutocompleteResults] = useState<
-    AutocompleteResult[]
-  >([]);
-  const [showAutocomplete, setShowAutocomplete] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // const [autocompleteResults, setAutocompleteResults] = useState<
+  //   AutocompleteResult[]
+  // >([]);
+  // const [showAutocomplete, setShowAutocomplete] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 자동완성 데이터 가져오기
   const fetchAutocomplete = async (query: string) => {
     if (query.trim().length < 2) {
-      setAutocompleteResults([]);
-      setShowAutocomplete(false);
+      // setAutocompleteResults([]);
+      // setShowAutocomplete(false);
       return;
     }
 
     try {
-      setLoading(true);
+      // setLoading(true);
       // 자동완성 API 사용
       const results = await musicAPI.getAutocomplete(query, 20);
-      setAutocompleteResults(results);
-      setShowAutocomplete(results.length > 0);
+      // setAutocompleteResults(results);
+      // setShowAutocomplete(results.length > 0);
       // 부모 컴포넌트에 자동완성 결과 전달
       onAutocompleteResults?.(results);
     } catch (error) {
       console.error("자동완성 조회 실패:", error);
-      setAutocompleteResults([]);
-      setShowAutocomplete(false);
+      // setAutocompleteResults([]);
+      // setShowAutocomplete(false);
       // 빈 결과도 부모 컴포넌트에 전달
       onAutocompleteResults?.([]);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -60,8 +60,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
     // 빈 쿼리인 경우에도 부모 컴포넌트에 알림 (SEARCH_ALL API 호출을 위해)
     if (!query.trim()) {
-      setAutocompleteResults([]);
-      setShowAutocomplete(false);
+      // setAutocompleteResults([]);
+      // setShowAutocomplete(false);
       onAutocompleteResults?.([]);
       return;
     }
@@ -71,28 +71,28 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   // 자동완성 아이템 선택
-  const handleSelectItem = (item: AutocompleteResult) => {
-    setSearchQuery(item.name);
-    setShowAutocomplete(false);
-    onSelect?.(item);
-  };
+  // const handleSelectItem = (item: AutocompleteResult) => {
+  //   setSearchQuery(item.name);
+  //   setShowAutocomplete(false);
+  //   onSelect?.(item);
+  // };
 
   // 외부 클릭 시 자동완성 닫기
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setShowAutocomplete(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (
+  //       containerRef.current &&
+  //       !containerRef.current.contains(event.target as Node)
+  //     ) {
+  //       setShowAutocomplete(false);
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, []);
 
   // 타이머 관련 코드 제거
 

@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PretestHeader from "../artist/_components/PretestHeader";
 import SessionList from "./_components/SessionList";
 import SkillGuideModal from "./_components/SkillGuideModal";
-import { surveyAPI, profileAPI, API, artistSaveAPI } from "@/api/API";
-import { API_ENDPOINTS } from "@/constants";
+import { surveyAPI, profileAPI, artistSaveAPI } from "@/api/API";
 import { SESSIONS } from "./_components/sessionData";
 
 const PretestSessionPage = () => {
@@ -17,7 +16,7 @@ const PretestSessionPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showSkillModal, setShowSkillModal] = useState(false);
-  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
+  // const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
 
   // Session 데이터 로드
   useEffect(() => {
