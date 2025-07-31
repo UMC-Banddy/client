@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PretestHeader from "../artist/_components/PretestHeader";
 import SessionList from "./_components/SessionList";
 import SkillGuideModal from "./_components/SkillGuideModal";
-import { surveyAPI, profileAPI, API } from "@/api/API";
+import { surveyAPI, profileAPI, API, artistSaveAPI } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
 import { SESSIONS } from "./_components/sessionData";
 
@@ -17,6 +17,7 @@ const PretestSessionPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showSkillModal, setShowSkillModal] = useState(false);
+  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
 
   // Session 데이터 로드
   useEffect(() => {
@@ -86,6 +87,40 @@ const PretestSessionPage = () => {
       try {
         setSubmitting(true);
 
+        // 1. 아티스트 저장 처리
+        // localStorage에서 선택된 아티스트 정보 가져오기
+        const savedArtistData = localStorage.getItem("selectedArtists");
+        if (savedArtistData) {
+          try {
+            const artistSpotifyIds = JSON.parse(savedArtistData);
+            console.log("저장된 아티스트 데이터:", artistSpotifyIds);
+
+            // 각 아티스트를 개별적으로 저장
+            const artistSavePromises = artistSpotifyIds.map(
+              async (spotifyId: string) => {
+                try {
+                  const result = await artistSaveAPI.saveArtist(spotifyId);
+                  console.log(`아티스트 ${spotifyId} 저장 성공:`, result);
+                  return result;
+                } catch (error) {
+                  console.error(`아티스트 ${spotifyId} 저장 실패:`, error);
+                  throw error;
+                }
+              }
+            );
+
+            await Promise.all(artistSavePromises);
+            console.log("모든 아티스트 저장 완료");
+
+            // 저장 완료 후 localStorage에서 제거
+            localStorage.removeItem("selectedArtists");
+          } catch (artistError) {
+            console.error("아티스트 저장 중 오류:", artistError);
+            // 아티스트 저장 실패해도 세션 저장은 계속 진행
+          }
+        }
+
+        // 2. 세션 데이터 처리
         // selectedSessions를 availableSessions 형식으로 변환
         const availableSessions = Object.entries(selectedSessions).map(
           ([sessionId, levelId]) => {
@@ -93,8 +128,27 @@ const PretestSessionPage = () => {
             const session = sessions.find((s) => s.id === sessionId);
 
             // 서버에서 가져온 세션 데이터를 기반으로 sessionType 결정
-            // session.name을 그대로 사용 (서버가 기대하는 형식)
-            const sessionType = session ? session.name : sessionId;
+            // 서버가 제공한 session.name을 그대로 사용 (이미 올바른 형식)
+            let sessionType = session ? session.name : sessionId;
+
+            // 디버깅을 위한 로그
+            console.log("원본 세션 이름:", session?.name);
+            console.log("변환 전 sessionType:", sessionType);
+
+            // 서버가 기대하는 영문 세션 타입으로 변환
+            const sessionTypeMapping: Record<string, string> = {
+              "🎤 보컬 🎤": "vocal",
+              "🎸 일렉 기타 🎸": "electric_guitar", 
+              "🪕 어쿠스틱 기타 🪕": "acoustic_guitar",
+              "🪕 베이스 🪕": "bass",
+              "🥁 드럼 🥁": "drums",
+              "🎹 키보드 🎹": "keyboard",
+              "🎻 바이올린 🎻": "violin",
+              "🎺 트럼펫 🎺": "trumpet",
+            };
+
+            sessionType = sessionTypeMapping[sessionType] || sessionType;
+            console.log("변환 후 sessionType:", sessionType);
 
             // levelId를 level로 변환 (예: "beginner" -> "beginner")
             const level = levelId;

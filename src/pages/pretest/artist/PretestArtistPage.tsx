@@ -300,6 +300,12 @@ const PretestArtistPage = () => {
 
         console.log("전송할 아티스트 데이터:", selectedArtistData);
 
+        // 선택된 아티스트 정보를 localStorage에 저장 (세션 페이지에서 사용)
+        localStorage.setItem(
+          "selectedArtists",
+          JSON.stringify(selectedArtistData)
+        );
+
         // 각 아티스트를 개별적으로 저장
         const savePromises = selectedArtistData.map(async (spotifyId) => {
           try {
