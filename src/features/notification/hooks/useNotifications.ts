@@ -4,7 +4,7 @@ import { API_ENDPOINTS } from "@/constants";
 import { authStore } from "@/store/authStore";
 import { type Notification } from "@/types/notification";
 
-export const useNotificationCount = () => {
+export const useNotifications = () => {
   const { data: notifications = [], isLoading, error, refetch } = useQuery<Notification[]>({
     queryKey: ["notifications"],
     queryFn: async () => {
@@ -15,7 +15,7 @@ export const useNotificationCount = () => {
   });
 
   return {
-    count: notifications.length,
+    notifications,
     isLoading,
     error: error?.message || null,
     refetch,
