@@ -54,6 +54,15 @@ export interface MusicSearchResult {
   type: "track" | "artist" | "album";
 }
 
+// API 문서에 따른 아티스트 검색 결과 타입
+export interface ArtistSearchResult {
+  spotifyId: string;
+  name: string;
+  genres: string;
+  imageUrl: string;
+  externalUrl: string;
+}
+
 // 자동완성 결과 타입 정의
 export interface AutocompleteResult {
   id: string;
@@ -164,6 +173,38 @@ export const artistAPI = {
 
 // 음악 검색 관련 API 함수들
 export const musicAPI = {
+  // 전체 음악 검색 (SEARCH_ALL 엔드포인트 사용)
+  searchAll: async (
+    query: string = "",
+    limit: number = 20,
+    offset: number = 0
+  ): Promise<ArtistSearchResult[]> => {
+    try {
+      // 빈 쿼리인 경우 기본 검색어 사용
+      const searchQuery = query.trim() || "artist";
+
+      const response = await API.get(
+        `${API_ENDPOINTS.MUSIC.SEARCH_ALL}?q=${encodeURIComponent(
+          searchQuery
+        )}&limit=${limit}&offset=${offset}`
+      );
+
+      // API 문서에 따른 응답 구조 처리
+      if (response.data && response.data.isSuccess && response.data.result) {
+        return response.data.result;
+      } else if (response.data && Array.isArray(response.data)) {
+        return response.data;
+      } else {
+        console.warn("예상치 못한 API 응답 구조:", response.data);
+        return [];
+      }
+    } catch (error) {
+      console.error("전체 음악 검색 실패:", error);
+      // 에러 발생 시 빈 배열 반환하여 앱이 중단되지 않도록 함
+      return [];
+    }
+  },
+
   // 아티스트 검색
   searchArtists: async (
     query: string,

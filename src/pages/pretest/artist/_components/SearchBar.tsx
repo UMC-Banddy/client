@@ -58,7 +58,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setSearchQuery(query);
     onSearch?.(query);
 
-    // 빈 쿼리인 경우 결과 초기화
+    // 빈 쿼리인 경우에도 부모 컴포넌트에 알림 (SEARCH_ALL API 호출을 위해)
     if (!query.trim()) {
       setAutocompleteResults([]);
       setShowAutocomplete(false);
