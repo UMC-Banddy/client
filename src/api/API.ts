@@ -254,7 +254,7 @@ export const musicAPI = {
 // 아티스트 저장 API 함수
 export const artistSaveAPI = {
   // 아티스트 저장
-  saveArtist: async (spotifyId: string): Promise<any> => {
+  saveArtist: async (spotifyId: string): Promise<{ isSuccess: boolean; result: any }> => {
     try {
       const response = await API.post(
         API_ENDPOINTS.ARTISTS.SAVE,
@@ -268,7 +268,7 @@ export const artistSaveAPI = {
         }
       );
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("아티스트 저장 실패:", error);
       throw error;
     }
@@ -278,7 +278,7 @@ export const artistSaveAPI = {
 // 프로필 수정 API 함수
 export const profileAPI = {
   // 프로필 조회
-  getProfile: async (): Promise<any> => {
+  getProfile: async (): Promise<{ isSuccess: boolean; result: any }> => {
     try {
       const response = await API.get(API_ENDPOINTS.PROFILE.SELF);
       return response.data;

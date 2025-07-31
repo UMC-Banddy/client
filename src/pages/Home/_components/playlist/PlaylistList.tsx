@@ -6,6 +6,7 @@ interface Track {
   id: number;
   title: string;
   artist: string;
+  image?: string;
   albumImage?: string;
   duration?: string;
 }
@@ -15,7 +16,7 @@ interface PlaylistListProps {
 }
 
 // 기본 데이터 (API 연결 전까지 사용)
-const defaultPlaylistData = [
+const defaultPlaylistData: Track[] = [
   {
     id: 1,
     title: "いらないもの",
@@ -60,11 +61,9 @@ const PlaylistList: React.FC<PlaylistListProps> = ({
     {tracks.map((item) => (
       <PlaylistItem
         key={item.id}
-        id={item.id}
         title={item.title}
         artist={item.artist}
-        image={item.albumImage || theCabs}
-        duration={item.duration || "3:45"}
+        image={item.albumImage || item.image || theCabs}
       />
     ))}
   </div>

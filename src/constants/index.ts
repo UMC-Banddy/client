@@ -1,23 +1,23 @@
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: "/api/member/login",
-    SIGNUP: "/api/member",
-    VERIFY_CODE: "/api/auth/verify",
-    SEND_CODE: "/api/auth/send",
-    CHECK_NICKNAME: "/api/member/check-nickname",
-    LOGOUT: "/api/auth/logout",
-    INACTIVE: "/api/auth/inactive",
-    REFRESH_TOKEN: "/api/auth/refreshToken",
+    LOGIN: "/member/login",
+    SIGNUP: "/member",
+    VERIFY_CODE: "/auth/verify",
+    SEND_CODE: "/auth/send",
+    CHECK_NICKNAME: "/member/check-nickname",
+    LOGOUT: "/auth/logout",
+    INACTIVE: "/auth/inactive",
+    REFRESH_TOKEN: "/auth/refreshToken",
   },
 
   SURVEY: {
-    SUBMIT: "/api/member/survey",
-    KEYWORD: "/api/member/survey/keyword",
-    ARTIST: "/api/member/survey/artist",
-    ARTIST_SEARCH: "/api/member/survey/artists/search",
-    GENRE: "/api/member/survey/genre",
-    SESSION: "/api/member/survey/session",
-    GENRE_SEARCH: "/api/member/survey/genres/search",
+    SUBMIT: "/member/survey",
+    KEYWORD: "/member/survey/keyword",
+    ARTIST: "/member/survey/artist",
+    ARTIST_SEARCH: "/member/survey/artists/search",
+    GENRE: "/member/survey/genre",
+    SESSION: "/member/survey/session",
+    GENRE_SEARCH: "/member/survey/genres/search",
   },
 
   FRIEND: {
@@ -56,15 +56,15 @@ export const API_ENDPOINTS = {
     BOOKMARKS: "/api/bands/bookmarks",
     DELETE_BOOKMARK: (bandId: string) => `/api/bands/${bandId}/bookmark`,
     RECRUIT: "/api/recruitments",
-    JOIN: (bandId: string) => `/api/bands/${bandId}/join`, // 해당 api가 스웨거에 없음 백엔드와 소통 필요해보임 (노션에는 있음)
+    JOIN: (bandId: string) => `/api/bands/${bandId}/join`,
   },
 
   RECRUITMENT: {
-    JOIN: (bandId: string) => `/api/bands/${bandId}/join`, // 해당 api가 스웨거에 없음 백엔드와 소통 필요해보임 (노션에는 있음)
+    JOIN: (bandId: string) => `/api/bands/${bandId}/join`,
     CREATE: "/api/recruitments",
-    EDIT: "/api/recruitments", // 스웨거 문서만 봐서는 옳게 구현되어 있는 건지 확인 필요.. (노션과 다른 주소, 엔드포인트 뒤 슬래쉬 형태가 비정상적)
-    DETAIL: (recruitId: string) => `/api/recruitments/${recruitId}`, // 해당 api가 스웨거에 없음 백엔드와 소통 필요해보임 (노션에는 있음)
-    PROCESS: (recruitId: string) => `/api/recruitments/${recruitId}/requests`, // 해당 api가 스웨거에 없음 백엔드와 소통 필요해보임 (노션에는 있음)
+    EDIT: "/api/recruitments",
+    DETAIL: (bandId: string) => `/api/recruitments/${bandId}`,
+    PROCESS: (bandId: string) => `/api/recruitments/${bandId}`,
   },
 
   CHAT: {
@@ -79,16 +79,13 @@ export const API_ENDPOINTS = {
       limit: number = 20
     ) => `/api/chat/rooms/${roomId}/messages?cursor=${cursor}&limit=${limit}`,
     ROOM_MEMBERS: (roomId: string | number) => `/api/chat/rooms/${roomId}`,
-    INVITE: (roomId: string) => `/api/chat/rooms/${roomId}/members/invite`,
     JOIN: (roomId: string) => `/api/chat/rooms/${roomId}/members/join`,
     LEAVE: (roomId: string) => `/api/chat/rooms/${roomId}/members/exit`,
-    CREATE_INTERVIEW: (bandId: string) => `/api/chat/rooms/interview/${bandId}`,
-    CREATE_APPLICATION: (bandId: string) =>
-      `/api/chat/rooms/application/${bandId}`,
+    BAND_JOIN: (bandId: string) => `/api/chat/bands/${bandId}/join`,
   },
 
   WEBSOCKET: {
-    // 소켓 관련 모든 api 스웨거에 없음 백엔드와 소통 필요해보임 (노션에는 있음)
+    // 웹소켓 관련 엔드포인트 (실제 구현 시 백엔드와 협의 필요)
     SUBSCRIBE: (roomId: string) => `/topic/chat/${roomId}`,
     SEND_MESSAGE: (roomId: string) => `/app/chat/sendMessage/${roomId}`,
     UNSUBSCRIBE: (roomId: string) => `/user/${roomId}/queue`,
@@ -96,7 +93,7 @@ export const API_ENDPOINTS = {
   },
 
   MUSIC: {
-    SEARCH_ALL: "/api/music/search/artists", // 실제 아티스트 검색 엔드포인트로 수정
+    SEARCH_ALL: "/api/music/search/artists",
     SEARCH_TRACKS: "/api/music/search/tracks",
     SEARCH_ARTISTS: "/api/music/search/artists",
     SEARCH_ALBUMS: "/api/music/search/albums",
@@ -113,6 +110,7 @@ export const API_ENDPOINTS = {
     LIST: "/api/tracks",
     DETAIL: (trackId: string) => `/api/tracks/${trackId}`,
     RECENT: "/api/tracks/recent",
+    SIMILAR: "/api/tracks/similar",
   },
 
   TRACK_FOLDERS: {
@@ -130,6 +128,7 @@ export const API_ENDPOINTS = {
     TOGGLE: "/api/artists/toggle",
     LIST: "/api/artists",
     DETAIL: (artistId: string) => `/api/artists/${artistId}`,
+    SIMILAR: "/api/artists/similar",
   },
 
   ARTIST_FOLDERS: {

@@ -34,18 +34,20 @@ export const createDirectChat = async (
   return response.data;
 };
 
-// 면접 채팅방 생성 (밴드 가입 신청용)
+// 면접 채팅방 생성 (밴드 가입 신청용) - API 문서에 없어서 주석 처리
 export const createInterviewChat = async (bandId: string) => {
-  const response = await API.post(API_ENDPOINTS.CHAT.CREATE_INTERVIEW(bandId));
-  return response.data;
+  // const response = await API.post(API_ENDPOINTS.CHAT.CREATE_INTERVIEW(bandId));
+  // return response.data;
+  throw new Error("면접 채팅방 생성 API가 구현되지 않았습니다.");
 };
 
-// 지원 채팅방 생성 (밴드 지원용)
+// 지원 채팅방 생성 (밴드 지원용) - API 문서에 없어서 주석 처리
 export const createApplicationChat = async (bandId: string) => {
-  const response = await API.post(
-    API_ENDPOINTS.CHAT.CREATE_APPLICATION(bandId)
-  );
-  return response.data;
+  // const response = await API.post(
+  //   API_ENDPOINTS.CHAT.CREATE_APPLICATION(bandId)
+  // );
+  // return response.data;
+  throw new Error("지원 채팅방 생성 API가 구현되지 않았습니다.");
 };
 
 // 채팅 메시지 조회 (새로운 API 스펙 - 무한 스크롤)
@@ -76,12 +78,13 @@ export const getChatRoomMembers = async (
   return response.data;
 };
 
-// 채팅방 멤버 초대
+// 채팅방 멤버 초대 - API 문서에 없어서 주석 처리
 export const inviteChatMember = async (roomId: string, memberIds: number[]) => {
-  const response = await API.post(API_ENDPOINTS.CHAT.INVITE(roomId), {
-    memberIds,
-  });
-  return response.data;
+  // const response = await API.post(API_ENDPOINTS.CHAT.INVITE(roomId), {
+  //   memberIds,
+  // });
+  // return response.data;
+  throw new Error("채팅방 멤버 초대 API가 구현되지 않았습니다.");
 };
 
 // 채팅방 참여 (새로운 API 스펙)

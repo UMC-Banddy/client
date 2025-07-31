@@ -95,7 +95,7 @@ const TagList: React.FC<{
           >
             {variant === "home" && isSessionTag && SessionIcon && (
               <div className="w-3 h-3 mr-1 inline-block align-middle">
-                <SessionIcon size={12} color="white" />
+                <SessionIcon size={12} color="gray-200" />
               </div>
             )}
             {tag}

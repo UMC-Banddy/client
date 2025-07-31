@@ -102,7 +102,7 @@ export default function OtherProfile() {
       image: artist.imageUrl,
       title: artist.name,
     })),
-    albums: [], // TODO: 상대방 앨범 API 연결 필요
+    albums: [] as Array<{ image: string; title: string }>, // TODO: 상대방 앨범 API 연결 필요
     musics: savedTracks.map((track) => ({
       image: track.albumImage || "https://via.placeholder.com/150",
       title: track.title,
