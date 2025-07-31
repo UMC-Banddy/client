@@ -15,7 +15,7 @@ export default function SuggestionList({ suggestions, onSuggestionClick }: Sugge
           className="flex items-center w-[87vw] h-[5.7vh] py-[1.4vh] text-hakgyo-r-16 text-white cursor-pointer"
           onClick={onSuggestionClick ? () => onSuggestionClick(s) : undefined}
         >
-          <img src={Search} alt="search" className="w-[6vw] h-[6vw] mr-[4vw]" />
+          <img src={Search} alt="search" className="w-[6vw] h-[6vw] mr-[16px] max-w-[25px] max-h-[25px]" />
           {s}
         </div>
       ))}

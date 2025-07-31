@@ -93,6 +93,7 @@ export const API_ENDPOINTS = {
   },
 
   MUSIC: {
+    SEARCH: "/api/music/search",
     SEARCH_ALL: "/api/music/search/artists",
     SEARCH_TRACKS: "/api/music/search/tracks",
     SEARCH_ARTISTS: "/api/music/search/artists",
