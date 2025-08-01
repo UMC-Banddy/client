@@ -1,117 +1,150 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import SearchField from "../_components/SearchField";
 import ArtistToggleBtn from "../_components/create_band/artist/ArtistToggleBtn";
 import dummy from "@/assets/images/home-album1.svg";
 import deleteIcon from "@/assets/icons/join/ic_delete.svg";
+import { API } from "@/api/API";
+import JoinHeader from "../_components/JoinHeader";
+import { useNavigate } from "react-router-dom";
+import { useSnapshot } from "valtio";
+import { createBandActions, createBandStore } from "@/store/createBandStore";
 
-const artists = [
-  {
-    id: 0,
-    thumbnail: dummy,
-    name: "검정치마",
-  },
-  {
-    id: 1,
-    thumbnail: "",
-    name: "Placebo",
-  },
-  {
-    id: 2,
-    thumbnail: "",
-    name: "Meow",
-  },
-  {
-    id: 3,
-    thumbnail: "",
-    name: "BECK",
-  },
-  {
-    id: 4,
-    thumbnail: "",
-    name: "Tyler, the creator",
-  },
-  {
-    id: 5,
-    thumbnail: "",
-    name: "Oasis",
-  },
-  {
-    id: 6,
-    thumbnail: "",
-    name: "Steve Lacy",
-  },
-  {
-    id: 7,
-    thumbnail: "",
-    name: "Blur",
-  },
-  {
-    id: 8,
-    thumbnail: "",
-    name: "쏜애플",
-  },
-];
+export type Artist = {
+  spotifyId: string;
+  name: string;
+  genres: string;
+  imageUrl: string;
+  externalUrl: string;
+};
 
-const CreateBandArtist = () => {
-  const [toggledArtist, setToggledArtist] = useState<number[]>([]);
+const CreateBandArtist: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<Artist[]>([]);
+
+  const { artists: selectedArtists } = useSnapshot(createBandStore);
+  const setArtists = createBandActions.setArtists;
+
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const { data } = await API.get("/api/music/search/artists", {
+          params: { q: searchTerm, limit: 12, offset: 0 },
+        });
+        if (data.isSuccess) {
+          setSearchResults(data.result);
+        } else {
+          console.error("Search failed:", data.message);
+          setSearchResults([]);
+        }
+      } catch (err) {
+        console.error(err);
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [searchTerm]);
+
+  const toggleArtist = (artist: Artist) => {
+    const exists = selectedArtists.some(
+      (a) => a.spotifyId === artist.spotifyId
+    );
+    if (exists) {
+      setArtists(
+        selectedArtists.filter((a) => a.spotifyId !== artist.spotifyId)
+      );
+    } else {
+      setArtists([...selectedArtists, artist]);
+    }
+  };
+
   return (
-    <main className="relative min-h-screen w-[393px] mx-auto bg-[#121212]/90 px-[24px] pt-[16px] pb-[200px]">
-      <section className="flex flex-col gap-[28px] mb-[28px] ">
-        <p className="text-hakgyo-b-24 text-[#E9E9E9]">추구하는 장르</p>
-        {toggledArtist.length > 0 && (
-          <div className="flex flex-nowrap gap-[12px] overflow-x-auto">
-            {toggledArtist.map((artist) => (
-              <div className="flex flex-shrink-0 flex-col items-center gap-[4px]">
-                <div
-                  className="relative size-[50px] bg-[#959595] bg-cover bg-no-repeat rounded-full"
-                  style={{
-                    backgroundImage: `url(${artists[artist].thumbnail})`,
-                  }}
-                >
-                  <div>
-                    <button
-                      className="flex items-center justify-center absolute top-[-2px] right-[-4px] size-[19px] rounded-full bg-[#121212] cursor-pointer z-20"
-                      onClick={() =>
-                        setToggledArtist((prev) =>
-                          prev.filter((id) => id !== artist)
-                        )
-                      }
+    <main className="relative min-h-screen w-[393px] mx-auto px-[16px] pt-[16px] pb-[200px]">
+      <JoinHeader
+        enableConfirmBtn={selectedArtists.length > 0}
+        onClick={() => navigate("/join/create-band")}
+      />
+
+      <section className="px-[8px]">
+        <section className="flex flex-col gap-[28px] mb-[28px]">
+          <p className="text-hakgyo-b-24 text-[#E9E9E9]">대표하는 아티스트</p>
+          {selectedArtists.length > 0 && (
+            <>
+              <section className="flex flex-nowrap gap-[12px] overflow-x-auto">
+                {selectedArtists.map((artist) => (
+                  <div
+                    key={artist.spotifyId}
+                    className="flex flex-col items-center gap-[4px] flex-shrink-0"
+                  >
+                    <div
+                      className="relative w-[50px] h-[50px] rounded-full bg-cover bg-center"
+                      style={{
+                        backgroundImage: `url(${artist.imageUrl || dummy})`,
+                      }}
                     >
-                      <img src={deleteIcon} alt="" />
-                    </button>
+                      <button
+                        className="absolute -top-1 -right-1 w-[19px] h-[19px] rounded-full bg-[#121212] flex items-center justify-center"
+                        onClick={() => toggleArtist(artist)}
+                      >
+                        <img src={deleteIcon} alt="Remove" />
+                      </button>
+                    </div>
+                    <p className="w-[55px] text-hakgyo-r-14 text-white text-center line-clamp-1">
+                      {artist.name}
+                    </p>
                   </div>
-                </div>
-                <p className="w-[55px] text-hakgyo-r-14 text-[#fff] text-center overflow-ellipsis line-clamp-1">
-                  {artists[artist].name}
-                </p>
-              </div>
+                ))}
+              </section>
+              <div className="w-full h-[0.5px] bg-[#E9E9E9]"></div>
+            </>
+          )}
+        </section>
+
+        <SearchField
+          placeholder="아티스트 검색하기"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        {searchResults.length > 0 ? (
+          <section className="grid grid-cols-3 gap-x-[12px] gap-y-[43px] mt-[32px]">
+            {searchResults.map((artist) => (
+              <ArtistToggleBtn
+                key={artist.spotifyId}
+                thumbnail={artist.imageUrl || dummy}
+                toggled={selectedArtists.some(
+                  (a) => a.spotifyId === artist.spotifyId
+                )}
+                onClick={() => toggleArtist(artist)}
+              >
+                {artist.name}
+              </ArtistToggleBtn>
             ))}
-          </div>
+          </section>
+        ) : (
+          <p className="mt-[32px] text-hakgyo-r-14 text-[#959595]">
+            {searchTerm
+              ? "아티스트를 찾을 수 없습니다."
+              : "아티스트를 검색해주세요."}
+          </p>
         )}
-        <div className="h-[0.5px] bg-[#E9E9E9]"></div>
-      </section>
-
-      <SearchField placeholder="아티스트 검색하기" />
-
-      <section className="grid grid-cols-3 gap-x-[12px] gap-y-[43px] mt-[32px]">
-        {artists.map((artist) => (
-          <ArtistToggleBtn
-            key={artist.id}
-            thumbnail={artist.thumbnail}
-            onClick={() => {
-              if (toggledArtist.includes(artist.id)) {
-                setToggledArtist(
-                  toggledArtist.filter((id) => id !== artist.id)
-                );
-              } else {
-                setToggledArtist([...toggledArtist, artist.id]);
-              }
-            }}
-            toggled={toggledArtist.includes(artist.id)}
-          >
-            {artist.name}
-          </ArtistToggleBtn>
-        ))}
       </section>
     </main>
   );

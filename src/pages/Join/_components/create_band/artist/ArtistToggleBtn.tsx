@@ -22,7 +22,7 @@ const ArtistToggleBtn = ({
         {toggled && (
           <>
             <div
-              className="absolute top-[0] left-[0] size-full z-10"
+              className="absolute top-[0] left-[0] size-full rounded-full z-10"
               style={{
                 background:
                   "linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))",

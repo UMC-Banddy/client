@@ -10,6 +10,7 @@ import BandMenuContentBtn from "./_components/band_recruit/BandMenuContentBtn";
 import CheckBox from "./_components/band_recruit/CheckBox";
 import MuiDialog from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
+import { useNavigate } from "react-router-dom";
 
 const dummyData = [
   {
@@ -32,8 +33,10 @@ const BandRecruit = () => {
   const [openPassDialog, setOpenPassDialog] = useState(false);
   const [isPassDialog, setIsPassDialog] = useState(false);
 
+  const navigate = useNavigate();
+
   return (
-    <main className="relative min-h-screen w-[393px] mx-auto bg-[#121212]/90">
+    <main className="relative min-h-screen w-[393px] mx-auto">
       <section
         className="flex flex-col justify-between w-full h-[228px] bg-cover bg-center bg-no-repeat px-[16px] pt-[16px]"
         style={{ backgroundImage: `url(${bandRecruit})` }}
@@ -59,7 +62,12 @@ const BandRecruit = () => {
               >
                 합격 / 불합격 관리
               </BandMenuContentBtn>
-              <BandMenuContentBtn onClick={() => setOpenMenu(false)}>
+              <BandMenuContentBtn
+                onClick={() => {
+                  navigate("/join/create-band");
+                  setOpenMenu(false);
+                }}
+              >
                 밴드 모집방 편집
               </BandMenuContentBtn>
               <BandMenuContentBtn
@@ -143,7 +151,7 @@ const BandRecruit = () => {
       </section>
 
       {checkEnabled && (
-        <section className="flex justify-between items-center fixed bottom-[66px] px-[20px] w-full h-[69px] rounded-t-[12px] bg-[#292929]">
+        <section className="flex justify-between items-center fixed bottom-[104px] px-[20px] w-[393px] h-[69px] rounded-t-[12px] bg-[#292929] z-[60]">
           <div className="flex items-center gap-[8px] ">
             <CheckBox
               checked={checkedId.length === dummyData.length}
@@ -193,8 +201,8 @@ const BandRecruit = () => {
               </p>
               <p className="text-hakgyo-r-14 text-[#555] text-start">
                 예를 누르시면 즉시 {isPassDialog ? "합격" : "불합격"} 통보가
-                전송되며, 취소할 수 없습니다. 또한 친구 신청이 자동으로
-                발송됩니다.
+                전송되며, 취소할 수 없습니다.{" "}
+                {isPassDialog && "또한 친구 신청이 자동으로 발송됩니다."}
               </p>
 
               <section className="mt-[28px] w-full">

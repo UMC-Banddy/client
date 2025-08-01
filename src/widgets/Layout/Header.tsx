@@ -10,14 +10,30 @@ const routeNameMap: Record<string, string> = {
   "/my/notifications": "Notifications",
   "/my/archive": "Archive",
   "/my/archive/add": "Archive",
+  "/join/saved-band": "JOIN",
   // 필요시 추가
 };
+
+const nonHeaderRouteNames = [
+  "/join",
+  "/join/band-recruit",
+  "/join/create-chat",
+  "/join/create-chat/2",
+  "/join/create-band",
+  "/join/create-band/genre",
+  "/join/create-band/artist",
+  "/join/create-band/song",
+];
 
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const routeName = routeNameMap[location.pathname] || "";
   const depth = location.pathname.split("/").filter(Boolean).length;
+
+  if (nonHeaderRouteNames.includes(location.pathname)) {
+    return null;
+  }
 
   if (depth >= 2 && !routeName) {
     // 뒤로가기 버튼만

@@ -1,30 +1,36 @@
-import back from "@/assets/icons/join/ic_back.svg";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import RecruitChat from "./_components/band_recruit/RecruitChat";
 import SearchField from "./_components/SearchField";
+import { API } from "@/api/API";
+import { useNavigate } from "react-router-dom";
+import JoinHeader from "./_components/JoinHeader";
 
-const dummyData = [
-  {
-    id: 0,
-    thumbnail: "",
-    name: "noko",
-  },
-  {
-    id: 1,
-    thumbnail: "",
-    name: "noko",
-  },
-  {
-    id: 2,
-    thumbnail: "",
-    name: "noko",
-  },
-];
+type Friend = {
+  friendId: number;
+  otherMemberId: number;
+  nickname: string;
+  email: string;
+  bio: string | null;
+  profileImageUrl: string | null;
+  createdAt: string;
+};
 
 const CreateChat = () => {
   const [enableConfirmBtn, setEnableConfirmBtn] = useState(false);
   const [checkedList, setCheckedList] = useState<number[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchFriends = async () => {
+      const { data } = await API.get("/api/friend");
+      setFriends(data);
+    };
+
+    fetchFriends();
+  }, []);
 
   useEffect(() => {
     if (checkedList.length > 0) {
@@ -43,34 +49,30 @@ const CreateChat = () => {
   };
 
   return (
-    <main className="relative p-[16px] min-h-screen w-[393px] mx-auto bg-[#121212]/90">
-      <div className="flex justify-between mb-[16px] w-full">
-        <button className="p-[0] bg-transparent border-none cursor-pointer">
-          <img src={back} alt="back" />
-        </button>
-        <button
-          className={clsx(
-            "p-[0] bg-transparent border-none text-ibm-sb-16",
-            enableConfirmBtn ? "text-[#79D000] cursor-pointer" : "text-[#555]"
-          )}
-        >
-          확인
-        </button>
-      </div>
+    <main className="relative p-[16px] min-h-screen w-[393px] mx-auto">
+      <JoinHeader
+        enableConfirmBtn={enableConfirmBtn}
+        onClick={() =>
+          navigate("/join/create-chat/2", { state: { checkedList } })
+        }
+      />
 
       {checkedList.length > 0 && (
         <section className="flex gap-[20px]">
-          {checkedList.map((item) => (
-            <div key={item} className="flex flex-col items-center gap-[4px]">
-              <div
-                className="size-[50px] rounded-full bg-[#777]"
-                style={{ backgroundImage: `url(${dummyData[item].thumbnail})` }}
-              />
-              <p className="text-hakgyo-r-14 text-[#fff]">
-                {dummyData[item].name}
-              </p>
-            </div>
-          ))}
+          {checkedList.map((id) => {
+            const friend = friends.find((f) => f.friendId === id);
+            return (
+              <div key={id} className="flex flex-col items-center gap-[4px]">
+                <div
+                  className="w-[50px] h-[50px] rounded-full bg-[#777] bg-cover bg-center"
+                  style={{ backgroundImage: `url(${friend?.profileImageUrl})` }}
+                />
+                <p className="text-hakgyo-r-14 text-[#fff]">
+                  {friend?.nickname}
+                </p>
+              </div>
+            );
+          })}
         </section>
       )}
 
@@ -83,14 +85,16 @@ const CreateChat = () => {
       />
 
       <section className="flex flex-col gap-[20px]">
-        {dummyData.map((item) => (
+        {friends.map((item) => (
           <RecruitChat
-            key={item.id}
+            key={item.friendId}
             enableCheck={true}
-            checked={checkedList.includes(item.id)}
+            checked={checkedList.includes(item.friendId)}
             onCheck={() => {
-              handleCheckboxClick(item.id);
+              handleCheckboxClick(item.friendId);
             }}
+            name={item.nickname}
+            thumbnail={item?.profileImageUrl}
             isOnlyName={true}
           />
         ))}

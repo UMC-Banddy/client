@@ -1,139 +1,176 @@
+import { useState, useRef, useEffect } from "react";
+import SearchField from "../_components/SearchField";
 import plusIcon from "@/assets/icons/join/ic_plus_btn.svg";
-import dummyImage from "@/assets/images/home-album1.svg";
-import playIcon from "@/assets/icons/join/ic_play.svg";
 import checkIcon from "@/assets/icons/join/ic_check_transparent.svg";
 import deleteIcon from "@/assets/icons/join/ic_delete.svg";
-import { useState } from "react";
-import SearchField from "../_components/SearchField";
+import dummyImage from "@/assets/images/home-album1.svg";
+import playIcon from "@/assets/icons/join/ic_play.svg";
+import { API } from "@/api/API";
+import JoinHeader from "../_components/JoinHeader";
+import { useNavigate } from "react-router-dom";
+import { useSnapshot } from "valtio";
+import { createBandActions, createBandStore } from "@/store/createBandStore";
 
-const songList = [
-  {
-    id: 1,
-    thumbnail: dummyImage,
-    title: "Seagull",
-    artist: "Ride",
-  },
-  {
-    id: 2,
-    thumbnail: "",
-    title: "Vapour Trail",
-    artist: "Ride",
-  },
-  {
-    id: 3,
-    thumbnail: "",
-    title: "Dreams Burn Down",
-    artist: "Ride",
-  },
-];
+export type Track = {
+  spotifyId: string;
+  title: string;
+  artist: string;
+  album: string;
+  duration: string;
+  imageUrl: string;
+  externalUrl: string;
+};
 
-const CreateBandSong = () => {
-  const [selectedSong, setSelectedSong] = useState<number[]>([]);
+const CreateBandSong: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<Track[]>([]);
+
+  const { songs: selectedSongs } = useSnapshot(createBandStore);
+  const setSongs = createBandActions.setSongs;
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const { data } = await API.get("/api/music/search/tracks", {
+          params: { q: searchTerm, limit: 10, offset: 0 },
+        });
+        if (data.isSuccess) setSearchResults(data.result);
+        else setSearchResults([]);
+      } catch {
+        setSearchResults([]);
+      }
+    }, 300);
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [searchTerm]);
+
+  const toggleSong = (track: Track) => {
+    const exists = selectedSongs.some((t) => t.spotifyId === track.spotifyId);
+    if (exists) {
+      setSongs(selectedSongs.filter((t) => t.spotifyId !== track.spotifyId));
+    } else {
+      setSongs([...selectedSongs, track]);
+    }
+  };
 
   return (
-    <main className="relative min-h-screen w-[393px] mx-auto bg-[#121212]/90 px-[24px] pt-[16px] pb-[200px]">
-      <section className="flex flex-col gap-[28px]">
-        <p className="text-hakgyo-b-24 text-[#E9E9E9]">목표하는 곡</p>
-        {selectedSong.length > 0 && (
-          <div className="flex gap-[20px]">
-            {selectedSong.map((song) => (
-              <div key={song} className="flex flex-col gap-[4px]">
-                <div className="relative size-[50px]">
-                  <img
-                    src={songList[song - 1].thumbnail}
-                    alt=""
-                    className="size-full"
-                  />
-                  <div
-                    className="absolute top-[0] left-[0] size-full z-10"
-                    style={{
-                      background: `linear-gradient(
-                        0deg,
-                        rgba(0, 0, 0, 0.35) 0%,
-                        rgba(0, 0, 0, 0.35) 100%
-                    )`,
-                    }}
-                  ></div>
-                  <button
-                    className="flex items-center justify-center absolute top-[-2px] right-[-4px] size-[19px] rounded-full bg-[#121212] cursor-pointer z-20"
-                    onClick={() =>
-                      setSelectedSong((prev) =>
-                        prev.filter((id) => id !== song)
-                      )
-                    }
-                  >
-                    <img src={deleteIcon} alt="" />
-                  </button>
-                </div>
-                <p className="w-[50px] text-hakgyo-r-16 text-[#fff] overflow-ellipsis line-clamp-1">
-                  {songList[song - 1].title}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-        <div className="h-[0.5px] bg-[#E9E9E9]"></div>
+    <main className="relative min-h-screen w-[393px] mx-auto px-[16px] pt-[16px] pb-[200px]">
+      <JoinHeader
+        enableConfirmBtn={selectedSongs.length > 0}
+        onClick={() => navigate("/join/create-band")}
+      />
 
-        <section>
-          <SearchField placeholder="곡 검색하기" />
-          <p className="mt-[20px] mb-[32px] text-wanted-sb-12 text-[#959595]">
+      <section className="px-[8px]">
+        <section className="flex flex-col gap-[28px] mb-[28px]">
+          <p className="text-hakgyo-b-24 text-[#E9E9E9]">목표하는 곡</p>
+          {selectedSongs.length > 0 && (
+            <>
+              <div className="flex gap-[20px] overflow-x-auto">
+                {selectedSongs.map((track) => (
+                  <div
+                    key={track.spotifyId}
+                    className="flex flex-col gap-[4px] flex-shrink-0"
+                  >
+                    <div
+                      className="relative w-[50px] h-[50px] bg-cover bg-center"
+                      style={{
+                        backgroundImage: `url(${track.imageUrl || dummyImage})`,
+                      }}
+                    >
+                      <button
+                        className="absolute -top-1 -right-1 w-[19px] h-[19px] rounded-full bg-[#121212] flex items-center justify-center"
+                        onClick={() => toggleSong(track)}
+                      >
+                        <img src={deleteIcon} alt="Remove" />
+                      </button>
+                    </div>
+                    <p className="w-[50px] text-hakgyo-r-16 text-white text-center line-clamp-1">
+                      {track.title}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="w-full h-[0.5px] bg-[#E9E9E9]" />
+            </>
+          )}
+        </section>
+
+        <section className="mb-[32px]">
+          <SearchField
+            placeholder="곡 검색하기"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <p className="mt-[20px] text-wanted-sb-12 text-[#959595]">
             Shoegaze 장르의 Ride의 곡은 어때요?
           </p>
         </section>
+
+        <div className="flex flex-col gap-[16px]">
+          {searchResults.length > 0 ? (
+            searchResults.map((track) => (
+              <div
+                key={track.spotifyId}
+                className="flex justify-between items-center gap-[16px]"
+              >
+                <div className="flex gap-[15px] items-center">
+                  <div className="relative w-[55px] h-[55px] rounded bg-[#CACACA] overflow-hidden">
+                    <img
+                      src={track.imageUrl || dummyImage}
+                      alt={track.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/35" />
+                    <img
+                      src={playIcon}
+                      alt="Play"
+                      className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-[26px] h-[26px]"
+                    />
+                  </div>
+                  <div className="flex flex-col justify-center gap-[2px]">
+                    <p className="text-hakgyo-r-16 text-white">{track.title}</p>
+                    <p className="text-hakgyo-r-16 text-[#CACACA]">
+                      {track.artist}
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => toggleSong(track)}>
+                  <img
+                    src={
+                      selectedSongs.some((t) => t.spotifyId === track.spotifyId)
+                        ? checkIcon
+                        : plusIcon
+                    }
+                    alt={
+                      selectedSongs.some((t) => t.spotifyId === track.spotifyId)
+                        ? "Selected"
+                        : "Select"
+                    }
+                    className="w-[31px] h-[31px]"
+                  />
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="text-hakgyo-r-14 text-[#959595]">
+              {searchTerm ? "곡을 찾을 수 없습니다." : "검색어를 입력해주세요."}
+            </p>
+          )}
+        </div>
       </section>
-      <div className="flex flex-col gap-[16px]">
-        {songList.map((song) => (
-          <div
-            key={song.id}
-            className="flex justify-between items-center gap-[16px]"
-          >
-            <div className="flex gap-[15px]">
-              <div className="relative size-[55px]">
-                <img
-                  src={song.thumbnail}
-                  alt=""
-                  className="size-full bg-[#CACACA]"
-                />
-                <div
-                  className="absolute top-[0] left-[0] size-full z-10"
-                  style={{
-                    background: `linear-gradient(
-                        0deg,
-                        rgba(0, 0, 0, 0.35) 0%,
-                        rgba(0, 0, 0, 0.35) 100%
-                    )`,
-                  }}
-                ></div>
-                <img
-                  src={playIcon}
-                  alt=""
-                  className="absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] size-[26px] z-20"
-                />
-              </div>
-              <div className="flex flex-col justify-center gap-[2px]">
-                <p className="text-hakgyo-r-16 text-[#fff]">{song.title}</p>
-                <p className="text-hakgyo-r-16 text-[#CACACA]">{song.artist}</p>
-              </div>
-            </div>
-            <button
-              className="cursor-pointer"
-              onClick={() =>
-                setSelectedSong((prev) =>
-                  prev.includes(song.id)
-                    ? prev.filter((id) => id !== song.id)
-                    : [...prev, song.id]
-                )
-              }
-            >
-              <img
-                src={selectedSong.includes(song.id) ? checkIcon : plusIcon}
-                alt=""
-                className="size-[31px]"
-              />
-            </button>
-          </div>
-        ))}
-      </div>
     </main>
   );
 };
