@@ -17,18 +17,18 @@ const ElectricGuitarImg = ({ size = 68, color }: ImgSrcProps) => {
             stroke={
               color === "gray" || color === "gray-200" ? "#555555" : "#ffffff"
             }
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
           <path
             d="M10.3401 34.1198C10.342 34.9211 10.652 35.691 11.2061 36.2698C11.4762 36.5531 11.8009 36.7785 12.1607 36.9326C12.5204 37.0866 12.9077 37.1661 13.2991 37.1661C13.6904 37.1661 14.0777 37.0866 14.4375 36.9326C14.7973 36.7785 15.122 36.5531 15.3921 36.2698C15.6691 35.9868 15.8873 35.6516 16.0341 35.2838C16.3344 34.5369 16.3344 33.7028 16.0341 32.9558C15.8879 32.5882 15.6704 32.2531 15.3941 31.9698C15.1234 31.6876 14.7985 31.463 14.4388 31.3096C14.0791 31.1562 13.6921 31.0771 13.3011 31.0771C12.9101 31.0771 12.5231 31.1562 12.1634 31.3096C11.8037 31.463 11.4788 31.6876 11.2081 31.9698C10.654 32.5487 10.342 33.3185 10.3401 34.1198Z"
             stroke={
               color === "gray" || color === "gray-200" ? "#555555" : "#ffffff"
             }
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </g>
         <defs>
