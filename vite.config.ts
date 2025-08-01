@@ -5,51 +5,59 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const plugins = [
-    react(),
-    svgr(),
-  ];
+  const plugins = [react(), svgr()];
 
-  // 개발 환경에서만 PWA 활성화
-  if (mode === "development") {
-    plugins.push(
-      VitePWA({
-        registerType: "autoUpdate",
-        includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
-        workbox: {
-          globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-          skipWaiting: true,
-          clientsClaim: true,
-          maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-          globIgnores: ["**/guitar-boy-*.svg"],
-        },
-        manifest: {
-          name: "Banddy",
-          short_name: "Banddy",
-          description: "밴드 음악 커뮤니티",
-          theme_color: "#ffffff",
-          icons: [
-            {
-              src: "pwa-192x192.png",
-              sizes: "192x192",
-              type: "image/png",
-            },
-            {
-              src: "pwa-512x512.png",
-              sizes: "512x512",
-              type: "image/png",
-            },
-            {
-              src: "pwa-512x512.png",
-              sizes: "512x512",
-              type: "image/png",
-              purpose: "any maskable",
-            },
-          ],
-        },
-      })
-    );
-  }
+  // PWA 설정 (개발 및 프로덕션 모두 활성화)
+  plugins.push(
+    VitePWA({
+      registerType: "autoUpdate",
+      includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        skipWaiting: true,
+        clientsClaim: true,
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        globIgnores: ["**/guitar-boy-*.svg"],
+        // Service Worker 파일명 명시적 설정
+        swDest: "sw.js",
+      },
+      manifest: {
+        name: "Banddy",
+        short_name: "Banddy",
+        description: "밴드 음악 커뮤니티",
+        theme_color: "#ffffff",
+        background_color: "#121212",
+        display: "standalone",
+        start_url: "/",
+        scope: "/",
+        icons: [
+          {
+            src: "pwa-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+          {
+            src: "pwa-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable",
+          },
+        ],
+      },
+      // Service Worker 등록 방식 설정
+      injectRegister: "auto",
+      // 개발 환경에서도 PWA 활성화
+      devOptions: {
+        enabled: true,
+        type: "module",
+      },
+    })
+  );
 
   return {
     plugins,

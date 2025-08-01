@@ -16,15 +16,31 @@
     },
     {
       "src": "/registerSW.js",
-      "dest": "/registerSW.js"
+      "dest": "/registerSW.js",
+      "headers": {
+        "Content-Type": "application/javascript"
+      }
     },
     {
       "src": "/sw.js",
-      "dest": "/sw.js"
+      "dest": "/sw.js",
+      "headers": {
+        "Content-Type": "application/javascript"
+      }
     },
     {
       "src": "/manifest.webmanifest",
-      "dest": "/manifest.webmanifest"
+      "dest": "/manifest.webmanifest",
+      "headers": {
+        "Content-Type": "application/manifest+json"
+      }
+    },
+    {
+      "src": "/pwa-(.*).png",
+      "dest": "/pwa-$1.png",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
     },
     {
       "src": "/(.*)",
