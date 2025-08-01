@@ -4,6 +4,8 @@ import calendarIcon from "@/assets/icons/chat/calendar.svg";
 import albumIcon from "@/assets/icons/chat/album.svg";
 import recordIcon from "@/assets/icons/chat/record.svg";
 import topArrowIcon from "@/assets/icons/chat/top-arrow.svg";
+import profile1Img from "@/assets/images/profile1.png";
+import backIcon from "@/assets/icons/back.svg";
 // ... existing code ...
 
 // Types
@@ -63,7 +65,7 @@ export interface ChatInputBarProps {
 // Chat Header Component
 export function ChatHeader({
   bandName = "우리밴드 정상영업합니다",
-  bandAvatar = "/src/assets/images/profile1.png",
+  bandAvatar = profile1Img,
   onBack,
   onSettings,
 }: ChatHeaderProps) {
@@ -76,7 +78,7 @@ export function ChatHeader({
           onClick={onBack}
         >
           <img
-            src="/src/assets/icons/back.svg"
+            src={backIcon}
             alt="Back"
             className="w-14 h-14"
           />

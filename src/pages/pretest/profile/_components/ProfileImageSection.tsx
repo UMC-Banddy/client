@@ -1,4 +1,5 @@
 import React from "react";
+import cameraIcon from "@/assets/icons/camera.svg";
 
 interface ProfileImageSectionProps {
   imageUrl: string;
@@ -26,7 +27,7 @@ const ProfileImageSection: React.FC<ProfileImageSectionProps> = ({
           className="absolute bottom-2 right-2 w-10 h-10 sm:w-10 sm:h-10 md:w-10 md:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 2xl:w-13 2xl:h-13 bg-black rounded-full flex items-center justify-center"
         >
           <img
-            src="/src/assets/icons/camera.svg"
+            src={cameraIcon}
             alt="카메라"
             className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 2xl:w-9 2xl:h-9"
           />

@@ -1,4 +1,5 @@
 export { default as ElectricGuitarImg } from "./ElectricGuitarImg";
+export { default as AcousticGuitarImg } from "./AcousticGuitarImg";
 export { default as MicImg } from "./MicImg";
 export { default as GuitarImg } from "./GuitarImg";
 export { default as BassImg } from "./BassImg";
