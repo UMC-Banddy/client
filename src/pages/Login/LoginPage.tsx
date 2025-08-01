@@ -5,9 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import logo from "../../assets/logos/LOGO1.svg";
-import eyeOpen from "../../assets/icons/login/eye-open.svg";
-import eyeClosed from "../../assets/icons/login/eye-closed.svg";
 import { login } from "@/store/auth";
+import LoginInputField from "./_components/LoginInputField";
 
 const LoginPage: React.FC = () => {
   const snap = useSnapshot(authStore);
@@ -70,51 +69,33 @@ const LoginPage: React.FC = () => {
 
       <div className="w-[321px] space-y-6">
         {/* 아이디 */}
-        <div className="space-y-2">
-          <label htmlFor="email" className="block text-sm text-[#E9E9E9]">
-            아이디
-          </label>
-          <input
-            id="email"
-            type="email"
-            placeholder="이메일 또는 아이디"
-            value={snap.email}
-            onChange={(e) => {
-              authStore.email = e.target.value;
-              authStore.errorMessage = "";
-            }}
-            className="w-full h-[49px] bg-[#292929] text-white placeholder-[#959595] rounded-[9px] px-4 py-[13px] focus:outline-none"
-          />
-        </div>
+        <LoginInputField
+          id="email"
+          label="아이디"
+          type="email"
+          placeholder="이메일 또는 아이디"
+          value={snap.email}
+          onChange={(e) => {
+            authStore.email = e.target.value;
+            authStore.errorMessage = "";
+          }}
+        />
 
         {/* 비밀번호 */}
-        <div className="space-y-2 relative">
-          <label htmlFor="password" className="block text-sm text-[#E9E9E9]">
-            비밀번호
-          </label>
-          <input
-            id="password"
-            type={snap.showPassword ? "text" : "password"}
-            placeholder="비밀번호"
-            value={snap.password}
-            onChange={(e) => {
-              authStore.password = e.target.value;
-              authStore.errorMessage = "";
-            }}
-            className="w-full h-[49px] bg-[#292929] text-white placeholder-[#959595] rounded-[9px] px-4 py-[13px] pr-12 focus:outline-none"
-          />
-          <button
-            type="button"
-            className="absolute right-4 top-[38px]"
-            onClick={() => (authStore.showPassword = !authStore.showPassword)}
-          >
-            <img
-              src={snap.showPassword ? eyeOpen : eyeClosed}
-              alt="toggle visibility"
-              className="w-5 h-5 opacity-70"
-            />
-          </button>
-        </div>
+        <LoginInputField
+          id="password"
+          label="비밀번호"
+          type="password"
+          placeholder="비밀번호"
+          value={snap.password}
+          onChange={(e) => {
+            authStore.password = e.target.value;
+            authStore.errorMessage = "";
+          }}
+          showPasswordToggle={true}
+          onPasswordToggle={() => (authStore.showPassword = !authStore.showPassword)}
+          isPasswordVisible={snap.showPassword}
+        />
 
         {/* 에러 메시지 */}
         {snap.errorMessage && (

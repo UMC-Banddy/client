@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import whiteStar from "../../assets/logos/white-star.svg";
+import SignupButton from "./_components/SignupButton";
 
 const SignupCompletePage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,8 +12,6 @@ const SignupCompletePage: React.FC = () => {
       <div className="w-full h-0.5 bg-[#959595]">
         <div className="w-full h-full bg-[#C7242D]" />
       </div>
-
-        
 
       {/* 콘텐츠 */}
       <div className="flex flex-col items-center justify-center px-6 pt-[180px] pb-10 text-center">
@@ -25,19 +24,19 @@ const SignupCompletePage: React.FC = () => {
           나와 더 잘 맞는 밴드를 찾아 보세요!
         </p>
 
-        <button
+        <SignupButton
           onClick={() => navigate("/pre-test/artist")}
-          className="w-full py-3 rounded-[24px] bg-[#C7242D] hover:bg-[#b51f27] text-black font-semibold mb-4"
+          className="mb-4"
         >
           사전 테스트 하러 가기
-        </button>
+        </SignupButton>
 
-        <button
+        <SignupButton
           onClick={() => navigate("/login")}
-          className="w-full py-3 rounded-[24px] bg-[#555555] text-[#CACACA] font-semibold cursor-default"
+          variant="secondary"
         >
           로그인 하러 가기
-        </button>
+        </SignupButton>
       </div>
     </div>
   );

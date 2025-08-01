@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import whiteStar from "../../assets/logos/white-star.svg";
 import blackStar from "../../assets/logos/black-star.svg";
 import { verifyEmailCode } from "../../store/auth";
+import SignupHeader from "./_components/SignupHeader";
+import SignupStepTitle from "./_components/SignupStepTitle";
+import SignupButton from "./_components/SignupButton";
 
 const SignupVerifyPage: React.FC = () => {
   const navigate = useNavigate();
   const [code, setCode] = useState(["", "", "", "", ""]);
   const [timeLeft, setTimeLeft] = useState(299);
   const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -45,33 +49,35 @@ const SignupVerifyPage: React.FC = () => {
     try {
       const res = await verifyEmailCode(finalCode);
       if (res.verified) {
+        setPopupMessage("인증이 완료되었습니다.");
+        setIsSuccess(true);
         setShowPopup(true);
       } else {
-        setError(res.message || "인증에 실패했습니다.");
+        setPopupMessage("인증번호가 맞지 않습니다.");
+        setIsSuccess(false);
+        setShowPopup(true);
       }
     } catch (err) {
-      setError("서버 오류로 인증에 실패했습니다.");
+      setPopupMessage("서버 오류로 인증에 실패했습니다.");
+      setIsSuccess(false);
+      setShowPopup(true);
       console.error(err);
+    }
+  };
+
+  const handlePopupClose = () => {
+    setShowPopup(false);
+    if (isSuccess) {
+      navigate("/signup/password");
     }
   };
 
   return (
     <div className="relative w-full min-h-screen max-w-md mx-auto bg-black text-white overflow-hidden">
-      {/* 프로그레스바 */}
-      <div className="w-full h-0.5 bg-[#959595]">
-        <div className="w-1/4 h-full bg-[#C7242D]" />
-      </div>
-
-      {/* 별아이콘 */}
-      <img
-        src={whiteStar}
-        alt="step"
-        className="absolute right-6 top-[25px] w-8 h-8"
-      />
+      <SignupHeader progress={25} />
 
       <div className="flex flex-col px-6 pt-[200px]">
-        <p className="text-sm text-[#959595] mb-1">Step. 1</p>
-        <h1 className="text-lg font-semibold mb-8">인증번호를 입력해 주세요.</h1>
+        <SignupStepTitle step={1} title="인증번호를 입력해 주세요." />
 
         <div className="flex justify-between mb-2 gap-[8px]">
           {code.map((digit, i) => (
@@ -117,17 +123,13 @@ const SignupVerifyPage: React.FC = () => {
           </button>
         </div>
 
-        <button
-          disabled={code.join("").length !== 5}
+        <SignupButton
           onClick={handleConfirm}
-          className={`w-full py-3 mt-8 rounded-[24px] font-semibold transition ${
-            code.join("").length === 5
-              ? "bg-[#AD3634] text-[#000000]"
-              : "bg-[#959595] text-[#696969] cursor-default"
-          }`}
+          disabled={code.join("").length !== 5}
+          className="mt-8"
         >
           확인
-        </button>
+        </SignupButton>
       </div>
 
       <AnimatePresence>
@@ -150,14 +152,15 @@ const SignupVerifyPage: React.FC = () => {
                 className="w-12 h-12 mx-auto mb-4"
               />
               <p className="mb-6 text-[#292929] text-base font-medium">
-                인증이 완료되었습니다.
+                {popupMessage}
               </p>
-              <button
-                onClick={() => navigate("/signup/password")}
-                className="w-[130px] mx-auto py-2 rounded-[24px] bg-[#AD3634] text-white font-semibold"
+              <SignupButton
+                onClick={handlePopupClose}
+                variant="popup"
+                className="mx-auto"
               >
                 확인
-              </button>
+              </SignupButton>
             </motion.div>
           </motion.div>
         )}
