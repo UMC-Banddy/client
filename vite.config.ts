@@ -4,78 +4,85 @@ import svgr from "vite-plugin-svgr";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  plugins: [
+export default defineConfig(({ mode }) => {
+  const plugins = [
     react(),
     svgr(),
-    VitePWA({
-      registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
-      workbox: {
-        // Node.js 호환성을 위한 설정
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-        skipWaiting: true,
-        clientsClaim: true,
-        // 큰 파일 크기 제한 증가 (10MB)
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        // 큰 파일은 캐시에서 제외
-        globIgnores: ["**/guitar-boy-*.svg"],
+  ];
+
+  // 개발 환경에서만 PWA 활성화
+  if (mode === "development") {
+    plugins.push(
+      VitePWA({
+        registerType: "autoUpdate",
+        includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
+        workbox: {
+          globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+          skipWaiting: true,
+          clientsClaim: true,
+          maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+          globIgnores: ["**/guitar-boy-*.svg"],
+        },
+        manifest: {
+          name: "Banddy",
+          short_name: "Banddy",
+          description: "밴드 음악 커뮤니티",
+          theme_color: "#ffffff",
+          icons: [
+            {
+              src: "pwa-192x192.png",
+              sizes: "192x192",
+              type: "image/png",
+            },
+            {
+              src: "pwa-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+            },
+            {
+              src: "pwa-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "any maskable",
+            },
+          ],
+        },
+      })
+    );
+  }
+
+  return {
+    plugins,
+    resolve: {
+      alias: {
+        "@": "/src",
       },
-      manifest: {
-        name: "Banddy",
-        short_name: "Banddy",
-        description: "밴드 음악 커뮤니티",
-        theme_color: "#ffffff",
-        icons: [
-          {
-            src: "pwa-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-          },
-          {
-            src: "pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable",
-          },
-        ],
-      },
-    }),
-  ],
-  resolve: {
-    alias: {
-      "@": "/src",
     },
-  },
-  define: {
-    global: "globalThis",
-  },
-  build: {
-    outDir: "dist",
-    sourcemap: mode === "development",
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ["react", "react-dom"],
-          router: ["react-router-dom"],
-          ui: ["@mui/material", "@emotion/react", "@emotion/styled"],
-          state: ["valtio", "zustand"],
-          websocket: ["@stomp/stompjs", "sockjs-client"],
+    define: {
+      global: "globalThis",
+    },
+    build: {
+      outDir: "dist",
+      sourcemap: mode === "development",
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ["react", "react-dom"],
+            router: ["react-router-dom"],
+            ui: ["@mui/material", "@emotion/react", "@emotion/styled"],
+            state: ["valtio", "zustand"],
+            websocket: ["@stomp/stompjs", "sockjs-client"],
+          },
         },
       },
     },
-  },
-  server: {
-    port: 5173,
-    host: true,
-  },
-  preview: {
-    port: 4173,
-    host: true,
-  },
-}));
+    server: {
+      port: 5173,
+      host: true,
+    },
+    preview: {
+      port: 4173,
+      host: true,
+    },
+  };
+});
