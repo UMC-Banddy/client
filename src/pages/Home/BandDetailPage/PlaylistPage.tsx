@@ -24,6 +24,16 @@ interface BandInfo {
   profileImage: string;
 }
 
+// API 응답 타입 정의
+interface ApiTrack {
+  id?: number;
+  title?: string;
+  artist?: string;
+  albumImage?: string;
+  duration?: string;
+  imageUrl?: string;
+}
+
 export default function PlaylistPage() {
   const { bandId } = useParams<{ bandId: string }>();
   const [bandInfo, setBandInfo] = useState<BandInfo>({
@@ -71,8 +81,7 @@ export default function PlaylistPage() {
 
       // API 응답을 Track 형식으로 변환
       const transformedTracks: Track[] = tracksData.map(
-        // (track: any, index: number) => ({
-        (track: Track, index: number) => ({
+        (track: ApiTrack, index: number) => ({
           id: track.id || index + 1,
           title: track.title || `곡 ${index + 1}`,
           artist: track.artist || "아티스트",

@@ -53,6 +53,9 @@ export const API_ENDPOINTS = {
   BANDS: {
     PROFILE: (bandId: string) => `/api/band/${bandId}/profile`,
     DETAIL: (bandId: string) => `/api/band/${bandId}/detail`,
+    MEMBERS: (bandId: string) => `/api/band/${bandId}/members`,
+    TRACKS: (bandId: string) => `/api/band/${bandId}/tracks`,
+    ARTISTS: (bandId: string) => `/api/band/${bandId}/artists`,
     LIST: "/api/bands", // 모든 밴드 목록 조회 (백엔드 구현 필요)
     RECOMMENDED: "/api/bands/recommended", // 추천 밴드 목록 조회 (백엔드 구현 필요)
     BOOKMARK: (bandId: string) => `/api/bands/${bandId}/bookmark`,

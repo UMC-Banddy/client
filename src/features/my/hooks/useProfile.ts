@@ -12,4 +12,4 @@ export const useProfile = () => {
     },
     enabled: !!authStore.accessToken,
   });
-}; 
+};

@@ -276,7 +276,7 @@ export const getBandMembers = async (bandId: string) => {
     if (import.meta.env.DEV) {
       console.log("밴드 멤버 조회 요청:", { bandId });
     }
-    const response = await API.get(`/api/band/${bandId}/members`);
+    const response = await API.get(API_ENDPOINTS.BANDS.MEMBERS(bandId));
     if (import.meta.env.DEV) {
       console.log("밴드 멤버 조회 성공:", response.data);
     }
@@ -292,7 +292,7 @@ export const getBandTracks = async (bandId: string) => {
     if (import.meta.env.DEV) {
       console.log("밴드 곡 목록 조회 요청:", { bandId });
     }
-    const response = await API.get(`/api/band/${bandId}/tracks`);
+    const response = await API.get(API_ENDPOINTS.BANDS.TRACKS(bandId));
     if (import.meta.env.DEV) {
       console.log("밴드 곡 목록 조회 성공:", response.data);
     }
@@ -308,7 +308,7 @@ export const getBandArtists = async (bandId: string) => {
     if (import.meta.env.DEV) {
       console.log("밴드 선호 아티스트 조회 요청:", { bandId });
     }
-    const response = await API.get(`/api/band/${bandId}/artists`);
+    const response = await API.get(API_ENDPOINTS.BANDS.ARTISTS(bandId));
     if (import.meta.env.DEV) {
       console.log("밴드 선호 아티스트 조회 성공:", response.data);
     }

@@ -20,6 +20,14 @@ interface BandInfo {
   profileImage: string;
 }
 
+// API 응답 타입 정의
+interface ApiArtist {
+  id?: number;
+  name?: string;
+  image?: string;
+  imageUrl?: string;
+}
+
 // 임시 데이터 (API 연결 전까지 사용)
 const preferData = [
   { id: 1, name: "BECK", image: guitarBoy },
@@ -77,8 +85,7 @@ export default function PreferPage() {
 
       // API 응답을 Artist 형식으로 변환
       const transformedArtists: Artist[] = artistsData.map(
-        // (artist: any, index: number) => ({
-        (artist: Artist, index: number) => ({
+        (artist: ApiArtist, index: number) => ({
           id: artist.id || index + 1,
           name: artist.name || `아티스트 ${index + 1}`,
           image: artist.imageUrl || artist.image || guitarBoy,

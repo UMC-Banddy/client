@@ -28,6 +28,15 @@ interface BandInfo {
   maxMembers: number;
 }
 
+// API 응답 타입 정의
+interface ApiBandMember {
+  id?: number;
+  name?: string;
+  role?: string;
+  isRecruiting?: boolean;
+  profileImage?: string;
+}
+
 export default function PeoplePage() {
   const { bandId } = useParams<{ bandId: string }>();
   const [bandInfo, setBandInfo] = useState<BandInfo>({
@@ -55,8 +64,8 @@ export default function PeoplePage() {
         description: "인원 구성 정보",
         profileImage: profileData.goalTracks?.[0]?.imageUrl || homeAlbum2,
         memberCount:
-          profileData.composition?.maleCount +
-            profileData.composition?.femaleCount || 0,
+          (profileData.composition?.maleCount || 0) +
+          (profileData.composition?.femaleCount || 0),
         maxMembers: 4, // 기본값
       });
     } catch (error) {
@@ -82,8 +91,7 @@ export default function PeoplePage() {
 
       // API 응답을 BandMember 형식으로 변환
       const transformedMembers: BandMember[] = membersData.map(
-        // (member: any, index: number) => ({
-        (member: BandMember, index: number) => ({
+        (member: ApiBandMember, index: number) => ({
           id: member.id || index + 1,
           name: member.name || `멤버 ${index + 1}`,
           role: member.role || "guitar",

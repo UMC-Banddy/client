@@ -10,6 +10,11 @@ module.exports = [
       "**/*.config.*", // vite, tailwind, postcss 등
       "**/*.d.ts",
       "**/*.test.*",
+      // PWA 관련 자동 생성 파일들
+      "sw.js",
+      "workbox-*.js",
+      "registerSW.js",
+      "manifest.webmanifest",
     ],
   },
   js.configs.recommended,
