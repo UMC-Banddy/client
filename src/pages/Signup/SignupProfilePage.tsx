@@ -1,45 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { authStore } from "@/store/authStore";
 import { signupMember } from "@/store/auth";
-import whiteStar from "../../assets/logos/white-star.svg";
+import SignupHeader from "./_components/SignupHeader";
+import SignupStepTitle from "./_components/SignupStepTitle";
+import SignupInputField from "./_components/SignupInputField";
+import SignupButton from "./_components/SignupButton";
 
 /* 전체 지역 */
 const regions = [
-  "서울",
-  "경기",
-  "인천",
-  "부산",
-  "대구",
-  "광주",
-  "대전",
-  "울산",
-  "세종",
-  "강원",
-  "충북",
-  "충남",
-  "전북",
-  "전남",
-  "경북",
-  "경남",
-  "제주"
+  "-", "서울", "경기", "인천", "부산", "대구", "광주", "대전", "울산", "세종",
+  "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"
 ];
 
 const SignupProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [age, setAge] = useState("");
   const [gender, setGender] = useState<"male" | "female" | null>(null);
-  const [region, setRegion] = useState("");
+  const [region, setRegion] = useState("-");
   const [regionOpen, setRegionOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const isFormValid = !!(age && gender);
+
+  // 페이지 진입 시 토스트 메시지 표시
+  useEffect(() => {
+    setShowToast(true);
+    const timer = setTimeout(() => {
+      setShowToast(false);
+    }, 3000); // 3초 후 자동으로 사라짐
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numValue = parseInt(value);
+    
+    // 음수 입력 방지
+    if (value === "" || (numValue >= 0 && numValue <= 120)) {
+      setAge(value);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!isFormValid) return;
 
     authStore.age = Number(age);
     authStore.gender = gender === "male" ? "남성" : "여성";
-    authStore.region = region;
+    authStore.region = region === "-" ? "" : region;
 
     try {
       await signupMember({
@@ -58,32 +67,28 @@ const SignupProfilePage: React.FC = () => {
 
   return (
     <div className="relative w-full min-h-screen max-w-md mx-auto bg-black text-white overflow-hidden">
-      {/* 프로그레스 바 */}
-      <div className="w-full h-0.5 bg-[#959595]">
-        <div className="w-full h-full bg-[#C7242D]" />
-      </div>
+      <SignupHeader progress={100} />
 
-      {/* 상단 아이콘 */}
-      <img src={whiteStar} alt="step" className="absolute right-6 top-[18px] w-8 h-8" />
-
-      {/* 콘텐츠 */}
       <div className="flex flex-col px-6 pt-[180px] pb-10">
-        <p className="text-sm text-[#959595] mb-1">Step. 4</p>
-        <h1 className="text-lg font-semibold mb-2">기본 정보를 입력해 주세요.</h1>
-        <p className="text-xs text-[#959595] mb-6">* 표시는 필수 입력 사항입니다.</p>
+        <SignupStepTitle 
+          step={4} 
+          title="기본 정보를 입력해 주세요." 
+          subtitle="* 표시는 필수 입력 사항입니다."
+        />
 
         {/* 나이 */}
         <div className="mb-6">
           <label htmlFor="age" className="block mb-1">
             나이 <span className="text-red-500">*</span>
           </label>
-          <input
+          <SignupInputField
             id="age"
             type="number"
             inputMode="numeric"
             value={age}
-            onChange={(e) => setAge(e.target.value)}
-            className="w-full border-b border-[#959595] bg-transparent py-2 focus:outline-none text-white"
+            onChange={handleAgeChange}
+            min="0"
+            max="120"
           />
         </div>
 
@@ -127,9 +132,9 @@ const SignupProfilePage: React.FC = () => {
               <div className="relative w-[120px]">
                 <button
                   onClick={() => setRegionOpen(!regionOpen)}
-                  className="w-full border bg-[#121212]  border-[#E9E9E9] py-2 px-3 text-left text-[#E9E9E9] text-sm flex justify-between items-center"
+                  className="w-full border bg-[#121212] border-[#E9E9E9] py-2 px-3 text-left text-[#E9E9E9] text-sm flex justify-between items-center"
                 >
-                  {region || "선택"}
+                  {region}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className={`h-4 w-4 transform transition-transform ${regionOpen ? "rotate-180" : ""}`}
@@ -162,18 +167,23 @@ const SignupProfilePage: React.FC = () => {
         )}
 
         {/* 완료 버튼 */}
-        <button
-          disabled={!isFormValid}
+        <SignupButton
           onClick={handleSubmit}
-          className={`w-full py-3 mt-4 rounded-[24px] font-semibold transition ${
-            isFormValid
-              ? "bg-[#C7242D] text-[#000000]"
-              : "bg-[#959595] text-[#555555] cursor-default"
-          }`}
+          disabled={!isFormValid}
+          className="mt-4"
         >
           완료
-        </button>
+        </SignupButton>
       </div>
+
+      {/* 토스트 메시지 */}
+      {showToast && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="text-[#959595] text-sm whitespace-nowrap animate-fade-in-out">
+            거의 다 왔어요. 화이팅 !
+          </div>
+        </div>
+      )}
     </div>
   );
 };

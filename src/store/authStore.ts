@@ -9,7 +9,6 @@ export interface AuthState {
   nickname: string;
   gender: string;
   region: string;
-  district: string;
   age: number;
 
   // UI 상태
@@ -30,7 +29,6 @@ export const authStore = proxy<AuthState>({
   nickname: "",
   gender: "",
   region: "",
-  district: "",
   age: 0,
 
   // UI

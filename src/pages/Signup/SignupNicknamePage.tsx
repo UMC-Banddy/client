@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/logos/white-star.svg";
 import { checkNickname } from "../../store/auth";
-import { authStore } from "../../store/authStore"; 
+import { authStore } from "../../store/authStore";
+import SignupHeader from "./_components/SignupHeader";
+import SignupStepTitle from "./_components/SignupStepTitle";
+import SignupInputField from "./_components/SignupInputField";
+import SignupButton from "./_components/SignupButton";
 
 const SignupNicknamePage: React.FC = () => {
   const navigate = useNavigate();
@@ -38,7 +41,7 @@ const SignupNicknamePage: React.FC = () => {
       if (res.available) {
         setIsAvailable(true);
         setMessage("사용 가능한 닉네임입니다.");
-        authStore.nickname = nickname; // 중복 확인 성공 시 저장
+        authStore.nickname = nickname;
       } else {
         setIsAvailable(false);
         setMessage("사용 불가능한 닉네임입니다.");
@@ -51,7 +54,7 @@ const SignupNicknamePage: React.FC = () => {
   };
 
   const handleNext = () => {
-    authStore.nickname = nickname; // 마지막 방어
+    authStore.nickname = nickname;
     navigate("/signup/profile");
   };
 
@@ -59,22 +62,17 @@ const SignupNicknamePage: React.FC = () => {
 
   return (
     <div className="relative w-full min-h-screen max-w-md mx-auto bg-black text-white overflow-hidden">
-      <div className="w-full h-0.5 bg-[#959595]">
-        <div className="w-3/4 h-full bg-[#C7242D]" />
-      </div>
-
-      <img src={logo} alt="step" className="absolute right-6 top-[18px] w-8 h-8" />
+      <SignupHeader progress={75} />
 
       <div className="flex flex-col px-6 pt-[180px]">
-        <p className="text-sm text-[#959595] mb-1">Step. 3</p>
-        <h1 className="text-lg font-semibold mb-8">닉네임을 설정해 주세요.</h1>
+        <SignupStepTitle step={3} title="닉네임을 설정해 주세요." />
 
         <div className="relative">
-          <input
+          <SignupInputField
             type="text"
             value={nickname}
             onChange={(e) => handleChange(e.target.value)}
-            className="w-full border-b border-[#959595] bg-transparent py-2 pr-[95px] focus:outline-none text-white"
+            className="pr-[0px]"
           />
           <button
             type="button"
@@ -108,17 +106,12 @@ const SignupNicknamePage: React.FC = () => {
       </div>
 
       <div className="px-6 mt-36">
-        <button
-          disabled={!canSubmit}
+        <SignupButton
           onClick={handleNext}
-          className={`w-full py-3 rounded-[24px] font-semibold transition ${
-            canSubmit
-              ? "bg-[#C7242D] text-[#000000]"
-              : "bg-[#959595] text-[#555555] cursor-default"
-          }`}
+          disabled={!canSubmit}
         >
-          완료
-        </button>
+          다음
+        </SignupButton>
       </div>
     </div>
   );

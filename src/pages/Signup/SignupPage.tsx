@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import whiteStar from "../../assets/logos/white-star.svg";
 import blackstar from "../../assets/logos/black-star.svg";
-
 import { authStore } from "../../store/authStore";
 import { sendEmailCode } from "../../store/auth";
+import SignupHeader from "./_components/SignupHeader";
+import SignupStepTitle from "./_components/SignupStepTitle";
+import SignupInputField from "./_components/SignupInputField";
+import SignupButton from "./_components/SignupButton";
 
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState(authStore.email);
@@ -15,10 +17,10 @@ const SignupPage: React.FC = () => {
   const handleSendCode = async () => {
     if (!email) return;
     try {
-      const message = await sendEmailCode(email); // 문자열 응답 처리
+      const message = await sendEmailCode(email);
       console.log("이메일 전송 응답:", message);
 
-      authStore.email = email; // 전역 상태 저장
+      authStore.email = email;
 
       setShowPopup(true);
       setTimeout(() => {
@@ -32,41 +34,28 @@ const SignupPage: React.FC = () => {
 
   return (
     <div className="relative w-full min-h-screen max-w-md mx-auto bg-black text-white overflow-hidden">
-      {/* 프로그레스바 */}
-      <div className="w-full h-0.5 bg-[#959595]">
-        <div className="w-1/4 h-full bg-[#C7242D]" />
-      </div>
-
-      {/* 별 아이콘 */}
-      <img src={whiteStar} alt="step" className="absolute right-6 top-[25px] w-8 h-8" />
+      <SignupHeader progress={25} />
 
       {/* 콘텐츠 영역 */}
-      <div className="flex flex-col items-start justify-center px-6 text-left min-h-[calc(100vh-180px)]">
-        <p className="text-sm text-[#959595] mb-1">Step. 1</p>
-        <h1 className="text-lg font-semibold mb-8">이메일 아이디를 입력해주세요.</h1>
+      <div className="flex flex-col  justify-center px-6 text-left min-h-[calc(100vh-180px)]">
+        <SignupStepTitle step={1} title="이메일 아이디를 입력해주세요." />
 
-        <input
+        <SignupInputField
           type="email"
+          placeholder="example@banddy.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="example@banddy.com"
-          className="w-full border-b border-[#959595] bg-transparent py-2 focus:outline-none placeholder-[#959595] text-sm"
         />
       </div>
 
       {/* 인증번호 발송 버튼 */}
       <div className="px-6 pb-8 bottom-10 left-0 right-0 max-w-md mx-auto bg-black">
-        <button
+        <SignupButton
           onClick={handleSendCode}
           disabled={!email}
-          className={`w-full h-[49px] rounded-[24px] font-semibold transition ${
-            email
-              ? "bg-[#C7242D] text-white"
-              : "bg-[#959595] text-[#696969] cursor-default"
-          }`}
         >
           인증번호 발송
-        </button>
+        </SignupButton>
       </div>
 
       {/* 팝업 애니메이션 */}
@@ -88,15 +77,16 @@ const SignupPage: React.FC = () => {
               <p className="mb-6 text-[#292929] font-medium text-base">
                 인증번호가 발송되었습니다.
               </p>
-              <button
+              <SignupButton
                 onClick={() => {
                   setShowPopup(false);
                   navigate("/signup/verify");
                 }}
-                className="w-[130px] mx-auto py-2 rounded-[24px] bg-[#C7242D] text-white font-semibold"
+                variant="popup"
+                className="mx-auto"
               >
                 확인
-              </button>
+              </SignupButton>
             </motion.div>
           </motion.div>
         )}
