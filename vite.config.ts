@@ -7,11 +7,11 @@ import svgr from "vite-plugin-svgr";
 export default defineConfig(({ mode }) => {
   const plugins = [react(), svgr()];
 
-  // PWA 설정 임시 비활성화
+  // PWA 설정 임시 비활성화 (Service Worker 404 오류 해결을 위해)
   // plugins.push(
   //   VitePWA({
   //     registerType: "autoUpdate",
-  //     includeAssets: ["favicon.ico", "apple-touch-icon.png", "android-chrome-192x192.png", "android-chrome-512x512.png"],
+  //     includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
   //     workbox: {
   //       globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
   //       skipWaiting: true,
@@ -25,24 +25,24 @@ export default defineConfig(({ mode }) => {
   //       name: "Banddy",
   //       short_name: "Banddy",
   //       description: "밴드 음악 커뮤니티",
-  //       theme_color: "#DF0001",
-  //       background_color: "#DF0001",
+  //       theme_color: "#ffffff",
+  //       background_color: "#121212",
   //       display: "standalone",
   //       start_url: "/",
   //       scope: "/",
   //       icons: [
   //         {
-  //           src: "android-chrome-192x192.png",
+  //           src: "pwa-192x192.png",
   //           sizes: "192x192",
   //           type: "image/png",
   //         },
   //         {
-  //           src: "android-chrome-512x512.png",
+  //           src: "pwa-512x512.png",
   //           sizes: "512x512",
   //           type: "image/png",
   //         },
   //         {
-  //           src: "android-chrome-512x512.png",
+  //           src: "pwa-512x512.png",
   //           sizes: "512x512",
   //           type: "image/png",
   //           purpose: "any maskable",
@@ -51,11 +51,6 @@ export default defineConfig(({ mode }) => {
   //     },
   //     // Service Worker 등록 방식 설정
   //     injectRegister: "auto",
-  //     // 개발 환경에서도 PWA 활성화
-  //     devOptions: {
-  //       enabled: true,
-  //       type: "module",
-  //     },
   //   })
   // );
 
