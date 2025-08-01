@@ -77,11 +77,7 @@ export function ChatHeader({
           className="flex items-center justify-center w-24 h-24 rounded-full hover:bg-white/10 transition-colors"
           onClick={onBack}
         >
-          <img
-            src={backIcon}
-            alt="Back"
-            className="w-14 h-14"
-          />
+          <img src={backIcon} alt="Back" className="w-14 h-14" />
         </button>
 
         <div className="flex flex-col items-center">
