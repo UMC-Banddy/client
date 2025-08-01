@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { 
+  useState, 
+  // useEffect, 
+  useRef } from "react";
 import { musicAPI } from "@/api/API";
 import type { AutocompleteResult } from "@/api/API";
 
@@ -13,7 +16,7 @@ interface SearchBarProps {
 const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "아티스트 검색하기",
   onSearch,
-  onSelect,
+  // onSelect,
   onAutocompleteResults,
   className = "",
 }) => {

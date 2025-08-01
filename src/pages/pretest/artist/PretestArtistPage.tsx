@@ -4,7 +4,7 @@ import PretestHeader from "./_components/PretestHeader";
 import SearchBar from "./_components/SearchBar";
 import ArtistGrid from "./_components/ArtistGrid";
 import { musicAPI, artistSaveAPI } from "@/api/API";
-import type { AutocompleteResult } from "@/api/API";
+// import type { AutocompleteResult } from "@/api/API";
 import oasisImage from "@/assets/images/oasis.png";
 
 // 아티스트 타입 정의 (API에서 import가 안 될 경우를 대비)

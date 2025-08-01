@@ -15,14 +15,14 @@ export default function ProfileActionButtons({ onChat, onFriend }: ProfileAction
         className="flex items-center gap-[1vw] px-[4vw] py-[2vh] text-wanted-b-13"
         onClick={onChat}
       >
-        <img src={chat_request} alt="chat" className="w-[5vw] h-[5vw]" /> 채팅 요청
+        <img src={chat_request} alt="chat" className="w-[5vw] h-[5vw] min-w-[18px] min-h-[18px]" /> 채팅 요청
       </ProfileDetailBtn>
       <ProfileDetailBtn
         color="red"
         className="flex items-center gap-[1vw] px-[4vw] py-[2vh]"
         onClick={onFriend}
       >
-        <img src={friend_request} alt="friend" className="w-[5vw] h-[5vw]" /> 친구 추가
+        <img src={friend_request} alt="friend" className="w-[5vw] h-[5vw] min-w-[18px] min-h-[18px]" /> 친구 추가
       </ProfileDetailBtn>
     </div>
   );

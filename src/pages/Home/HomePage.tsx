@@ -3,15 +3,15 @@ import BandCarousel from "./_components/BandCarousel";
 import MuiDialog from "@/shared/components/MuiDialog";
 import BandInfoModal from "./_components/BandInfoModal";
 import { getRecommendedBands } from "@/store/userStore";
-import {
-  MicImg,
-  GuitarImg,
-  BassImg,
-  DrumImg,
-  PianoImg,
-  ViolinImg,
-  TrumpetImg,
-} from "@/shared/components/images";
+// import {
+//   MicImg,
+//   GuitarImg,
+//   BassImg,
+//   DrumImg,
+//   PianoImg,
+//   ViolinImg,
+//   TrumpetImg,
+// } from "@/shared/components/images";
 
 interface TrackDto {
   title: string;
@@ -211,7 +211,8 @@ const HomePage = () => {
 
       // API 응답이 있지만 유효하지 않은 경우도 fallback 사용
       const validProfiles = profiles.filter(
-        (profile: any) =>
+        // (profile: any) =>
+        (profile: BandProfileData) =>
           profile &&
           (profile.goalTracks || profile.preferredArtists || profile.sessions)
       );
@@ -225,7 +226,8 @@ const HomePage = () => {
       }
 
       // 밴드 프로필 데이터를 캐러셀 형식으로 변환
-      const bands: Band[] = validProfiles.map((profile: any, index: number) => {
+      // const bands: Band[] = validProfiles.map((profile: any, index: number) => {
+      const bands: Band[] = validProfiles.map((profile: BandProfileData, index: number) => {
         // API 응답 구조에 따라 안전하게 접근
         const goalTracks = profile.goalTracks || [];
         const preferredArtists = profile.preferredArtists || [];
