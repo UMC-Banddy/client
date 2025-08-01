@@ -11,6 +11,20 @@ import KeywordSection from "./_components/KeywordSection";
 import IntroductionSection from "./_components/IntroductionSection";
 import { profileAPI } from "@/api/API";
 
+// 임시로 만들었습니다.. (타입 정의)
+interface ProfileData {
+  gender: string;
+  nickname: string;
+  age: number;
+  region: string;
+  district: string;
+  bio: string;
+  profileImageUrl: string;
+  availableSessions: Array<{ sessionType: string; level: string }>;
+  tags: string[];
+  savedTracks: Array<{ title: string; imageUrl?: string }>;
+}
+
 const PretestProfileEditPage: React.FC = () => {
   const navigate = useNavigate();
 
@@ -54,7 +68,8 @@ const PretestProfileEditPage: React.FC = () => {
         console.log("프로필 데이터:", response);
 
         if (response.isSuccess && response.result) {
-          const data = response.result;
+          // const data = response.result;
+          const data = response.result as ProfileData;
 
           // 성별을 UI 표시용으로 변환
           const genderDisplayMap: Record<string, string> = {
@@ -431,11 +446,14 @@ const PretestProfileEditPage: React.FC = () => {
         setError(null);
 
         // 서버에서 받은 이미지 URL로 업데이트 (있는 경우)
-        if (response.result && response.result.profileImageUrl) {
-          setProfileImageUrl(response.result.profileImageUrl);
+        // if (response.result && response.result.profileImageUrl) {
+        //   setProfileImageUrl(response.result.profileImageUrl);
+        if (response.result && (response.result as ProfileData).profileImageUrl) {
+          setProfileImageUrl((response.result as ProfileData).profileImageUrl);
           console.log(
             "서버 이미지 URL로 업데이트:",
-            response.result.profileImageUrl
+            // response.result.profileImageUrl
+            (response.result as ProfileData).profileImageUrl
           );
         }
       } else {

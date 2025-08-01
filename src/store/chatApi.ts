@@ -35,14 +35,16 @@ export const createDirectChat = async (
 };
 
 // 면접 채팅방 생성 (밴드 가입 신청용) - API 문서에 없어서 주석 처리
-export const createInterviewChat = async (_bandId: string) => {
+// export const createInterviewChat = async (_bandId: string) => {
+export const createInterviewChat = async () => {
   // const response = await API.post(API_ENDPOINTS.CHAT.CREATE_INTERVIEW(bandId));
   // return response.data;
   throw new Error("면접 채팅방 생성 API가 구현되지 않았습니다.");
 };
 
 // 지원 채팅방 생성 (밴드 지원용) - API 문서에 없어서 주석 처리
-export const createApplicationChat = async (_bandId: string) => {
+// export const createApplicationChat = async (_bandId: string) => {
+export const createApplicationChat = async () => {
   // const response = await API.post(
   //   API_ENDPOINTS.CHAT.CREATE_APPLICATION(bandId)
   // );
@@ -80,8 +82,8 @@ export const getChatRoomMembers = async (
 
 // 채팅방 멤버 초대 - API 문서에 없어서 주석 처리
 export const inviteChatMember = async (
-  _roomId: string,
-  _memberIds: number[]
+  // _roomId: string,
+  // _memberIds: number[]
 ) => {
   // const response = await API.post(API_ENDPOINTS.CHAT.INVITE(roomId), {
   //   memberIds,

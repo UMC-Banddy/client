@@ -37,8 +37,11 @@ export const API_ENDPOINTS = {
     OTHER: (memberId: string) => `/api/member/${memberId}/profile`,
     OTHER_TRACKS: (memberId: string) =>
       `/api/member/${memberId}/profile/saved-tracks`,
+    OTHER_ALBUMS: (memberId: string) =>
+      `/api/member/${memberId}/profile/saved-albums`,
     OTHER_TAGS: (memberId: string) => `/api/member/${memberId}/tags`,
     NOTIFICATIONS: "/api/notifications",
+    MARK_NOTIFICATION_READ: "/api/notifications/read",
   },
 
   ALBUM_TRACKS: {
@@ -93,6 +96,7 @@ export const API_ENDPOINTS = {
   },
 
   MUSIC: {
+    SEARCH: "/api/music/search",
     SEARCH_ALL: "/api/music/search/artists",
     SEARCH_TRACKS: "/api/music/search/tracks",
     SEARCH_ARTISTS: "/api/music/search/artists",

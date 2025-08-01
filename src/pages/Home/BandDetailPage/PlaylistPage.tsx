@@ -14,6 +14,7 @@ interface Track {
   artist: string;
   albumImage?: string;
   duration?: string;
+  imageUrl?: string;
 }
 
 interface BandInfo {
@@ -70,7 +71,8 @@ export default function PlaylistPage() {
 
       // API 응답을 Track 형식으로 변환
       const transformedTracks: Track[] = tracksData.map(
-        (track: any, index: number) => ({
+        // (track: any, index: number) => ({
+        (track: Track, index: number) => ({
           id: track.id || index + 1,
           title: track.title || `곡 ${index + 1}`,
           artist: track.artist || "아티스트",

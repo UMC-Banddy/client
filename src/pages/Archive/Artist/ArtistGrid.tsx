@@ -1,4 +1,4 @@
-// ... existing code ...
+import React from "react";
 
 interface ArtistGridItem {
   image: string;
@@ -11,9 +11,12 @@ interface ArtistGridProps {
 
 export default function ArtistGrid({ items }: ArtistGridProps) {
   return (
-    <div className="flex gap-[3vw] overflow-x-auto scrollbar-hide">
+    <div className="flex gap-[12px] overflow-x-auto scrollbar-hide mb-[4.2vh]">
       {items.map((item, idx) => (
-        <div key={idx} className="flex flex-col items-center flex-shrink-0">
+        <div
+          key={idx}
+          className="flex flex-col items-center flex-shrink-0"
+        >
           <img
             src={item.image}
             alt={item.title}
@@ -26,4 +29,4 @@ export default function ArtistGrid({ items }: ArtistGridProps) {
       ))}
     </div>
   );
-}
+} 

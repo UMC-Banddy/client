@@ -6,6 +6,20 @@ import SkillGuideModal from "./_components/SkillGuideModal";
 import { surveyAPI, profileAPI, artistSaveAPI } from "@/api/API";
 import { SESSIONS } from "./_components/sessionData";
 
+// 임시로 만들었습니다.. (타입 정의)
+interface ProfileData {
+  gender: string;
+  nickname: string;
+  age: number;
+  region: string;
+  district: string;
+  bio: string;
+  profileImageUrl: string;
+  availableSessions: Array<{ sessionType: string; level: string }>;
+  tags: string[];
+  savedTracks: Array<{ title: string; imageUrl?: string }>;
+}
+
 const PretestSessionPage = () => {
   const navigate = useNavigate();
   const [selectedSessions, setSelectedSessions] = useState<
@@ -176,7 +190,8 @@ const PretestSessionPage = () => {
 
           // 기존 프로필 정보와 새로운 세션 정보를 병합
           const updatedProfile = {
-            ...currentProfile.result, // 기존 프로필 정보 유지
+            // ...currentProfile.result, // 기존 프로필 정보 유지
+            ...(currentProfile.result as ProfileData), // 기존 프로필 정보 유지
             availableSessions: availableSessions, // 세션 정보만 업데이트
           };
 

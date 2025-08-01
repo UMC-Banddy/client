@@ -4,10 +4,11 @@ interface MusicGridProps {
 
 export default function MusicGrid({ items }: MusicGridProps) {
   return (
-    <div className="flex gap-[3vw] overflow-x-auto pb-[1vh] scrollbar-hide">
+    // <div className="flex gap-[14px] overflow-x-auto pb-[1vh] scrollbar-hide mb-[4vh] w-screen -mx-[24px] pl-[24px]">
+    <div className="flex gap-[14px] overflow-x-auto pb-[1vh] scrollbar-hide mb-[4vh]">
       {items.map((item, i) => (
-        <div key={i} className="flex flex-col items-start flex-shrink-0 w-[29vw]">
-          <div className="relative w-[29vw] h-[29vw] overflow-hidden bg-[#71717A]">
+        <div key={i} className="flex flex-col items-start">
+          <div className="relative w-[29vw] h-[29vw] overflow-hidden bg-[#71717A] max-w-[116px] max-h-[116px]">
             <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
           </div>
           <div className="mt-[1vh] text-hakgyo-r-14 text-[#FFFFFF]">{item.title}</div>

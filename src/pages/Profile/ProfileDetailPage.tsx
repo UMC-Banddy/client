@@ -1,10 +1,24 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import ProfileHeader from "./_components/ProfileHeader";
 import ProfileCard from "./_components/ProfileCard";
 import ProfileModalSection from "./_components/ProfileModalSection";
-import { DrumImg, MicImg } from "@/shared/components/images";
+import { useOtherProfile } from "@/features/profile/hooks/useOtherProfile";
+import { 
+  MicImg, 
+  DrumImg, 
+  ElectricGuitarImg, 
+  GuitarImg, 
+  BassImg, 
+  PianoImg, 
+  ViolinImg, 
+  TrumpetImg 
+} from "@/shared/components/images";
 
 export default function ProfileDetailPage() {
+  const { id } = useParams();
+  const { profile: otherProfile, isLoading, error } = useOtherProfile(id ? parseInt(id) : null);
+  
   // 가이드 상태 관리
   const [showGuide, setShowGuide] = useState(false);
   
@@ -16,33 +30,66 @@ export default function ProfileDetailPage() {
   // 메뉴 상태 관리
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // 목데이터
-  const profile = {
-    avatar: "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRVZlH-Bqpxw2XI_qUxlkg4uI0ewNh8jKqgS8G9x-GXYZzAQj1-",
-    id: 1,
-    name: "Flowerboy",
-    age: 23,
-    gender: "여성",
-    location: "서울시 노원구",
-    session: [
-      { icon: <MicImg color="red" size={32} /> },
-      { icon: <DrumImg color="red" size={32} /> },
-    ],
-    genres: [
-      { icon: "🤘", label: "Tiwan Indie" },
-      { icon: "🎸", label: "Rock" },
-      { icon: "💔", label: "EMO" },
-    ],
-    artists: [
-      { image: "https://i.discogs.com/LWJa1W9cdAaPKnxkTNMyh3xsHMQ96HiwSFlwxfEz4gs/rs:fit/g:sm/q:40/h:150/w:150/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2ODc2/Njc1LTE2ODI0MTU4/ODMtNjM3Mi5qcGVn.jpeg", name: "Gorillaz" },
-      { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSt4MeWxVeeh39au45yo0lKDddcIYWZWSnkRJH79EALdOyQ-Ldh", name: "Sheena ringo" },
-      { image: "https://cdn-ak.f.st-hatena.com/images/fotolife/a/arakibass/20250110/20250110230234.jpg", name: "The cabs" },
-    ],
-    tags: [
-      "지각 안해요", "미리 조율해요", "핑크 안 내요", "연습 해와요", "주단위 합주"
-    ],
-    bio: "안녕하세요 저는 파리의 택시운전사입니다.\n파리는 정말 멋진 도시이고요 2025 파리 엑스포 화이팅!",
+  // 세션 이름에 따라 적절한 컴포넌트를 반환하는 함수
+  const getSessionComponent = (sessionName: string) => {
+    const lowerName = sessionName.toLowerCase();
+    if (lowerName.includes("보컬") || lowerName.includes("🎤")) return <MicImg color="red" size={32} />;
+    if (lowerName.includes("드럼") || lowerName.includes("🥁")) return <DrumImg color="red" size={32} />;
+    if (lowerName.includes("일렉") || lowerName.includes("🎸")) return <ElectricGuitarImg color="red" size={32} />;
+    if (lowerName.includes("어쿠스틱") || lowerName.includes("🪕")) return <GuitarImg color="red" size={32} />;
+    if (lowerName.includes("베이스") || lowerName.includes("🎧")) return <BassImg color="red" size={32} />;
+    if (lowerName.includes("키보드") || lowerName.includes("🎹")) return <PianoImg color="red" size={32} />;
+    if (lowerName.includes("바이올린") || lowerName.includes("🎻")) return <ViolinImg color="red" size={32} />;
+    if (lowerName.includes("트럼펫") || lowerName.includes("🎺")) return <TrumpetImg color="red" size={32} />;
+    return <MicImg color="red" size={32} />; // 기본값
   };
+
+  // 장르 이름에 따라 아이콘을 반환하는 함수
+  const getGenreIcon = (genreName: string) => {
+    const lowerName = genreName.toLowerCase();
+    if (lowerName.includes("rock")) return "🎸";
+    if (lowerName.includes("metal")) return "⚡";
+    if (lowerName.includes("pop")) return "🎤";
+    if (lowerName.includes("jazz")) return "🎺";
+    if (lowerName.includes("emo")) return "💔";
+    if (lowerName.includes("indie")) return "🌊";
+    if (lowerName.includes("punk")) return "🧑‍🎤";
+    if (lowerName.includes("r&b")) return "🎵";
+    if (lowerName.includes("grunge")) return "🥁";
+    if (lowerName.includes("shoegaze")) return "👟";
+    if (lowerName.includes("psychedelic")) return "💊";
+    if (lowerName.includes("dream pop")) return "🌙";
+    if (lowerName.includes("nu metal")) return "⛓️";
+    if (lowerName.includes("j-pop")) return "⛩️";
+    if (lowerName.includes("tiwan indie")) return "🤘";
+    if (lowerName.includes("russian rock")) return "🪆";
+    return "🎵"; // 기본값
+  };
+  
+  // API 데이터를 기존 형식으로 변환
+  const profile = otherProfile ? {
+    avatar: otherProfile.profileImageUrl,
+    id: otherProfile.memberId,
+    name: otherProfile.nickname,
+    age: otherProfile.age,
+    gender: otherProfile.gender === "MALE" ? "남성" : "여성",
+    location: otherProfile?.region || "",
+    session: otherProfile.sessions.map((session: { icon: string; name: string }) => ({
+      icon: getSessionComponent(session.name),
+      name: session.name
+    })),
+    genres: otherProfile.genres.map((genre: string) => ({
+      icon: getGenreIcon(genre),
+      label: genre
+    })),
+    artists: otherProfile.favoriteArtists.map((artist: { imageUrl: string; name: string }) => ({
+      image: artist.imageUrl,
+      name: artist.name
+    })),
+    tags: otherProfile.traits,
+    bio: otherProfile.bio,
+    youtubeUrl: otherProfile.youtubeUrl,
+  } : null;
 
   // 첫 접근 감지 및 가이드 표시
   useEffect(() => {
@@ -71,6 +118,31 @@ export default function ProfileDetailPage() {
     setModalType(null);
     setModalMsg("");
   };
+
+  // 로딩 중이거나 에러가 있으면 처리
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full bg-[#1C1C1E] flex items-center justify-center">
+        <div className="text-white">로딩 중...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen w-full bg-[#1C1C1E] flex items-center justify-center">
+        <div className="text-white">{error}</div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen w-full bg-[#1C1C1E] flex items-center justify-center">
+        <div className="text-white">프로필을 찾을 수 없습니다.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-[#1C1C1E] flex flex-col items-center relative">

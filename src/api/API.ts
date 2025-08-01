@@ -1,6 +1,7 @@
 import axios from "axios";
 import { API_ENDPOINTS } from "@/constants";
 import { authStore } from "@/store/authStore";
+import { AxiosError } from "axios";
 
 // 아티스트 타입 정의
 export interface Artist {
@@ -256,7 +257,8 @@ export const artistSaveAPI = {
   // 아티스트 저장
   saveArtist: async (
     spotifyId: string
-  ): Promise<{ isSuccess: boolean; result: any }> => {
+  // ): Promise<{ isSuccess: boolean; result: any }> => {
+  ): Promise<{ isSuccess: boolean; result: unknown }> => {
     try {
       const response = await API.post(
         API_ENDPOINTS.ARTISTS.SAVE,
@@ -280,7 +282,8 @@ export const artistSaveAPI = {
 // 프로필 수정 API 함수
 export const profileAPI = {
   // 프로필 조회
-  getProfile: async (): Promise<{ isSuccess: boolean; result: any }> => {
+  // getProfile: async (): Promise<{ isSuccess: boolean; result: any }> => {
+  getProfile: async (): Promise<{ isSuccess: boolean; result: unknown }> => {
     try {
       const response = await API.get(API_ENDPOINTS.PROFILE.SELF);
       return response.data;
@@ -307,7 +310,8 @@ export const profileAPI = {
     genres?: string[];
     artists?: string[];
     keywords?: string[];
-  }): Promise<{ isSuccess: boolean; result: any }> => {
+  // }): Promise<{ isSuccess: boolean; result: any }> => {
+  }): Promise<{ isSuccess: boolean; result: unknown }> => {
     try {
       // FormData인 경우와 일반 데이터인 경우를 구분
       const isFormData = profileData.profileImage instanceof FormData;
@@ -326,6 +330,7 @@ export const profileAPI = {
         return response.data;
       } else {
         // profileImage가 문자열이거나 없는 경우 JSON으로 전송
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { profileImage: _, ...jsonData } = profileData;
 
         const response = await API.put(API_ENDPOINTS.PROFILE.UPDATE, jsonData, {
@@ -402,7 +407,7 @@ export const surveyAPI = {
       }
     } catch (error: unknown) {
       console.error("Survey 제출 실패:", error);
-      console.error("에러 상세 정보:", (error as any).response?.data);
+      console.error("에러 상세 정보:", (error as AxiosError).response?.data);
       throw error;
     }
   },

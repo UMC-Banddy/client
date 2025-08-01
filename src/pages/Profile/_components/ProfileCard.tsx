@@ -21,6 +21,7 @@ interface ProfileData {
   artists: Array<{ image: string; name: string }>;
   tags: string[];
   bio: string;
+  youtubeUrl?: string | null;
 }
 
 interface ProfileCardProps {
@@ -49,14 +50,23 @@ export default function ProfileCard({
         >
           <img src={file_music} alt="file-music" className="w-[12vw] h-[12vw] max-w-[48px] max-h-[48px]" />
         </button>
-        <button className="bg-black rounded-full w-[12vw] h-[12vw] flex items-center justify-center max-w-[48px] max-h-[48px] cursor-pointer">
+        <button 
+          className="bg-black rounded-full w-[12vw] h-[12vw] flex items-center justify-center max-w-[48px] max-h-[48px] cursor-pointer"
+          onClick={() => {
+            if (profile.youtubeUrl) {
+              window.open(profile.youtubeUrl, "_blank");
+            }
+          }}
+        >
           <img src={youtube} alt="youtube" className="w-[12vw] h-[12vw] max-w-[48px] max-h-[48px]" />
         </button>
       </div>
       
       {/* 프로필 이미지와 가이드 */}
       <div className="relative">
-        <div className="w-[38vw] h-[38vw] max-w-[152px] max-h-[152px] rounded-full bg-[#808080] flex items-center justify-center overflow-hidden mt-[4vh] mb-[1vh]">
+        <div 
+          className="w-[38vw] h-[38vw] max-w-[152px] max-h-[152px] rounded-full bg-[#808080] flex items-center justify-center overflow-hidden mt-[4vh] mb-[1vh] cursor-pointer"
+        >
           <img src={profile.avatar} alt="avatar" className="w-full h-full object-cover" />
         </div>
         

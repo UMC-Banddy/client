@@ -8,7 +8,7 @@ export default function ArchivePage() {
   const [activeTab, setActiveTab] = useState("음악");
 
   return (
-    <div className="min-h-[100dvh] w-full flex flex-col pl-[6vw]">
+    <div className="min-h-[100dvh] w-full flex flex-col px-[24px]">
       <ArchiveTabs activeTab={activeTab} onTabChange={setActiveTab} />
       {activeTab === "음악" && <Music />}
       {activeTab === "아티스트" && <Artist />}
