@@ -3,16 +3,6 @@ import BandCarousel from "./_components/BandCarousel";
 import MuiDialog from "@/shared/components/MuiDialog";
 import BandInfoModal from "./_components/BandInfoModal";
 import { getRecommendedBands } from "@/store/userStore";
-import {
-  MicImg,
-  GuitarImg,
-  AcousticGuitarImg,
-  BassImg,
-  DrumImg,
-  PianoImg,
-  ViolinImg,
-  TrumpetImg,
-} from "@/shared/components/images";
 
 // 이미지 import
 import homeAlbum3Img from "@/assets/images/home-album3.png";
