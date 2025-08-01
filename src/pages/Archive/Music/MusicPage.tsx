@@ -1,6 +1,8 @@
 import { useState } from "react";
 import MusicGrid from "./MusicGrid";
+import MusicGridSkeleton from "./MusicGridSkeleton";
 import MusicList from "./MusicList";
+import MusicListSkeleton from "./MusicListSkeleton";
 import SectionDivider from "@/pages/My/_components/SectionDivider";
 import { useNavigate } from "react-router-dom";
 import plus from "@/assets/icons/archive/plus.svg";
@@ -18,15 +20,7 @@ export default function Music() {
   const { tracks, isLoading, error } = useSimilarTracks();
   const { tracks: archivedTracks, isLoading: archivedTracksLoading, error: archivedTracksError } = useArchivedTracks();
 
-  // 로딩 중이거나 에러가 있으면 처리
-  if (isLoading || archivedTracksLoading) {
-    return (
-      <div className="min-h-[100vh] w-full flex items-center justify-center">
-        <div className="text-white">로딩 중...</div>
-      </div>
-    );
-  }
-
+  // 에러가 있으면 처리
   if (error || archivedTracksError) {
     return (
       <div className="min-h-[100vh] w-full flex items-center justify-center">
@@ -44,11 +38,15 @@ export default function Music() {
           나와 비슷한 사용자가 많이 저장한 곡
         </span>
       <div className="mt-[2vh]">
-        <MusicGrid items={tracks.map(track => ({
-          image: track.imageUrl,
-          title: track.title,
-          subtitle: track.artist
-        }))} />
+        {isLoading ? (
+          <MusicGridSkeleton />
+        ) : (
+          <MusicGrid items={tracks.map(track => ({
+            image: track.imageUrl,
+            title: track.title,
+            subtitle: track.artist
+          }))} />
+        )}
       </div>
       <SectionDivider />
         <div className="flex items-center justify-between mt-[2vh] mb-[2vh] w-full">
@@ -78,11 +76,15 @@ export default function Music() {
             <img src={unlock} alt="unlock" className="w-[10vw] h-[10vw] cursor-pointer max-w-[40px] max-h-[40px]" onClick={() => setLocked(true)} />
           )}
         </div>
-        <MusicList items={archivedTracks.map(track => ({
-          image: track.imageUrl,
-          title: track.title,
-          subtitle: track.artist
-        }))} />
+        {archivedTracksLoading ? (
+          <MusicListSkeleton />
+        ) : (
+          <MusicList items={archivedTracks.map(track => ({
+            image: track.imageUrl,
+            title: track.title,
+            subtitle: track.artist
+          }))} />
+        )}
     </>
   );
 }

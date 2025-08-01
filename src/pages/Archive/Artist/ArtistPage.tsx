@@ -1,6 +1,8 @@
 import { useState } from "react";
 import ArtistGrid from "./ArtistGrid";
+import ArtistGridSkeleton from "./ArtistGridSkeleton";
 import ArtistList from "./ArtistList";
+import ArtistListSkeleton from "./ArtistListSkeleton";
 import SectionDivider from "@/pages/My/_components/SectionDivider";
 import plus from "@/assets/icons/archive/plus.svg";
 import folder from "@/assets/icons/archive/folder.svg";
@@ -18,15 +20,7 @@ export default function ArtistPage() {
   const { artists, isLoading, error } = useSimilarArtists();
   const { artists: archivedArtists, isLoading: archivedArtistsLoading, error: archivedArtistsError } = useArchivedArtists();
 
-  // 로딩 중이거나 에러가 있으면 처리
-  if (isLoading || archivedArtistsLoading) {
-    return (
-      <div className="min-h-[100vh] w-full flex items-center justify-center">
-        <div className="text-white">로딩 중...</div>
-      </div>
-    );
-  }
-
+  // 에러가 있으면 처리
   if (error || archivedArtistsError) {
     return (
       <div className="min-h-[100vh] w-full flex items-center justify-center">
@@ -43,10 +37,14 @@ export default function ArtistPage() {
       <span className="text-[#CACACA] text-hakgyo-b-17 flex mb-[4.7vh]">
         나와 비슷한 사용자가 많이 저장한 아티스트
       </span>
-      <ArtistGrid items={artists.map(artist => ({
-        image: artist.imageUrl,
-        title: artist.name
-      }))} />
+      {isLoading ? (
+        <ArtistGridSkeleton />
+      ) : (
+        <ArtistGrid items={artists.map(artist => ({
+          image: artist.imageUrl,
+          title: artist.name
+        }))} />
+      )}
       <div className="pr-[24px]">
         <SectionDivider />
         <div className="flex items-center justify-between mt-[2vh] mb-[2.8vh] w-full">
@@ -76,11 +74,15 @@ export default function ArtistPage() {
             <img src={unlock} alt="unlock" className="w-[10vw] h-[10vw] cursor-pointer max-w-[40px] max-h-[40px]" onClick={() => setLocked(true)} />
           )}
         </div>
-        <ArtistList items={archivedArtists.map(artist => ({
-          image: artist.imageUrl,
-          title: artist.name,
-          externalUrl: artist.externalUrl
-        }))} />
+        {archivedArtistsLoading ? (
+          <ArtistListSkeleton />
+        ) : (
+          <ArtistList items={archivedArtists.map(artist => ({
+            image: artist.imageUrl,
+            title: artist.name,
+            externalUrl: artist.externalUrl
+          }))} />
+        )}
       </div>
     </>
   );

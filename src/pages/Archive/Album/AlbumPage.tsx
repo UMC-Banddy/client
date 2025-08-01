@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AlbumGrid from "./AlbumGrid";
+import AlbumGridSkeleton from "./AlbumGridSkeleton";
 import lock from "@/assets/icons/archive/lock.svg";
 import unlock from "@/assets/icons/archive/unlock.svg";
 import plus from "@/assets/icons/archive/plus.svg";
@@ -11,15 +12,7 @@ export default function AlbumPage() {
   const navigate = useNavigate();
   const { albums, isLoading, error } = useArchivedAlbums();
 
-  // 로딩 중이거나 에러가 있으면 처리
-  if (isLoading) {
-    return (
-      <div className="min-h-[100vh] w-full flex items-center justify-center">
-        <div className="text-white">로딩 중...</div>
-      </div>
-    );
-  }
-
+  // 에러가 있으면 처리
   if (error) {
     return (
       <div className="min-h-[100vh] w-full flex items-center justify-center">
@@ -43,11 +36,15 @@ export default function AlbumPage() {
             )}
           </div>
         </div>
-        <AlbumGrid items={albums.map(album => ({
-          image: album.imageUrl,
-          title: album.name,
-          externalUrl: album.externalUrl
-        }))} />
+        {isLoading ? (
+          <AlbumGridSkeleton />
+        ) : (
+          <AlbumGrid items={albums.map(album => ({
+            image: album.imageUrl,
+            title: album.name,
+            externalUrl: album.externalUrl
+          }))} />
+        )}
       </div>
     </>
   );

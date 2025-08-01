@@ -1,7 +1,9 @@
 import { useState, useRef } from "react";
 import SearchBar from "./Music/_components/SearchBar";
 import SuggestionList from "./Music/_components/SuggestionList";
+import SuggestionListSkeleton from "./Music/_components/SuggestionListSkeleton";
 import SongList from "./Music/_components/SongList";
+import SongListSkeleton from "./Music/_components/SongListSkeleton";
 import Search from "@/assets/icons/archive/search.svg";
 import Cancel from "@/assets/icons/archive/cancel.svg";
 import { useAutocomplete } from "@/features/archive/hooks/useAutocomplete";
@@ -49,8 +51,8 @@ export default function AddPage({
   // 검색어를 300ms debounce 처리
   const debouncedSearch = useDebounce(search, 300);
   
-  const { suggestions } = useAutocomplete(debouncedSearch);
-  const { searched: searchedSongs } = useSearch(debouncedSearch);
+  const { suggestions, isLoading: suggestionsLoading } = useAutocomplete(debouncedSearch);
+  const { searched: searchedSongs, isLoading: searchLoading } = useSearch(debouncedSearch);
   const { saveItem, deleteItem, isSaved } = useSaveItem();
 
   const handleToggle = async (song: Song) => {
@@ -125,16 +127,24 @@ export default function AddPage({
           </div>
         )}
         {search && (
-          <SuggestionList 
-            suggestions={suggestions} 
-            onSuggestionClick={(suggestion) => setSearch(suggestion)}
+          suggestionsLoading ? (
+            <SuggestionListSkeleton />
+          ) : (
+            <SuggestionList 
+              suggestions={suggestions} 
+              onSuggestionClick={(suggestion) => setSearch(suggestion)}
+            />
+          )
+        )}
+        {searchLoading ? (
+          <SongListSkeleton />
+        ) : (
+          <SongList 
+            songs={showSongs} 
+            added={showSongs.map(song => song.spotifyId && song.type ? isSaved(song.spotifyId, song.type) : false)} 
+            onToggle={handleToggle} 
           />
         )}
-        <SongList 
-          songs={showSongs} 
-          added={showSongs.map(song => song.spotifyId && song.type ? isSaved(song.spotifyId, song.type) : false)} 
-          onToggle={handleToggle} 
-        />
       {toast.visible && (
         <div className="fixed bottom-[14vh] left-1/2 -translate-x-1/2 bg-[#121212] text-[#FFFFFF] rounded-[10px] px-[16px] flex items-center z-50 w-[91.8vw] h-[6.5vh] max-w-[361px]">
           <span className="flex-1 text-left">{toast.message}</span>
