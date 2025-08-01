@@ -3,6 +3,7 @@ import BackIcon from "@/assets/icons/back.svg";
 import FlagIcon from "@/assets/icons/chat/flag.svg";
 import BlockIcon from "@/assets/icons/chat/block.svg";
 import GetoutIcon from "@/assets/icons/chat/getout.svg";
+import profile1Img from "@/assets/images/profile1.png";
 
 interface ChatHeaderProps {
   bandName?: string;
@@ -16,7 +17,7 @@ interface ChatHeaderProps {
 
 export default function ChatHeader({
   bandName = "우리밴드 정상영업합니다",
-  bandAvatar = "/src/assets/images/profile1.png",
+  bandAvatar = profile1Img,
   onBack,
   onReport,
   onBlock,

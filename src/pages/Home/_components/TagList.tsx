@@ -3,6 +3,7 @@ import CustomButton from "@/shared/ui/atoms/CustomButton";
 import {
   MicImg,
   GuitarImg,
+  AcousticGuitarImg,
   BassImg,
   DrumImg,
   PianoImg,
@@ -15,6 +16,11 @@ const getSessionIcon = (tagName: string) => {
   const cleanName = tagName.toLowerCase();
 
   if (cleanName.includes("보컬") || cleanName.includes("vocal")) return MicImg;
+  if (
+    cleanName.includes("어쿠스틱 기타") ||
+    cleanName.includes("acoustic guitar")
+  )
+    return AcousticGuitarImg;
   if (cleanName.includes("기타") || cleanName.includes("guitar"))
     return GuitarImg;
   if (cleanName.includes("베이스") || cleanName.includes("bass"))
@@ -57,6 +63,7 @@ const TagList: React.FC<{
         const isSessionTag =
           idx === 0 &&
           (tag.toLowerCase().includes("보컬") ||
+            tag.toLowerCase().includes("어쿠스틱 기타") ||
             tag.toLowerCase().includes("기타") ||
             tag.toLowerCase().includes("베이스") ||
             tag.toLowerCase().includes("드럼") ||
@@ -64,6 +71,7 @@ const TagList: React.FC<{
             tag.toLowerCase().includes("바이올린") ||
             tag.toLowerCase().includes("트럼펫") ||
             tag.toLowerCase().includes("vocal") ||
+            tag.toLowerCase().includes("acoustic guitar") ||
             tag.toLowerCase().includes("guitar") ||
             tag.toLowerCase().includes("bass") ||
             tag.toLowerCase().includes("drum") ||

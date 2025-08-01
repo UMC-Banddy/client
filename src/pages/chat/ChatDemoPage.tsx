@@ -7,6 +7,7 @@ import ChatInputBar from "./_components/ChatInputBar";
 import Modal from "@/shared/components/MuiDialog";
 import SessionSelectModal from "./_components/SessionSelectModal";
 import type { ChatRoom, ChatMessage } from "@/types/chat";
+import profile1Img from "@/assets/images/profile1.png";
 
 export default function ChatDemoPage() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function ChatDemoPage() {
     const defaultRoom: ChatRoom = {
       roomId: 1,
       roomName: "우리밴드 정상영업합니다",
-      roomImage: "/src/assets/images/profile1.png",
+      roomImage: profile1Img,
       lastMessage: `안녕하세요! 누룽지밴드입니다.
 
 저희 밴드에 관심을 가져 주셔서 감사합니다. 아래 양식에 맞추어 메시지 보내주시면 감사드리겠습니다.
@@ -68,7 +69,7 @@ export default function ChatDemoPage() {
       id: "1",
       type: "other",
       name: "밴드",
-      avatar: "/src/assets/images/profile1.png",
+      avatar: profile1Img,
       text: `안녕하세요! 누룽지밴드입니다.
 
 저희 밴드에 관심을 가져 주셔서 감사합니다. 아래 양식에 맞추어 메시지 보내주시면 감사드리겠습니다.
@@ -138,7 +139,7 @@ export default function ChatDemoPage() {
       id: Date.now().toString(),
       type: "me",
       name: "나",
-      avatar: "/src/assets/images/profile1.png",
+      avatar: profile1Img,
       text: text,
       time: new Date().toLocaleTimeString("ko-KR", {
         hour: "2-digit",
@@ -158,7 +159,7 @@ export default function ChatDemoPage() {
       id: Date.now().toString(),
       type: "me",
       name: "나",
-      avatar: "/src/assets/images/profile1.png",
+      avatar: profile1Img,
       text: `📷 이미지: ${imageFile.name}`,
       time: new Date().toLocaleTimeString("ko-KR", {
         hour: "2-digit",
@@ -178,7 +179,7 @@ export default function ChatDemoPage() {
       id: Date.now().toString(),
       type: "me",
       name: "나",
-      avatar: "/src/assets/images/profile1.png",
+      avatar: profile1Img,
       text: "📅 연습 일정을 확인해주세요!",
       time: new Date().toLocaleTimeString("ko-KR", {
         hour: "2-digit",
@@ -198,7 +199,7 @@ export default function ChatDemoPage() {
       id: Date.now().toString(),
       type: "me",
       name: "나",
-      avatar: "/src/assets/images/profile1.png",
+      avatar: profile1Img,
       audio: {
         duration: duration,
         isPlaying: false,
@@ -227,7 +228,7 @@ export default function ChatDemoPage() {
     <div className="min-h-screen w-full flex flex-col bg-[#121212]">
       <ChatHeader
         bandName={currentRoom?.roomName || "우리밴드 정상영업합니다"}
-        bandAvatar={currentRoom?.roomImage || "/src/assets/images/profile1.png"}
+        bandAvatar={currentRoom?.roomImage || profile1Img}
         onBack={handleBack}
         onReport={handleReport}
         onBlock={handleBlock}

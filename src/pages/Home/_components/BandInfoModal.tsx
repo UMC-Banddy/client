@@ -10,6 +10,7 @@ import Youtube from "@/shared/components/images/Youtube";
 import {
   MicImg,
   GuitarImg,
+  AcousticGuitarImg,
   BassImg,
   DrumImg,
   PianoImg,
@@ -46,6 +47,11 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
 
     if (cleanName.includes("보컬") || cleanName.includes("vocal"))
       return MicImg;
+    if (
+      cleanName.includes("어쿠스틱 기타") ||
+      cleanName.includes("acoustic guitar")
+    )
+      return AcousticGuitarImg;
     if (cleanName.includes("기타") || cleanName.includes("guitar"))
       return GuitarImg;
     if (cleanName.includes("베이스") || cleanName.includes("bass"))

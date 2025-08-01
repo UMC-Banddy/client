@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import homeAlbum2 from "@/assets/images/home-album2.svg";
+import homeAlbum3Img from "@/assets/images/home-album3.png";
+import homeAlbum2Img from "@/assets/images/home-album2.svg";
+import homeAlbum1Img from "@/assets/images/home-album1.svg";
 import BandProfileHeader from "@/pages/Home/_components/people/BandProfileHeader";
 import PlaylistList from "@/pages/Home/_components/playlist/PlaylistList";
 import { getBandProfile, getBandTracks } from "@/store/userStore";
@@ -87,19 +90,19 @@ export default function PlaylistPage() {
           id: 1,
           title: "그래요 저 왜색 짙어요",
           artist: "YOASOBI",
-          albumImage: "/src/assets/images/home-album3.png",
+          albumImage: homeAlbum3Img,
         },
         {
           id: 2,
           title: "혼또니 아리가또 고자이마스",
           artist: "aiko",
-          albumImage: "/src/assets/images/home-album2.svg",
+          albumImage: homeAlbum2Img,
         },
         {
           id: 3,
           title: "J-POP 히트곡",
           artist: "Various Artists",
-          albumImage: "/src/assets/images/home-album1.svg",
+          albumImage: homeAlbum1Img,
         },
       ]);
     } finally {
