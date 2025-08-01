@@ -2,10 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "./_components/Header";
 import ProfileInfo from "./_components/ProfileInfo";
+import ProfileInfoSkeleton from "./_components/ProfileInfoSkeleton";
 import SectionDivider from "./_components/SectionDivider";
 import HashtagList from "./_components/HashTagList";
+import HashTagListSkeleton from "./_components/HashTagListSkeleton";
 import ArchiveSection from "./_components/Archive/ArchiveSection";
 import MyArchiveItem from "./_components/Archive/MyArchiveItem";
+import MyArchiveItemSkeletonList from "./_components/Archive/MyArchiveItemSkeletonList";
 import MuiDialog from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
 import { useProfile } from "@/features/my/hooks/useProfile";
@@ -19,16 +22,8 @@ const MyPage = () => {
   const { count: notificationCount } = useNotificationCount();
   const [logoutOpen, setLogoutOpen] = useState(false);
 
-  // 로딩 중이거나 에러가 있으면 처리
-  if (isLoading) {
-    return (
-      <div className="min-h-[100vh] w-full flex items-center justify-center">
-        <div className="text-white">로딩 중...</div>
-      </div>
-    );
-  }
-
-  if (error || !profile) {
+  // 에러가 있으면 처리
+  if (error || (!isLoading && !profile)) {
     return (
       <div className="min-h-[100vh] w-full flex items-center justify-center">
         <div className="text-white">{error?.message || "프로필을 불러올 수 없습니다."}</div>
@@ -43,26 +38,41 @@ const MyPage = () => {
         hasNotification={notificationCount > 0}
       />
       <div className="mt-[10vh]"></div>
-      <ProfileInfo
-        nickname={profile.nickname}
-        avatarUrl={profile.profileImageUrl}
-        bio={profile.bio}
-        showEdit={true}
-        showShare={true}
-      />
-      <HashtagList tags={profile.tags} />
+      {isLoading ? (
+        <>
+          <ProfileInfoSkeleton />
+          <HashTagListSkeleton />
+        </>
+      ) : profile ? (
+        <>
+          <ProfileInfo
+            nickname={profile.nickname}
+            avatarUrl={profile.profileImageUrl}
+            bio={profile.bio}
+            showEdit={true}
+            showShare={true}
+          />
+          <HashtagList tags={profile.tags} />
+        </>
+      ) : null}
       <SectionDivider />
       <ArchiveSection title="음악 아카이빙" onClick={() => navigate("/my/archive")}/>
-      <div className="w-full grid grid-cols-3 gap-x-[20px] gap-y-[16px] px-[24px]">
-        {profile.savedTracks.map((track: SavedTrack, i: number) => (
-          <MyArchiveItem
-            key={i}
-            coverUrl={track.imageUrl}
-            title={track.title}
-            externalUrl={track.externalUrl}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="w-full grid grid-cols-3 gap-x-[20px] gap-y-[16px] px-[24px]">
+          <MyArchiveItemSkeletonList count={6} />
+        </div>
+      ) : (
+        <div className="w-full grid grid-cols-3 gap-x-[20px] gap-y-[16px] px-[24px]">
+          {profile.savedTracks.map((track: SavedTrack, i: number) => (
+            <MyArchiveItem
+              key={i}
+              coverUrl={track.imageUrl}
+              title={track.title}
+              externalUrl={track.externalUrl}
+            />
+          ))}
+        </div>
+      )}
 
       <div
         className="w-full flex flex-col items-center mt-[5vh] mb-[7vh] cursor-pointer"

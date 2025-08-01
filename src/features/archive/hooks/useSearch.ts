@@ -8,12 +8,12 @@ export const useSearch = (query: string) => {
   const { data: searched = [], isLoading, error } = useQuery<SearchItem[]>({
     queryKey: ["search", query],
     queryFn: async () => {
-      const response = await getSearch(query, 5, 0);
+      const response = await getSearch(query, 4, 0);
       // tracks, artists, albums를 하나의 배열로 합치면서 type 정보 추가
       const allResults: SearchItem[] = [
-        ...response.result.tracks.map(track => ({ ...track, type: "track" as const })),
         ...response.result.artists.map(artist => ({ ...artist, type: "artist" as const })),
         ...response.result.albums.map(album => ({ ...album, type: "album" as const })),
+        ...response.result.tracks.map(track => ({ ...track, type: "track" as const })),
       ];
       return allResults;
     },
