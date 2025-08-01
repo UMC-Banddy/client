@@ -1,12 +1,20 @@
 import host from "@/assets/icons/join/ic_host.svg";
+import { useNavigate } from "react-router-dom";
 
 interface BandChatProps {
   isHost?: boolean;
 }
 
 const BandChat = ({ isHost = false }: BandChatProps) => {
+  const navigate = useNavigate();
+
   return (
-    <button className="flex justify-between items-center w-full bg-transparent border-none cursor-pointer">
+    <button
+      className="flex justify-between items-center w-full bg-transparent border-none cursor-pointer"
+      onClick={() => {
+        navigate("band-recruit");
+      }}
+    >
       <div className="flex items-center gap-[12px]">
         <div className="bg-[#777] size-[50px]"></div>
         <div className="flex flex-col gap-[4px] text-start">

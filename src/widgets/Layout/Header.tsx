@@ -10,11 +10,13 @@ const routeNameMap: Record<string, string> = {
   "/my/notifications": "Notifications",
   "/my/archive": "Archive",
   "/my/archive/add": "Archive",
+  "/join/saved-band": "JOIN",
   // 필요시 추가
 };
 
 const nonHeaderRouteNames = [
   "/join",
+  "/join/band-recruit",
   "/join/create-chat",
   "/join/create-chat/2",
   "/join/create-band",

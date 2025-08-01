@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import volumeOff from "@/assets/icons/join/ic_volume_off.svg";
 import thumbnail from "@/assets/images/home-album1.svg";
+import { useNavigate } from "react-router-dom";
 
 interface BandThumbnailProps {
   isRecruiting: boolean;
@@ -9,8 +10,13 @@ interface BandThumbnailProps {
 
 const BandThumbnail = ({ isRecruiting = false }: BandThumbnailProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const navigate = useNavigate();
   return (
-    <div className="flex flex-col gap-[12px]">
+    <div
+      className="flex flex-col gap-[12px]"
+      onClick={() => navigate("/join/saved-band/1")}
+    >
       <div className="relative size-[166px] bg-[#777]">
         <div
           className="absolute top-0 left-0 w-full h-full bg-cover bg-center"

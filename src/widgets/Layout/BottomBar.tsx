@@ -26,7 +26,7 @@ const navs = [
     label: "밴드생성",
     activeIcon: chatIcon,
     inactiveIcon: noChatIcon,
-    path: "/band/create",
+    path: "/join",
   },
   {
     label: "마이",
