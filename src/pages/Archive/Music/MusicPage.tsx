@@ -41,7 +41,7 @@ export default function Music() {
         {isLoading ? (
           <MusicGridSkeleton />
         ) : (
-          <MusicGrid items={tracks.map(track => ({
+          <MusicGrid items={(tracks || []).map(track => ({
             image: track.imageUrl,
             title: track.title,
             subtitle: track.artist
@@ -79,7 +79,7 @@ export default function Music() {
         {archivedTracksLoading ? (
           <MusicListSkeleton />
         ) : (
-          <MusicList items={archivedTracks.map(track => ({
+          <MusicList items={(archivedTracks || []).map(track => ({
             image: track.imageUrl,
             title: track.title,
             subtitle: track.artist
