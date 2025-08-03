@@ -18,14 +18,10 @@
 node --version
 npm --version
 
-# AWS CLI 설치 (macOS)
-brew install awscli
 
 # Vercel CLI 설치
 npm install -g vercel
 
-# 배포 스크립트 실행 권한 부여
-chmod +x scripts/deploy-aws.sh
 ```
 
 ### 2. 환경 변수 설정
@@ -81,48 +77,6 @@ vercel --prod
 ### 4. 자동 배포
 
 GitHub 저장소와 연결하면 자동 배포됩니다.
-
-## ☁️ AWS S3 + CloudFront 배포
-
-### 1. AWS 리소스 생성
-
-#### S3 버킷 생성
-
-```bash
-# 프로덕션 버킷
-aws s3 mb s3://banddy-client-production
-
-# 스테이징 버킷
-aws s3 mb s3://banddy-client-staging
-
-# 정적 웹사이트 호스팅 설정
-aws s3 website s3://banddy-client-production --index-document index.html --error-document index.html
-```
-
-#### CloudFront 배포 생성
-
-1. AWS 콘솔 → CloudFront → 배포 생성
-2. 원본 도메인: S3 버킷 선택
-3. 뷰어 프로토콜 정책: Redirect HTTP to HTTPS
-4. 캐시 정책: CachingOptimized
-
-### 2. 도메인 설정
-
-#### Route 53 설정
-
-1. 호스팅 영역 생성
-2. A 레코드 생성 (CloudFront 배포 연결)
-3. SSL 인증서 발급 (ACM)
-
-### 3. 배포 실행
-
-```bash
-# 스테이징 배포
-npm run deploy:aws:staging
-
-# 프로덕션 배포
-npm run deploy:aws:production
-```
 
 ## 🔄 GitHub Actions CI/CD
 
