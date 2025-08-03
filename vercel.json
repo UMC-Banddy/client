@@ -9,14 +9,33 @@
       }
     }
   ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://banddy.site/api/$1"
+    },
+    {
+      "source": "/auth/(.*)",
+      "destination": "https://banddy.site/auth/$1"
+    },
+    {
+      "source": "/member/(.*)",
+      "destination": "https://banddy.site/member/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "routes": [
     {
       "src": "/assets/(.*)",
       "dest": "/assets/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "src": "/[^.]+",
+      "dest": "/",
+      "status": 200
     }
   ]
 }
