@@ -44,6 +44,7 @@ import AlbumPage from "@/pages/Archive/Album/AlbumPage";
 import OtherProfile from "@/pages/Profile/OtherProfile";
 import ProfileDetailPage from "@/pages/Profile/ProfileDetailPage";
 import ProtectedRoute from "@/shared/components/ProtectedRoute";
+import { Outlet } from "react-router-dom";
 
 const routes = [
   {
@@ -310,82 +311,39 @@ const routes = [
       {
         path: "/join",
         element: (
-          <ProtectedRoute requireAuth={true}>
-            <Join />
+          <ProtectedRoute requireAuth>
+            <Outlet />
           </ProtectedRoute>
         ),
-      },
-      {
-        path: "/join/band-recruit",
-        element: (
-          <ProtectedRoute requireAuth={true}>
-            <BandRecruit />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/join/create-band",
-        element: (
-          <ProtectedRoute requireAuth={true}>
-            <CreateBand />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/join/create-band/song",
-        element: (
-          <ProtectedRoute requireAuth={true}>
-            <CreateBandSong />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/join/create-band/genre",
-        element: (
-          <ProtectedRoute requireAuth={true}>
-            <CreateBandGenre />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/join/create-band/artist",
-        element: (
-          <ProtectedRoute requireAuth={true}>
-            <CreateBandArtist />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/join/create-chat",
-        element: (
-          <ProtectedRoute requireAuth={true}>
-            <CreateChat />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/join/create-chat/2",
-        element: (
-          <ProtectedRoute requireAuth={true}>
-            <CreateChat2 />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/join/saved-band",
-        element: (
-          <ProtectedRoute requireAuth={true}>
-            <SavedBand />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "/join/saved-band/:id",
-        element: (
-          <ProtectedRoute requireAuth={true}>
-            <SavedBandDetail />
-          </ProtectedRoute>
-        ),
+        children: [
+          { index: true, element: <Join /> },
+          { path: "band-recruit", element: <BandRecruit /> },
+          {
+            path: "create-band",
+            element: <CreateBand />,
+            children: [
+              { path: "song", element: <CreateBandSong /> },
+              { path: "genre", element: <CreateBandGenre /> },
+              { path: "artist", element: <CreateBandArtist /> },
+            ],
+          },
+          {
+            path: "create-chat",
+            element: <Outlet />,
+            children: [
+              { index: true, element: <CreateChat /> },
+              { path: "2", element: <CreateChat2 /> },
+            ],
+          },
+          {
+            path: "saved-band",
+            element: <Outlet />,
+            children: [
+              { index: true, element: <SavedBand /> },
+              { path: ":id", element: <SavedBandDetail /> },
+            ],
+          },
+        ],
       },
 
       {

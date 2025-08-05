@@ -31,7 +31,7 @@ import { genres } from "../_constants/genres";
 import { useSnapshot } from "valtio";
 import { createBandActions, createBandStore } from "@/store/createBandStore";
 import GenreStatusBlackBtn from "../_components/create_band/genre/GenreStatusBlackBtn";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutlet } from "react-router-dom";
 import JoinHeader from "../_components/JoinHeader";
 import { API } from "@/api/API";
 import ToggleBtn from "../_components/ToggleBtn";
@@ -152,6 +152,7 @@ const CreateBand = () => {
   const setToggledGenre = createBandActions.setGenres;
 
   const navigate = useNavigate();
+  const outlet = useOutlet();
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -228,6 +229,10 @@ const CreateBand = () => {
       console.error(err);
     }
   };
+
+  if (outlet) {
+    return outlet;
+  }
 
   return (
     <main className="relative min-h-screen w-[393px] mx-auto pb-[200px]">
