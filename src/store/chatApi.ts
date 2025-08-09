@@ -22,7 +22,28 @@ export const getChatRooms = async (): Promise<ChatRoomsResponse> => {
 export const createGroupChat = async (
   data: CreateGroupChatRequest
 ): Promise<CreateChatResponse> => {
-  const response = await API.post(API_ENDPOINTS.CHAT.CREATE_GROUP, data);
+  const formData = new FormData();
+  // imageUrl이 파일 업로드로 전달될 수 있어 multipart 지원
+  if (data.imageUrl) {
+    // 서버 스펙에 따라 키 이름이 image 또는 roomImage일 수 있음. 현재는 image로 사용.
+    formData.append("image", data.imageUrl as unknown as Blob);
+  }
+  formData.append(
+    "data",
+    new Blob(
+      [
+        JSON.stringify({
+          memberIds: data.memberIds,
+          roomName: data.roomName,
+        }),
+      ],
+      { type: "application/json" }
+    )
+  );
+
+  const response = await API.post(API_ENDPOINTS.CHAT.CREATE_GROUP, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return response.data;
 };
 
@@ -80,17 +101,59 @@ export const getChatRoomMembers = async (
   return response.data;
 };
 
+// 단체 채팅방 정보 수정 (multipart)
+export const updateGroupChat = async (payload: {
+  roomId: number;
+  roomName?: string;
+  imageFile?: File;
+}): Promise<{ roomId: number; roomName: string; roomProfileUrl: string }> => {
+  const formData = new FormData();
+  const data: Record<string, unknown> = {};
+  if (payload.roomName) data.roomName = payload.roomName;
+  if (Object.keys(data).length > 0) {
+    formData.append(
+      "data",
+      new Blob([JSON.stringify(data)], { type: "application/json" })
+    );
+  }
+  if (payload.imageFile) {
+    formData.append("image", payload.imageFile);
+  }
+  const response = await API.patch(API_ENDPOINTS.CHAT.UPDATE_GROUP, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    params: { roomId: payload.roomId },
+  });
+  return response.data;
+};
+
+// 채팅방 고정/해제
+export const pinChatRoom = async (params: {
+  bandId?: number;
+  chatId?: number;
+}): Promise<Record<string, never>> => {
+  const response = await API.patch(API_ENDPOINTS.CHAT.PIN, null, { params });
+  return response.data;
+};
+
+export const unpinChatRoom = async (params: {
+  bandId?: number;
+  chatId?: number;
+}): Promise<Record<string, never>> => {
+  const response = await API.patch(API_ENDPOINTS.CHAT.UNPIN, null, { params });
+  return response.data;
+};
+
 // 채팅방 멤버 초대 - API 문서에 없어서 주석 처리
-export const inviteChatMember = async (
+export const inviteChatMember = async () =>
   // _roomId: string,
   // _memberIds: number[]
-) => {
-  // const response = await API.post(API_ENDPOINTS.CHAT.INVITE(roomId), {
-  //   memberIds,
-  // });
-  // return response.data;
-  throw new Error("채팅방 멤버 초대 API가 구현되지 않았습니다.");
-};
+  {
+    // const response = await API.post(API_ENDPOINTS.CHAT.INVITE(roomId), {
+    //   memberIds,
+    // });
+    // return response.data;
+    throw new Error("채팅방 멤버 초대 API가 구현되지 않았습니다.");
+  };
 
 // 채팅방 참여 (새로운 API 스펙)
 export const joinChatRoom = async (roomId: string): Promise<JoinResponse> => {
