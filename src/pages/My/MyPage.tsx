@@ -47,7 +47,7 @@ const MyPage = () => {
   }
 
   // 에러가 있으면 처리
-  if (isError || (!isLoading && !profile)) {
+  if (isError) {
     return (
       <div className="min-h-[100vh] w-full flex flex-col items-center justify-center bg-[#121212]">
         <div className="text-white text-center px-4">
@@ -61,6 +61,28 @@ const MyPage = () => {
           >
             다시 시도
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 로딩 중이거나 데이터가 없는 경우
+  if (isLoading || !profile) {
+    return (
+      <div className="min-h-[100vh] w-full flex flex-col items-center justify-center bg-[#121212]">
+        <div className="text-white text-center px-4">
+          <div className="text-lg mb-2">프로필을 불러올 수 없습니다</div>
+          <div className="text-sm text-gray-400 mb-4">
+            {isLoading ? "로딩 중..." : "프로필 데이터가 없습니다"}
+          </div>
+          {!isLoading && (
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg"
+            >
+              다시 시도
+            </button>
+          )}
         </div>
       </div>
     );

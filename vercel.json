@@ -9,14 +9,26 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "source": "/api/(.*)",
+      "destination": "https://banddy.site/api/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/auth/(.*)",
+      "destination": "https://banddy.site/auth/$1"
+    },
+    {
+      "source": "/member/(.*)",
+      "destination": "https://banddy.site/member/$1"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

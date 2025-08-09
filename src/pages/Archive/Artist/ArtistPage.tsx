@@ -40,7 +40,7 @@ export default function ArtistPage() {
       {isLoading ? (
         <ArtistGridSkeleton />
       ) : (
-        <ArtistGrid items={artists.map(artist => ({
+        <ArtistGrid items={(artists || []).map(artist => ({
           image: artist.imageUrl,
           title: artist.name
         }))} />
@@ -77,7 +77,7 @@ export default function ArtistPage() {
         {archivedArtistsLoading ? (
           <ArtistListSkeleton />
         ) : (
-          <ArtistList items={archivedArtists.map(artist => ({
+          <ArtistList items={(archivedArtists || []).map(artist => ({
             image: artist.imageUrl,
             title: artist.name,
             externalUrl: artist.externalUrl

@@ -39,7 +39,7 @@ export default function AlbumPage() {
         {isLoading ? (
           <AlbumGridSkeleton />
         ) : (
-          <AlbumGrid items={albums.map(album => ({
+          <AlbumGrid items={(albums || []).map(album => ({
             image: album.imageUrl,
             title: album.name,
             externalUrl: album.externalUrl
