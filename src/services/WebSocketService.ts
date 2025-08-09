@@ -1,5 +1,6 @@
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
+import { authStore } from "@/store/authStore";
 
 import { chatActions } from "@/store/chatStore";
 import { API_ENDPOINTS } from "@/constants";
@@ -19,6 +20,7 @@ interface WebSocketError {
 class WebSocketService {
   private stompClient: Client | null = null;
   private subscriptions: Map<string, { unsubscribe: () => void }> = new Map();
+  private unreadSubscription: { unsubscribe: () => void } | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000; // 1초
@@ -123,6 +125,14 @@ class WebSocketService {
 
       this.isConnecting = true;
 
+      // 접속 시 헤더 설정 (Authorization, heart-beat 등)
+      const token = authStore.accessToken || "";
+      this.stompClient.connectHeaders = {
+        "accept-version": "1.1,1.0",
+        "heart-beat": "10000,10000",
+        Authorization: token,
+      } as unknown as Record<string, string>;
+
       // @stomp/stompjs v7.1.1에서는 activate() 메서드 사용
       this.stompClient.activate();
 
@@ -161,7 +171,8 @@ class WebSocketService {
     }
   }
 
-  subscribeToRoom(
+  // 그룹 채팅방(topic) 구독
+  subscribeToGroupRoom(
     roomId: string,
     onMessage: (message: WebSocketMessage) => void
   ): void {
@@ -173,7 +184,7 @@ class WebSocketService {
     // 기존 구독이 있다면 해제
     this.unsubscribeFromRoom(roomId);
 
-    const destination = API_ENDPOINTS.WEBSOCKET.SUBSCRIBE(roomId);
+    const destination = API_ENDPOINTS.WEBSOCKET.SUBSCRIBE_GROUP(roomId);
 
     const subscription = this.stompClient.subscribe(
       destination,
@@ -189,7 +200,68 @@ class WebSocketService {
     );
 
     this.subscriptions.set(roomId, subscription);
-    console.log(`채팅방 ${roomId} 구독 완료`);
+    console.log(`그룹 채팅방 ${roomId} 구독 완료 (${destination})`);
+  }
+
+  // 개인 채팅방(queue) 구독
+  subscribeToPrivateRoom(
+    roomId: string,
+    onMessage: (message: WebSocketMessage) => void
+  ): void {
+    if (!this.stompClient || !this.stompClient.connected) {
+      console.error("WebSocket이 연결되지 않았습니다.");
+      return;
+    }
+
+    // 기존 구독이 있다면 해제
+    this.unsubscribeFromRoom(roomId);
+
+    const destination = API_ENDPOINTS.WEBSOCKET.SUBSCRIBE_PRIVATE(roomId);
+
+    const subscription = this.stompClient.subscribe(
+      destination,
+      (frame: StompFrame) => {
+        try {
+          const message: WebSocketMessage = JSON.parse(frame.body || "");
+          console.log("실시간 메시지 수신:", message);
+          onMessage(message);
+        } catch (error) {
+          console.error("메시지 파싱 에러:", error);
+        }
+      }
+    );
+
+    this.subscriptions.set(roomId, subscription);
+    console.log(`개인 채팅방 ${roomId} 구독 완료 (${destination})`);
+  }
+
+  // 안읽은 메시지(queue) 구독
+  subscribeToUnread(onUnread: (data: unknown) => void): void {
+    if (!this.stompClient || !this.stompClient.connected) {
+      console.error("WebSocket이 연결되지 않았습니다.");
+      return;
+    }
+
+    // 기존 구독이 있다면 해제
+    if (this.unreadSubscription) {
+      this.unreadSubscription.unsubscribe();
+      this.unreadSubscription = null;
+    }
+
+    const destination = API_ENDPOINTS.WEBSOCKET.SUBSCRIBE_UNREAD;
+    this.unreadSubscription = this.stompClient.subscribe(
+      destination,
+      (frame: StompFrame) => {
+        try {
+          const payload = JSON.parse(frame.body || "");
+          console.log("UNREAD 수신:", payload);
+          onUnread(payload);
+        } catch (error) {
+          console.error("UNREAD 파싱 에러:", error);
+        }
+      }
+    );
+    console.log(`안읽음 구독 시작 (${destination})`);
   }
 
   unsubscribeFromRoom(roomId: string): void {
@@ -201,7 +273,12 @@ class WebSocketService {
     }
   }
 
-  sendMessage(roomId: string, content: string): void {
+  sendMessage(
+    roomId: string,
+    content: string,
+    roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP",
+    receiverId?: number
+  ): void {
     if (!this.stompClient || !this.stompClient.connected) {
       console.error("WebSocket이 연결되지 않았습니다.");
       return;
@@ -210,7 +287,9 @@ class WebSocketService {
     const destination = API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE(roomId);
     const message: WebSocketSendMessage = {
       content,
-      roomId: parseInt(roomId),
+      roomId: parseInt(roomId, 10),
+      roomType,
+      receiverId: roomType === "PRIVATE" ? receiverId : undefined,
     };
 
     this.stompClient.publish({
