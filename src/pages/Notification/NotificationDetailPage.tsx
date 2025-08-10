@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNotifications } from "@/features/notification/hooks/useNotifications";
 import { useOtherProfile } from "@/features/profile/hooks/useOtherProfile";
 import { useMarkNotificationAsRead } from "@/features/notification/hooks/useMarkNotificationAsRead";
+import { useFriendRequestActions } from "@/features/notification/hooks/useFriendRequestActions";
 import right from "@/assets/icons/notification/chevronright.svg";
 import arrow_back from "@/assets/icons/back.svg";
 import noImg from "@/assets/icons/profile/no_img.svg";
@@ -13,6 +14,9 @@ export default function NotificationDetailPage() {
   const { id } = useParams();
   const [showToast, setShowToast] = useState(false);
   const { notifications, isLoading, error } = useNotifications();
+  
+  // 커스텀 훅 사용
+  const { actionToast, handleAcceptFriend, handleRejectFriend } = useFriendRequestActions();
 
   // API에서 가져온 notifications에서 해당 notification 찾기
   const notification = notifications.find(n => n.notificationId.toString() === id);
@@ -20,6 +24,30 @@ export default function NotificationDetailPage() {
 
   // API hooks
   const markAsReadMutation = useMarkNotificationAsRead();
+
+  // 친구 신청 수락 핸들러
+  const handleAcceptFriendClick = () => {
+    if (!notification?.friendRequestId) return;
+    handleAcceptFriend(notification.friendRequestId);
+  };
+
+  // 친구 신청 거절 핸들러
+  const handleRejectFriendClick = () => {
+    if (!notification?.friendRequestId) return;
+    handleRejectFriend(notification.friendRequestId);
+  };
+
+  // 채팅 요청 수락 핸들러 (임시)
+  const handleAcceptChat = () => {
+    // TODO: 채팅 수락 API 구현 필요
+    console.log("채팅 요청 수락");
+  };
+
+  // 요청 거절 핸들러 (임시)
+  const handleReject = () => {
+    // TODO: 거절 API 구현 필요
+    console.log("요청 거절");
+  };
 
   useEffect(() => {
     if (notification) {
@@ -92,6 +120,7 @@ export default function NotificationDetailPage() {
       )}
       
 
+      {/* 기존 토스트 */}
       <div className={`fixed top-[0vh] left-1/2 -translate-x-1/2 bg-black text-white text-hakgyo-r-16 rounded-full px-[18px] py-[8.5px] z-50 border-white border-[0.5px] transition-transform duration-1000 ${showToast ? "translate-y-[20vh]" : "-translate-y-full"} ${showToast ? "opacity-100" : "opacity-0"}`}>
         <span className="whitespace-nowrap">
           {notification.type === "CHAT" || notification.type === "BAND" 
@@ -100,6 +129,13 @@ export default function NotificationDetailPage() {
               ? "새로운 친구 요청이 왔어요!" 
               : "알림 상세 페이지 진입"
           }
+        </span>
+      </div>
+
+      {/* 액션 토스트 */}
+      <div className={`fixed top-[0vh] left-1/2 -translate-x-1/2 bg-black text-white text-hakgyo-r-16 rounded-full px-[18px] py-[8.5px] z-50 border-white border-[0.5px] transition-transform duration-1000 ${actionToast.visible ? "translate-y-[20vh]" : "-translate-y-full"} ${actionToast.visible ? "opacity-100" : "opacity-0"}`}>
+        <span className="whitespace-nowrap">
+          {actionToast.message}
         </span>
       </div>
 
@@ -122,10 +158,21 @@ export default function NotificationDetailPage() {
             />
         </div>
         <div className="flex gap-[3vw] mt-[6vh]">
-          <CommonBtn color="gray">거절</CommonBtn>
-          {notification.type === "CHAT" && <CommonBtn color="red">채팅 수락</CommonBtn>}  
-          {notification.type === "BAND" && <CommonBtn color="red">채팅 수락</CommonBtn>}
-          {notification.type === "FRIEND" && <CommonBtn color="red">친구 수락</CommonBtn>}
+          <CommonBtn 
+            color="gray" 
+            onClick={notification.type === "FRIEND" ? handleRejectFriendClick : handleReject}
+          >
+            거절
+          </CommonBtn>
+          {notification.type === "CHAT" && (
+            <CommonBtn color="red" onClick={handleAcceptChat}>채팅 수락</CommonBtn>
+          )}  
+          {notification.type === "BAND" && (
+            <CommonBtn color="red" onClick={handleAcceptChat}>채팅 수락</CommonBtn>
+          )}
+          {notification.type === "FRIEND" && (
+            <CommonBtn color="red" onClick={handleAcceptFriendClick}>친구 수락</CommonBtn>
+          )}
         </div>
       </div>
     </div>
