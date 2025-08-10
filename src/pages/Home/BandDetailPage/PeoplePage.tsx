@@ -8,7 +8,7 @@ import GuitarImg from "@/shared/components/images/GuitarImg";
 import ElectricGuitarImg from "@/shared/components/images/ElectricGuitarImg";
 import BassImg from "@/shared/components/images/BassImg";
 import RecruitBadge from "@/pages/Home/_components/people/RecruitBadge";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import {
   useBandProfile,
   useBandMembers,
@@ -42,6 +42,11 @@ interface ApiBandMember {
 
 export default function PeoplePage() {
   const { bandId = "1" } = useParams<{ bandId: string }>();
+  const location = useLocation() as {
+    state?: {
+      initialBand?: { bandId?: string; title?: string; imageUrl?: string };
+    };
+  };
 
   const { data: bandData, isLoading: loadingProfile } = useBandProfile(bandId);
   const { data: membersData = [], isLoading: loadingMembers } =
@@ -55,16 +60,21 @@ export default function PeoplePage() {
     const female = profile?.composition?.femaleCount ?? 0;
     return {
       id: parseInt(bandId),
-      name: detail?.bandName || profile?.goalTracks?.[0]?.title || "냥커버!!",
+      name:
+        detail?.bandName ||
+        profile?.goalTracks?.[0]?.title ||
+        location.state?.initialBand?.title ||
+        "냥커버!!",
       description: "인원 구성 정보",
       profileImage:
         detail?.profileImageUrl ||
         profile?.goalTracks?.[0]?.imageUrl ||
+        location.state?.initialBand?.imageUrl ||
         homeAlbum2,
       memberCount: male + female,
       maxMembers: 4,
     } as BandInfo;
-  }, [bandId, profile, detail]);
+  }, [bandId, profile, detail, location.state]);
 
   const members: BandMember[] = useMemo(() => {
     const safe = Array.isArray(membersData) ? membersData : [];

@@ -3,7 +3,7 @@ import PreferArtistGrid from "../_components/prefer/PreferArtistGrid";
 import guitarBoy from "@/assets/images/guitar-boy.svg";
 import homeAlbum2 from "@/assets/images/home-album2.svg";
 import BandProfileHeader from "@/pages/Home/_components/people/BandProfileHeader";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import {
   useBandProfile,
   useBandArtists,
@@ -43,6 +43,11 @@ const preferData = [
 
 export default function PreferPage() {
   const { bandId = "1" } = useParams<{ bandId: string }>();
+  const location = useLocation() as {
+    state?: {
+      initialBand?: { bandId?: string; title?: string; imageUrl?: string };
+    };
+  };
   const { data: bandData, isLoading: loadingProfile } = useBandProfile(bandId);
   const { data: artistsData = [], isLoading: loadingArtists } =
     useBandArtists(bandId);
@@ -53,14 +58,19 @@ export default function PreferPage() {
   const bandInfo: BandInfo = useMemo(
     () => ({
       id: parseInt(bandId),
-      name: detail?.bandName || profile?.goalTracks?.[0]?.title || "냥커버!!",
+      name:
+        detail?.bandName ||
+        profile?.goalTracks?.[0]?.title ||
+        location.state?.initialBand?.title ||
+        "냥커버!!",
       description: "선호 아티스트",
       profileImage:
         detail?.profileImageUrl ||
         profile?.goalTracks?.[0]?.imageUrl ||
+        location.state?.initialBand?.imageUrl ||
         homeAlbum2,
     }),
-    [bandId, profile, detail]
+    [bandId, profile, detail, location.state]
   );
 
   const artists: Artist[] = useMemo(() => {

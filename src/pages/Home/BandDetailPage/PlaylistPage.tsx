@@ -5,7 +5,7 @@ import homeAlbum2Img from "@/assets/images/home-album2.svg";
 import homeAlbum1Img from "@/assets/images/home-album1.svg";
 import BandProfileHeader from "@/pages/Home/_components/people/BandProfileHeader";
 import PlaylistList from "@/pages/Home/_components/playlist/PlaylistList";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import {
   useBandProfile,
   useBandTracks,
@@ -39,6 +39,11 @@ interface ApiTrack {
 
 export default function PlaylistPage() {
   const { bandId = "1" } = useParams<{ bandId: string }>();
+  const location = useLocation() as {
+    state?: {
+      initialBand?: { bandId?: string; title?: string; imageUrl?: string };
+    };
+  };
   const { data: bandData, isLoading: loadingProfile } = useBandProfile(bandId);
   const { data: tracksData = [], isLoading: loadingTracks } =
     useBandTracks(bandId);
@@ -49,14 +54,19 @@ export default function PlaylistPage() {
   const bandInfo: BandInfo = useMemo(
     () => ({
       id: parseInt(bandId),
-      name: detail?.bandName || profile?.goalTracks?.[0]?.title || "냥커버!!",
+      name:
+        detail?.bandName ||
+        profile?.goalTracks?.[0]?.title ||
+        location.state?.initialBand?.title ||
+        "냥커버!!",
       description: "목표 곡",
       profileImage:
         detail?.profileImageUrl ||
         profile?.goalTracks?.[0]?.imageUrl ||
+        location.state?.initialBand?.imageUrl ||
         homeAlbum2,
     }),
-    [bandId, profile, detail]
+    [bandId, profile, detail, location.state]
   );
 
   const tracks: Track[] = useMemo(() => {
