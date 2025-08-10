@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import arrowPrev from "@/assets/icons/home/arrowprev.svg";
 import arrowNext from "@/assets/icons/home/arrownext.svg";
 import ButtonSection from "./ButtonSection";
+import fallbackImg from "@/assets/images/home-album3.png";
 import HomeTagSection from "./HomeTagSection";
 
 interface Band {
@@ -122,10 +123,14 @@ const BandCarousel: React.FC<{
               </div>
 
               <img
-                src={band.image}
+                src={band.image || fallbackImg}
                 alt={band.title}
                 className="w-72 h-72 rounded-xl object-cover mb-4 cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => handleBandClick(band)}
+                onError={(e) => {
+                  const t = e.currentTarget as HTMLImageElement;
+                  if (t.src !== fallbackImg) t.src = fallbackImg;
+                }}
               />
               <h2 className="text-white font-bold text-xl mb-2">
                 {band.title}
