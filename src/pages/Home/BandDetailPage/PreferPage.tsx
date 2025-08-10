@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import PreferArtistGrid from "../_components/prefer/PreferArtistGrid";
 import guitarBoy from "@/assets/images/guitar-boy.svg";
 import homeAlbum2 from "@/assets/images/home-album2.svg";
 import BandProfileHeader from "@/pages/Home/_components/people/BandProfileHeader";
-import { getBandProfile, getBandArtists } from "@/store/userStore";
 import { useParams } from "react-router-dom";
+import {
+  useBandProfile,
+  useBandArtists,
+} from "@/features/band/hooks/useBandData";
 
 interface Artist {
   id: number;
@@ -39,80 +42,38 @@ const preferData = [
 ];
 
 export default function PreferPage() {
-  const { bandId } = useParams<{ bandId: string }>();
-  const [bandInfo, setBandInfo] = useState<BandInfo>({
-    id: 1,
-    name: "냥커버!!",
-    description: "선호 아티스트",
-    profileImage: homeAlbum2,
-  });
-  const [artists, setArtists] = useState<Artist[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { bandId = "1" } = useParams<{ bandId: string }>();
+  const { data: bandData, isLoading: loadingProfile } = useBandProfile(bandId);
+  const { data: artistsData = [], isLoading: loadingArtists } =
+    useBandArtists(bandId);
 
-  // 밴드 정보 조회 API
-  const fetchBandInfo = async () => {
-    try {
-      if (!bandId) return;
+  const profile = bandData?.profile ?? {};
+  const detail = bandData?.detail;
 
-      const profileData = await getBandProfile(bandId);
+  const bandInfo: BandInfo = useMemo(
+    () => ({
+      id: parseInt(bandId),
+      name: detail?.bandName || profile?.goalTracks?.[0]?.title || "냥커버!!",
+      description: "선호 아티스트",
+      profileImage:
+        detail?.profileImageUrl ||
+        profile?.goalTracks?.[0]?.imageUrl ||
+        homeAlbum2,
+    }),
+    [bandId, profile, detail]
+  );
 
-      // BandProfileData를 BandInfo로 변환
-      setBandInfo({
-        id: parseInt(bandId),
-        name: profileData.goalTracks?.[0]?.title || "밴드명",
-        description: "선호 아티스트",
-        profileImage: profileData.goalTracks?.[0]?.imageUrl || homeAlbum2,
-      });
-    } catch (error) {
-      console.error("밴드 정보 조회 실패:", error);
-      // 에러 시 기본 데이터 사용
-      setBandInfo({
-        id: parseInt(bandId || "1"),
-        name: "냥커버!!",
-        description: "선호 아티스트",
-        profileImage: homeAlbum2,
-      });
-    }
-  };
+  const artists: Artist[] = useMemo(() => {
+    const safe = Array.isArray(artistsData) ? artistsData : [];
+    if (safe.length === 0) return preferData;
+    return safe.map((a: any, index: number) => ({
+      id: a?.id ?? index + 1,
+      name: a?.name ?? `아티스트 ${index + 1}`,
+      image: a?.imageUrl ?? a?.image ?? guitarBoy,
+    }));
+  }, [artistsData]);
 
-  // 밴드 선호 아티스트 목록 조회 API
-  const fetchBandArtists = async () => {
-    try {
-      setLoading(true);
-      if (!bandId) return;
-
-      const artistsData = await getBandArtists(bandId);
-
-      // API 응답을 Artist 형식으로 변환
-      const transformedArtists: Artist[] = artistsData.map(
-        (artist: ApiArtist, index: number) => ({
-          id: artist.id || index + 1,
-          name: artist.name || `아티스트 ${index + 1}`,
-          image: artist.imageUrl || artist.image || guitarBoy,
-        })
-      );
-
-      setArtists(transformedArtists);
-    } catch (error) {
-      console.error("밴드 아티스트 목록 조회 실패:", error);
-      // 에러 시 기본 데이터 사용
-      setArtists(preferData);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBandInfo();
-  }, [bandId]);
-
-  useEffect(() => {
-    if (bandInfo.id) {
-      fetchBandArtists();
-    }
-  }, [bandInfo.id]);
-
-  if (loading) {
+  if (loadingProfile || loadingArtists) {
     return (
       <main className="min-h-[calc(100vh-56px)] w-full flex flex-col bg-[#121212]/90 overflow-x-hidden px-6 pt-6 pb-0">
         <div className="text-white text-center">로딩 중...</div>

@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import PretestHeader from "../artist/_components/PretestHeader";
 import SessionList from "./_components/SessionList";
 import SkillGuideModal from "./_components/SkillGuideModal";
-import { surveyAPI, profileAPI, artistSaveAPI } from "@/api/API";
+import { profileAPI, artistSaveAPI } from "@/api/API";
 import { SESSIONS } from "./_components/sessionData";
+import { useSurveySessions } from "@/features/pretest/hooks/useSurveyData";
 
 // 임시로 만들었습니다.. (타입 정의)
 interface ProfileData {
@@ -26,44 +27,24 @@ const PretestSessionPage = () => {
     Record<string, string>
   >({});
   const [sessions, setSessions] = useState(SESSIONS);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: apiSessions, isLoading, isError } = useSurveySessions();
   const [submitting, setSubmitting] = useState(false);
   const [showSkillModal, setShowSkillModal] = useState(false);
   // const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
 
-  // Session 데이터 로드
+  // Session 데이터 로드 (react-query 결과와 결합)
   useEffect(() => {
-    const loadSessions = async () => {
-      try {
-        setLoading(true);
-        const apiData = await surveyAPI.getSessions();
-        console.log("서버 세션 데이터:", apiData);
-
-        // API 데이터와 mock 데이터의 levels를 결합
-        const combinedSessions = apiData.map((apiSession) => {
-          const mockSession = SESSIONS.find((s) => s.name === apiSession.name);
-          return {
-            ...apiSession,
-            id: apiSession.id.toString(), // API는 number, UI는 string 사용
-            levels: mockSession?.levels || SESSIONS[0].levels, // 기본값으로 첫 번째 세션의 levels 사용
-          };
-        });
-
-        setSessions(combinedSessions);
-        setError(null);
-      } catch (err) {
-        console.error("Session 데이터 로드 실패:", err);
-        setError("Session 데이터를 불러오는데 실패했습니다.");
-        // API 실패 시 mock 데이터 사용
-        setSessions(SESSIONS);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadSessions();
-  }, []);
+    if (!apiSessions) return;
+    const combined = apiSessions.map((apiSession) => {
+      const mockSession = SESSIONS.find((s) => s.name === apiSession.name);
+      return {
+        ...apiSession,
+        id: apiSession.id.toString(),
+        levels: mockSession?.levels || SESSIONS[0].levels,
+      };
+    });
+    setSessions(combined);
+  }, [apiSessions]);
 
   // 세션 선택 처리
   const handleSessionSelect = (sessionId: string) => {
@@ -148,23 +129,32 @@ const PretestSessionPage = () => {
             console.log("원본 세션 이름:", session?.name);
             console.log("변환 전 sessionType:", sessionType);
 
-            // 서버가 기대하는 영문 세션 타입으로 변환
+            // 서버가 기대하는 영문 세션 타입으로 변환 (이모지/한글명 모두 대응)
             const sessionTypeMapping: Record<string, string> = {
               "🎤 보컬 🎤": "vocal",
+              보컬: "vocal",
               "🎸 일렉 기타 🎸": "electric_guitar",
+              "일렉 기타": "electric_guitar",
               "🪕 어쿠스틱 기타 🪕": "acoustic_guitar",
+              "어쿠스틱 기타": "acoustic_guitar",
+              "🎵 베이스 🎵": "bass",
+              베이스: "bass",
               "🪕 베이스 🪕": "bass",
               "🥁 드럼 🥁": "drums",
+              드럼: "drums",
               "🎹 키보드 🎹": "keyboard",
+              키보드: "keyboard",
               "🎻 바이올린 🎻": "violin",
+              바이올린: "violin",
               "🎺 트럼펫 🎺": "trumpet",
+              트럼펫: "trumpet",
             };
 
             sessionType = sessionTypeMapping[sessionType] || sessionType;
             console.log("변환 후 sessionType:", sessionType);
 
-            // levelId를 level로 변환 (예: "beginner" -> "beginner")
-            const level = levelId;
+            // levelId를 서버 기대 형식으로 변환 (예: beginner -> BEGINNER)
+            const level = (levelId || "").toUpperCase();
 
             console.log(
               `세션 변환: ${sessionId} -> ${sessionType}, 레벨: ${level}`
@@ -202,20 +192,9 @@ const PretestSessionPage = () => {
         } catch (profileError) {
           console.error("프로필 조회 실패, 기본값으로 저장:", profileError);
 
-          // 프로필 조회 실패 시 기본값으로 저장
+          // 프로필 조회 실패 시 최소 필드만 전송 (서버 유효성 검사를 피하기 위함)
           await profileAPI.updateProfile({
             availableSessions: availableSessions,
-            nickname: "",
-            age: 0,
-            gender: "",
-            region: "",
-            district: "",
-            bio: "",
-            profileImage: "",
-            mediaUrl: "",
-            genres: [],
-            artists: [],
-            keywords: [],
           });
         }
 
@@ -273,15 +252,15 @@ const PretestSessionPage = () => {
 
           {/* 세션 리스트 */}
           <div className="mb-8 sm:mb-10 md:mb-12 lg:mb-16 xl:mb-20">
-            {loading ? (
+            {isLoading ? (
               <div className="flex justify-center items-center py-12">
                 <div className="text-white text-lg">
                   세션 목록을 불러오는 중...
                 </div>
               </div>
-            ) : error ? (
+            ) : isError ? (
               <div className="text-red-400 text-center py-4">
-                {error}
+                Session 데이터를 불러오는데 실패했습니다.
                 <div className="text-sm text-gray-400 mt-2">
                   (기본 세션 목록을 표시합니다)
                 </div>

@@ -3,7 +3,11 @@ import { useNavigate } from "react-router-dom";
 import PretestHeader from "./_components/PretestHeader";
 import SearchBar from "./_components/SearchBar";
 import ArtistGrid from "./_components/ArtistGrid";
-import { musicAPI, artistSaveAPI } from "@/api/API";
+import { artistSaveAPI } from "@/api/API";
+import {
+  useSurveyArtists,
+  useSearchArtists,
+} from "@/features/pretest/hooks/useSurveyData";
 // import type { AutocompleteResult } from "@/api/API";
 import oasisImage from "@/assets/images/oasis.png";
 
@@ -131,128 +135,48 @@ const PretestArtistPage = () => {
   //   AutocompleteResult[]
   // >([]);
   const [searchResults, setSearchResults] = useState<Artist[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: apiArtists, isLoading, isError } = useSurveyArtists();
+  const { data: searched, isFetching } = useSearchArtists(searchQuery);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  // 아티스트 데이터 로드 - SEARCH_ALL API 사용
+  // 초기 아티스트 목록 로드 (사전 테스트 아티스트 API)
   useEffect(() => {
-    const loadArtists = async () => {
-      try {
-        setLoading(true);
+    if (!apiArtists) return;
+    const mapped = apiArtists.map((item, index) => ({
+      id: index + 1,
+      spotifyId: item.spotifyId,
+      name: item.name,
+      genre: item.genre || "unknown",
+      imageUrl: item.imageUrl || oasisImage,
+      externalUrl:
+        item.externalUrl || `https://open.spotify.com/artist/${item.spotifyId}`,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    }));
+    setArtists(mapped.length > 0 ? mapped : ARTISTS);
+  }, [apiArtists]);
 
-        // 빈 쿼리로 SEARCH_ALL API 호출하여 기본 아티스트 목록 가져오기
-        let searchResults = await musicAPI.searchAll("", 30, 0);
-
-        // 빈 쿼리 결과가 없으면 "artist"로 시도
-        if (!searchResults || searchResults.length === 0) {
-          searchResults = await musicAPI.searchAll("artist", 30, 0);
-        }
-
-        // 검색 결과를 Artist 형식으로 변환 (API 문서에 따른 구조)
-        console.log("API 응답 데이터:", searchResults); // 디버깅용
-
-        // searchResults가 배열인지 확인
-        if (!Array.isArray(searchResults)) {
-          console.warn("searchResults가 배열이 아닙니다:", searchResults);
-          setArtists(ARTISTS);
-          setError(null);
-          return;
-        }
-
-        // 유효한 아티스트만 필터링 (name이 "ARTIST"이거나 imageUrl이 null인 경우 제외)
-        const validArtists = searchResults.filter(
-          (item) => item.name !== "ARTIST" && item.imageUrl !== null
-        );
-
-        const artistResults = validArtists.map((item, index) => ({
-          id: index + 1,
-          spotifyId: item.spotifyId,
-          name: item.name,
-          genre: item.genres || "unknown",
-          imageUrl: item.imageUrl || oasisImage,
-          externalUrl:
-            item.externalUrl ||
-            `https://open.spotify.com/artist/${item.spotifyId}`,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }));
-
-        // API에서 결과가 있으면 사용, 없으면 기본 데이터 사용
-        if (artistResults.length > 0) {
-          setArtists(artistResults);
-          setError(null);
-        } else {
-          console.warn(
-            "API에서 아티스트 데이터를 가져올 수 없어 기본 데이터를 사용합니다."
-          );
-          setArtists(ARTISTS);
-          setError(null);
-        }
-      } catch (err) {
-        console.error("아티스트 데이터 로드 실패:", err);
-        setError("아티스트 데이터를 불러오는데 실패했습니다.");
-        // API 실패 시 mock 데이터 사용
-        setArtists(ARTISTS);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadArtists();
-  }, []);
-
-  // 검색어 변경 시 SEARCH_ALL API 호출
+  // 검색어 변경 시 사전 테스트 아티스트 검색 API 데이터 반영
   useEffect(() => {
-    const searchArtists = async () => {
-      // 빈 검색어인 경우 기본 아티스트 목록 표시
-      if (!searchQuery.trim()) {
-        setSearchResults([]);
-        return;
-      }
-
-      try {
-        const searchResponse = await musicAPI.searchAll(searchQuery, 30, 0);
-
-        // 검색 결과를 Artist 형식으로 변환 (API 문서에 따른 구조)
-        console.log("검색 API 응답:", searchResponse); // 디버깅용
-
-        // searchResponse가 배열인지 확인
-        if (!Array.isArray(searchResponse)) {
-          console.warn("searchResponse가 배열이 아닙니다:", searchResponse);
-          setSearchResults([]);
-          return;
-        }
-
-        // 유효한 아티스트만 필터링 (name이 "ARTIST"이거나 imageUrl이 null인 경우 제외)
-        const validArtists = searchResponse.filter(
-          (item) => item.name !== "ARTIST" && item.imageUrl !== null
-        );
-
-        const artistResults = validArtists.map((item, index) => ({
-          id: index + 1000,
-          spotifyId: item.spotifyId,
-          name: item.name,
-          genre: item.genres || "unknown",
-          imageUrl: item.imageUrl || oasisImage,
-          externalUrl:
-            item.externalUrl ||
-            `https://open.spotify.com/artist/${item.spotifyId}`,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }));
-        setSearchResults(artistResults);
-      } catch (error) {
-        console.error("음악 검색 실패:", error);
-        setSearchResults([]);
-      }
-    };
-
-    // 디바운스 적용 (300ms)
-    const timeoutId = setTimeout(searchArtists, 300);
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    if (!searched) return;
+    const mapped = searched.map((item, index) => ({
+      id: index + 1000,
+      spotifyId: item.spotifyId,
+      name: item.name,
+      genre: item.genre || "unknown",
+      imageUrl: item.imageUrl || oasisImage,
+      externalUrl:
+        item.externalUrl || `https://open.spotify.com/artist/${item.spotifyId}`,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    }));
+    setSearchResults(mapped);
+  }, [searchQuery, searched]);
 
   // 검색 필터링된 아티스트 목록 (기본 아티스트 목록용)
   const filteredArtists = useMemo(() => {
@@ -423,7 +347,11 @@ const PretestArtistPage = () => {
 
           {/* 검색 결과 또는 아티스트 그리드 */}
           <div className="mb-8 sm:mb-10 md:mb-12 lg:mb-16 xl:mb-20">
-            {searchResults.length > 0 ? (
+            {isFetching ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="text-white text-lg">검색 중...</div>
+              </div>
+            ) : searchResults.length > 0 ? (
               // SEARCH_ALL API 결과를 동그라미 그리드 형태로 표시 (실제 이미지 사용)
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-x-4 gap-y-8 sm:gap-x-5 sm:gap-y-10 md:gap-x-6 md:gap-y-12 lg:gap-x-8 lg:gap-y-14 xl:gap-x-10 xl:gap-y-16 2xl:gap-x-12 2xl:gap-y-20">
                 {searchResults.map((artist, index) => (
@@ -464,17 +392,17 @@ const PretestArtistPage = () => {
                 <div className="text-white text-lg">검색 결과가 없습니다.</div>
               </div>
             ) : (
-              // 기본 아티스트 그리드 (빈 검색 시 SEARCH_ALL API 결과 표시)
+              // 기본 아티스트 그리드 (빈 검색 시 초기 목록 표시)
               <>
-                {loading ? (
+                {isLoading ? (
                   <div className="flex justify-center items-center py-12">
                     <div className="text-white text-lg">
                       아티스트 목록을 불러오는 중...
                     </div>
                   </div>
-                ) : error ? (
+                ) : isError ? (
                   <div className="text-red-400 text-center py-4">
-                    {error}
+                    아티스트 데이터를 불러오는데 실패했습니다.
                     <div className="text-sm text-gray-400 mt-2">
                       (기본 아티스트 목록을 표시합니다)
                     </div>

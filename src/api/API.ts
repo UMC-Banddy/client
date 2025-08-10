@@ -15,6 +15,22 @@ export interface Artist {
   updatedAt: string;
 }
 
+// 사전 테스트 키워드 타입
+export interface SurveyKeywordItem {
+  id: number;
+  content: string;
+}
+
+export type SurveyKeywordMap = Record<string, SurveyKeywordItem[]>;
+
+// 사전 테스트 장르 타입
+export interface Genre {
+  createdAt: string;
+  updatedAt: string;
+  id: number;
+  name: string;
+}
+
 // Survey 제출 데이터 타입 정의
 export interface SurveyData {
   selectedArtists: string[];
@@ -157,11 +173,11 @@ export const artistAPI = {
   },
 
   // 아티스트 검색
-  searchArtists: async (query: string): Promise<Artist[]> => {
+  searchArtists: async (keyword: string): Promise<Artist[]> => {
     try {
       const response = await API.get(
-        `${API_ENDPOINTS.SURVEY.ARTIST_SEARCH}?query=${encodeURIComponent(
-          query
+        `${API_ENDPOINTS.SURVEY.ARTIST_SEARCH}?keyword=${encodeURIComponent(
+          keyword
         )}`
       );
       return response.data;
@@ -257,7 +273,7 @@ export const artistSaveAPI = {
   // 아티스트 저장
   saveArtist: async (
     spotifyId: string
-  // ): Promise<{ isSuccess: boolean; result: any }> => {
+    // ): Promise<{ isSuccess: boolean; result: any }> => {
   ): Promise<{ isSuccess: boolean; result: unknown }> => {
     try {
       const response = await API.post(
@@ -310,7 +326,7 @@ export const profileAPI = {
     genres?: string[];
     artists?: string[];
     keywords?: string[];
-  // }): Promise<{ isSuccess: boolean; result: any }> => {
+    // }): Promise<{ isSuccess: boolean; result: any }> => {
   }): Promise<{ isSuccess: boolean; result: unknown }> => {
     try {
       // FormData인 경우와 일반 데이터인 경우를 구분
@@ -333,11 +349,70 @@ export const profileAPI = {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { profileImage: _, ...jsonData } = profileData;
 
-        const response = await API.put(API_ENDPOINTS.PROFILE.UPDATE, jsonData, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        // 최소 전송 규칙: 빈 문자열/빈 배열/undefined/null 제거 + 세션/레벨 정규화
+        const sessionTypeMapping: Record<string, string> = {
+          "🎤 보컬 🎤": "vocal",
+          보컬: "vocal",
+          "🎸 일렉 기타 🎸": "electric_guitar",
+          "일렉 기타": "electric_guitar",
+          "🪕 어쿠스틱 기타 🪕": "acoustic_guitar",
+          "어쿠스틱 기타": "acoustic_guitar",
+          "🎵 베이스 🎵": "bass",
+          베이스: "bass",
+          "🥁 드럼 🥁": "drums",
+          드럼: "drums",
+          "🎹 키보드 🎹": "keyboard",
+          키보드: "keyboard",
+          "🎻 바이올린 🎻": "violin",
+          바이올린: "violin",
+          "🎺 트럼펫 🎺": "trumpet",
+          트럼펫: "trumpet",
+        };
+
+        type Updatable = typeof jsonData & {
+          availableSessions?: Array<{ sessionType: string; level: string }>;
+        };
+
+        const sanitizePayload = (data: Updatable) => {
+          const result: Record<string, unknown> = {};
+          for (const [key, value] of Object.entries(data)) {
+            if (value === undefined || value === null) continue;
+            if (typeof value === "string" && value.trim() === "") continue;
+            if (Array.isArray(value) && value.length === 0) continue;
+
+            if (key === "availableSessions" && Array.isArray(value)) {
+              const normalized = value
+                .map((item) => ({
+                  sessionType:
+                    sessionTypeMapping[item.sessionType] ?? item.sessionType,
+                  level: (item.level || "").toUpperCase(),
+                }))
+                .filter(
+                  (item) =>
+                    item.sessionType && item.level && item.level.length > 0
+                );
+              if (normalized.length > 0) {
+                result[key] = normalized;
+              }
+              continue;
+            }
+
+            result[key] = value;
+          }
+          return result;
+        };
+
+        const sanitized = sanitizePayload(jsonData as Updatable);
+
+        const response = await API.put(
+          API_ENDPOINTS.PROFILE.UPDATE,
+          sanitized,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
         return response.data;
       }
     } catch (error: unknown) {
@@ -419,6 +494,43 @@ export const surveyAPI = {
       return response.data;
     } catch (error) {
       console.error("Session 목록 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // 카테고리별 키워드 전체 조회
+  getKeywords: async (): Promise<SurveyKeywordMap> => {
+    try {
+      const response = await API.get(API_ENDPOINTS.SURVEY.KEYWORD);
+      return response.data;
+    } catch (error) {
+      console.error("키워드 목록 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // 사전 테스트 장르 전체 조회
+  getGenres: async (): Promise<Genre[]> => {
+    try {
+      const response = await API.get(API_ENDPOINTS.SURVEY.GENRE);
+      return response.data;
+    } catch (error) {
+      console.error("장르 목록 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // 사전 테스트 장르 키워드 검색
+  searchGenres: async (keyword: string): Promise<Genre[]> => {
+    try {
+      const response = await API.get(
+        `${API_ENDPOINTS.SURVEY.GENRE_SEARCH}?keyword=${encodeURIComponent(
+          keyword
+        )}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("장르 검색 실패:", error);
       throw error;
     }
   },
