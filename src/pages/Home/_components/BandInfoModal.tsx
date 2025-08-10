@@ -28,6 +28,7 @@ interface BandInfoModalProps {
   youtubeUrl?: string;
   instagramUrl?: string;
   bandId?: string; // 추가
+  imageUrl?: string; // 캐러셀에서 사용한 이미지 전달
 }
 
 const BandInfoModal: React.FC<BandInfoModalProps> = ({
@@ -40,6 +41,7 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
   youtubeUrl,
   instagramUrl,
   bandId, // 추가
+  imageUrl,
 }) => {
   // 세션별 아이콘 매핑 함수
   const getSessionIcon = (tagName: string) => {
@@ -148,7 +150,18 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
           if (hasLink && link) {
             if (link.startsWith("/")) {
               return (
-                <Link key={idx} to={link} style={{ display: "inline-block" }}>
+                <Link
+                  key={idx}
+                  to={link}
+                  state={{
+                    initialBand: {
+                      bandId,
+                      title,
+                      imageUrl,
+                    },
+                  }}
+                  style={{ display: "inline-block" }}
+                >
                   {iconElement}
                 </Link>
               );
