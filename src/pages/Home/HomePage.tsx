@@ -360,6 +360,10 @@ const HomePage = () => {
       </main>
       <MuiDialog open={open} setOpen={setOpen}>
         <BandInfoModal
+          imageUrl={
+            selectedBand?.profileData?.goalTracks?.[0]?.imageUrl ||
+            selectedBand?.image
+          }
           title={
             selectedBand?.profileData?.goalTracks?.[0]?.title ||
             selectedBand?.title ||
