@@ -8,7 +8,11 @@ const HomeSkeleton: React.FC = () => {
       {/* tags */}
       <div className="w-full flex items-center justify-center gap-2 mb-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className={`${Pulse} h-6 rounded-full`} style={{ width: 72 }} />
+          <div
+            key={i}
+            className={`${Pulse} h-6 rounded-full`}
+            style={{ width: 72 }}
+          />
         ))}
       </div>
       {/* image */}
@@ -27,5 +31,3 @@ const HomeSkeleton: React.FC = () => {
 };
 
 export default HomeSkeleton;
-
-
