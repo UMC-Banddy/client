@@ -73,7 +73,7 @@ const LoginPage: React.FC = () => {
           id="email"
           label="아이디"
           type="email"
-          placeholder="이메일 또는 아이디"
+          placeholder="이메일 아이디"
           value={snap.email}
           onChange={(e) => {
             authStore.email = e.target.value;
