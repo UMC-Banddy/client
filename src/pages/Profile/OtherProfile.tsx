@@ -9,6 +9,12 @@ import MyArchiveItem from "@/pages/My/_components/Archive/MyArchiveItem";
 import { useOtherProfile } from "@/features/profile/hooks/useOtherProfile";
 import { useSavedTracks } from "@/features/profile/hooks/useSavedTracks";
 import { useSavedAlbums } from "@/features/profile/hooks/useSavedAlbums";
+// 스켈레톤 컴포넌트들
+import ProfileInfoSkeleton from "@/pages/My/_components/ProfileInfoSkeleton";
+import HashTagListSkeleton from "@/pages/My/_components/HashTagListSkeleton";
+import ArtistGridSkeleton from "@/pages/Archive/Artist/ArtistGridSkeleton";
+import MusicListSkeleton from "@/pages/Archive/Music/MusicListSkeleton";
+import MyArchiveItemSkeletonList from "@/pages/My/_components/Archive/MyArchiveItemSkeletonList";
 
 export default function OtherProfile() {
   const { id } = useParams();
@@ -40,11 +46,35 @@ export default function OtherProfile() {
 
   } : null;
 
-  // 로딩 중이거나 에러가 있으면 처리
+  // 로딩 중일 때 스켈레톤 표시
   if (profileLoading || tracksLoading || albumsLoading) {
     return (
-      <div className="min-h-[100vh] w-full flex items-center justify-center">
-        <div className="text-white">로딩 중...</div>
+      <div className="min-h-[100vh] w-full flex flex-col pb-[4vh]">
+        <ProfileInfoSkeleton />
+        <HashTagListSkeleton />
+        
+        <div className="pl-[24px]">
+          <ArtistGridSkeleton />
+        </div>
+        
+        <SectionDivider />
+        
+        <div className="flex gap-[2.5vw] px-[24px] mb-[3.2vh] mt-[1.8vh]">
+          <button
+            className="px-[20px] py-[8px] rounded-[19px] text-wanted-sb-15 bg-[#B42127] text-[#E9E9E9]"
+          >
+            곡
+          </button>
+          <button
+            className="px-[20px] py-[8px] rounded-[19px] text-wanted-sb-15 bg-[#555555] text-[#E9E9E9]"
+          >
+            앨범
+          </button>
+        </div>
+        
+        <div className="px-[24px]">
+          <MusicListSkeleton />
+        </div>
       </div>
     );
   }
@@ -109,15 +139,21 @@ export default function OtherProfile() {
             }))} 
           />
         ) : (
-          <div className="grid grid-cols-3 gap-x-[16px] gap-y-[20px]">
-            {profile.albums.map((album, i) => (
-              <MyArchiveItem
-                key={i}
-                coverUrl={album.image}
-                title={album.title}
-              />
-            ))}
-          </div>
+          albumsLoading ? (
+            <div className="grid grid-cols-3 gap-x-[16px] gap-y-[20px]">
+              <MyArchiveItemSkeletonList count={6} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-x-[16px] gap-y-[20px]">
+              {profile.albums.map((album, i) => (
+                <MyArchiveItem
+                  key={i}
+                  coverUrl={album.image}
+                  title={album.title}
+                />
+              ))}
+            </div>
+          )
         )}
       </div>
     </div>

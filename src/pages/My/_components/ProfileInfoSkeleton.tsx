@@ -12,11 +12,7 @@ const ProfileInfoSkeleton = () => {
         {/* 바이오 스켈레톤 */}
         <div className="w-full h-3 bg-gray-700 rounded mb-[2vh]" />
         
-        {/* 버튼 영역 스켈레톤 */}
-        <div className="flex gap-[12px]">
-          <div className="w-[71px] h-[34px] bg-gray-700 rounded-full" />
-          <div className="w-[32px] h-[32px] bg-gray-700 rounded" />
-        </div>
+        
       </div>
     </div>
   );

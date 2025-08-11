@@ -66,23 +66,41 @@ const MyPage = () => {
     );
   }
 
-  // 로딩 중이거나 데이터가 없는 경우
-  if (isLoading || !profile) {
+  // 로딩 중인 경우 스켈레톤 표시
+  if (isLoading) {
+    return (
+      <div className="min-h-[100vh] w-full flex flex-col">
+        <Header title="MY" hasNotification={notificationCount > 0} />
+        <div className="mt-[10vh]"></div>
+        <ProfileInfoSkeleton />
+        <HashTagListSkeleton />
+        <SectionDivider />
+        <ArchiveSection
+          title="음악 아카이빙"
+          onClick={() => navigate("/my/archive")}
+        />
+        <div className="w-full grid grid-cols-3 gap-x-[20px] gap-y-[16px] px-[24px]">
+          <MyArchiveItemSkeletonList count={6} />
+        </div>
+      </div>
+    );
+  }
+
+  // 데이터가 없는 경우
+  if (!profile) {
     return (
       <div className="min-h-[100vh] w-full flex flex-col items-center justify-center bg-[#121212]">
         <div className="text-white text-center px-4">
           <div className="text-lg mb-2">프로필을 불러올 수 없습니다</div>
           <div className="text-sm text-gray-400 mb-4">
-            {isLoading ? "로딩 중..." : "프로필 데이터가 없습니다"}
+            프로필 데이터가 없습니다
           </div>
-          {!isLoading && (
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg"
-            >
-              다시 시도
-            </button>
-          )}
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg"
+          >
+            다시 시도
+          </button>
         </div>
       </div>
     );
@@ -92,33 +110,20 @@ const MyPage = () => {
     <div className="min-h-[100vh] w-full flex flex-col">
       <Header title="MY" hasNotification={notificationCount > 0} />
       <div className="mt-[10vh]"></div>
-      {isLoading ? (
-        <>
-          <ProfileInfoSkeleton />
-          <HashTagListSkeleton />
-        </>
-      ) : profile ? (
-        <>
-          <ProfileInfo
-            nickname={profile.nickname}
-            avatarUrl={profile.profileImageUrl}
-            bio={profile.bio}
-            showEdit={true}
-            showShare={true}
-          />
-          <HashtagList tags={profile.tags} />
-        </>
-      ) : null}
+      <ProfileInfo
+        nickname={profile.nickname}
+        avatarUrl={profile.profileImageUrl}
+        bio={profile.bio}
+        showEdit={true}
+        showShare={true}
+      />
+      <HashtagList tags={profile.tags} />
       <SectionDivider />
       <ArchiveSection
         title="음악 아카이빙"
         onClick={() => navigate("/my/archive")}
       />
-      {isLoading ? (
-        <div className="w-full grid grid-cols-3 gap-x-[20px] gap-y-[16px] px-[24px]">
-          <MyArchiveItemSkeletonList count={6} />
-        </div>
-      ) : profile?.savedTracks ? (
+      {profile?.savedTracks ? (
         <div className="w-full grid grid-cols-3 gap-x-[20px] gap-y-[16px] px-[24px]">
           {profile?.savedTracks.map((track: SavedTrack, i: number) => (
             <MyArchiveItem

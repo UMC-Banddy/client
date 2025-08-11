@@ -4,13 +4,13 @@ import { useNotifications } from "@/features/notification/hooks/useNotifications
 export default function NotificationPage() {
   const { notifications, isLoading, error } = useNotifications();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-[100dvh] w-full flex items-center justify-center">
-        <div className="text-white">로딩 중...</div>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="min-h-[100dvh] w-full flex items-center justify-center">
+  //       <div className="text-white">로딩 중...</div>
+  //     </div>
+  //   );
+  // }
 
   if (error) {
     return (
@@ -22,7 +22,7 @@ export default function NotificationPage() {
 
   return (
     <div className="min-h-[100dvh] w-full flex flex-col">
-      <NotificationList notifications={notifications} />
+      <NotificationList notifications={notifications} isLoading={isLoading} />
     </div>
   );
 }
