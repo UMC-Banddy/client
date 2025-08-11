@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import BandCarousel from "./_components/BandCarousel";
+import HomeSkeleton from "./_components/HomeSkeleton";
 import MuiDialog from "@/shared/components/MuiDialog";
 import BandInfoModal from "./_components/BandInfoModal";
 import {
@@ -341,11 +342,7 @@ const HomePage = () => {
   }, [recommended]);
 
   if (loading || isFetching) {
-    return (
-      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-[420px] mx-auto">
-        <div className="text-white">로딩 중...</div>
-      </main>
-    );
+    return <HomeSkeleton />;
   }
 
   return (
