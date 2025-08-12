@@ -42,7 +42,8 @@ export default function AlbumPage() {
           <AlbumGrid items={(albums || []).map(album => ({
             image: album.imageUrl,
             title: album.name,
-            externalUrl: album.externalUrl
+            externalUrl: album.externalUrl,
+            albumId: album.albumId?.toString()
           }))} />
         )}
       </div>
