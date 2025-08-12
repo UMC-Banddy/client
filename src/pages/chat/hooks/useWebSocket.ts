@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSnapshot } from "valtio";
 import { chatStore, chatActions } from "@/store/chatStore";
 import webSocketService from "@/services/WebSocketService";
-import { chatActions } from "@/store/chatStore";
 import type { WebSocketMessage } from "@/types/chat";
 
 export const useWebSocket = () => {
