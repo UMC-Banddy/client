@@ -1,9 +1,8 @@
 import guitarActivated from "@/assets/icons/join/ic_guitar_activated.svg";
 import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
-import thumbnail from "@/assets/images/home-album1.svg";
 import volumeOff from "@/assets/icons/join/ic_volume_off.svg";
 import star from "@/assets/icons/join/ic_star.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog } from "@mui/material";
 import closeBtn from "@/assets/icons/join/ic_close_btn.svg";
 import StatusIndicator from "../_components/saved_band/StatusIndicator";
@@ -13,10 +12,30 @@ import users from "@/assets/icons/join/saved_band/ic_users.svg";
 import youtubeOutlined from "@/assets/icons/join/saved_band/ic_youtube_outlined.svg";
 import instagramOutlined from "@/assets/icons/join/saved_band/ic_instagram_outlined.svg";
 import tiktokOutlined from "@/assets/icons/join/saved_band/ic_tiktok_outlined.svg";
+import polygon from "@/assets/icons/join/saved_band/ic_polygon7.svg";
+import { useLocation, useParams } from "react-router-dom";
+import { API } from "@/api/API";
+import type { BandDetail } from "@/types/band";
+// import { showMembers } from "../_utils/showMembers";
 
 const SavedBandDetail = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+
+  const [data, setData] = useState<BandDetail>();
+
+  const { memberSummary } = useLocation().state;
+
+  const { id } = useParams();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data } = await API.get(`/api/band/${id}/detail`);
+      setData(data);
+    };
+
+    fetchData();
+  }, [id]);
 
   return (
     <main className="relative min-h-screen w-[393px] mx-auto px-[24px] pt-[12px]">
@@ -34,7 +53,7 @@ const SavedBandDetail = () => {
           <div
             className="absolute top-0 left-0 w-full h-full bg-cover bg-center"
             style={{
-              backgroundImage: `url(${thumbnail})`,
+              backgroundImage: `url(${data?.profileImageUrl})`,
             }}
           ></div>
           <div
@@ -55,10 +74,8 @@ const SavedBandDetail = () => {
       </section>
 
       <section className="flex flex-col gap-[8px] mt-[24px] mb-[44px]">
-        <p className="text-hakgyo-b-24 text-[#fff]">생태계교란종</p>
-        <p className="text-hakgyo-r-14 text-[#CACACA]">
-          광대족, 베스, 황소개구리 외 7명
-        </p>
+        <p className="text-hakgyo-b-24 text-[#fff]">{data?.bandName}</p>
+        <p className="text-hakgyo-r-14 text-[#CACACA]">{memberSummary}</p>
       </section>
 
       <section className="flex justify-between">
@@ -71,6 +88,7 @@ const SavedBandDetail = () => {
         </button>
       </section>
 
+      {/* ThumbnailDialog */}
       <Dialog
         open={showDetail}
         onClose={() => setShowDetail(false)}
@@ -94,7 +112,7 @@ const SavedBandDetail = () => {
             <img src={closeBtn} alt="" />
           </button>
 
-          <h1 className="mt-[64px] text-hakgyo-b-20">생태계교란종</h1>
+          <h1 className="mt-[64px] text-hakgyo-b-28">{data?.bandName}</h1>
           <div className="flex gap-[8px] mt-[20px] mb-[32px]">
             <StatusIndicator status="red" src={fileMusic} />
             <StatusIndicator status="red" src={music} />
@@ -103,6 +121,24 @@ const SavedBandDetail = () => {
             <StatusIndicator status="black" src={instagramOutlined} />
             <StatusIndicator status="black" src={tiktokOutlined} />
           </div>
+
+          <section className="pl-[36px] pr-[53px] w-full">
+            <div className="flex justify-start gap-[8px] text-ibm-sb-16">
+              <img src={polygon} alt="" />
+              <p>{data?.ageRange}</p>
+              <div className="w-[0.5px] h-[24px] bg-[#292929]" />
+              <p>{data?.genderCondition}</p>
+              <div className="w-[0.5px] h-[24px] bg-[#292929]" />
+              <p>{data?.region}</p>
+            </div>
+
+            <article className="mt-[28px] h-[156px] overflow-scroll text-hakgyo-r-16">
+              {data?.description}
+            </article>
+          </section>
+          <p className="absolute left-[36px] bottom-[32px] text-wanted-sb-12">
+            마감: {data?.endDate}
+          </p>
         </section>
       </Dialog>
     </main>
