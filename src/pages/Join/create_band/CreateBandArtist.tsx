@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import SearchField from "../_components/SearchField";
 import ArtistToggleBtn from "../_components/create_band/artist/ArtistToggleBtn";
-import dummy from "@/assets/images/home-album1.svg";
 import deleteIcon from "@/assets/icons/join/ic_delete.svg";
 import { API } from "@/api/API";
 import JoinHeader from "../_components/JoinHeader";
@@ -12,9 +11,9 @@ import { createBandActions, createBandStore } from "@/store/createBandStore";
 export type Artist = {
   spotifyId: string;
   name: string;
-  genres: string;
-  imageUrl: string;
-  externalUrl: string;
+  genres?: string;
+  imageUrl: string | null;
+  externalUrl?: string;
 };
 
 const CreateBandArtist: React.FC = () => {
@@ -96,7 +95,7 @@ const CreateBandArtist: React.FC = () => {
                     <div
                       className="relative w-[50px] h-[50px] rounded-full bg-cover bg-center"
                       style={{
-                        backgroundImage: `url(${artist.imageUrl || dummy})`,
+                        backgroundImage: `url(${artist.imageUrl})`,
                       }}
                     >
                       <button
@@ -128,7 +127,7 @@ const CreateBandArtist: React.FC = () => {
             {searchResults.map((artist) => (
               <ArtistToggleBtn
                 key={artist.spotifyId}
-                thumbnail={artist.imageUrl || dummy}
+                thumbnail={artist.imageUrl || ""}
                 toggled={selectedArtists.some(
                   (a) => a.spotifyId === artist.spotifyId
                 )}

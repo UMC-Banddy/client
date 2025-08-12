@@ -11,7 +11,7 @@ import {
 import { Dialog, Slide } from "@mui/material";
 import MuiDialog from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import happy from "@/assets/icons/join/ic_mood_happy.svg";
 import cameraBtn from "@/assets/icons/join/ic_camera_btn.svg";
 import music from "@/assets/icons/join/ic_music.svg";
@@ -31,27 +31,27 @@ import { genres } from "../_constants/genres";
 import { useSnapshot } from "valtio";
 import { createBandActions, createBandStore } from "@/store/createBandStore";
 import GenreStatusBlackBtn from "../_components/create_band/genre/GenreStatusBlackBtn";
-import { useNavigate, useOutlet } from "react-router-dom";
+import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import JoinHeader from "../_components/JoinHeader";
 import { API } from "@/api/API";
 import ToggleBtn from "../_components/ToggleBtn";
 
 const sessionList = [
-  { key: "mic", Icon: MicImg },
-  { key: "electricGuitar", Icon: ElectricGuitarImg },
-  { key: "guitar", Icon: GuitarImg },
-  { key: "bass", Icon: BassImg },
-  { key: "drum", Icon: DrumImg },
-  { key: "piano", Icon: PianoImg },
-  { key: "violin", Icon: ViolinImg },
-  { key: "trumpet", Icon: TrumpetImg },
+  { key: "🎤 보컬 🎤", Icon: MicImg },
+  { key: "🎸 일렉 기타 🎸", Icon: ElectricGuitarImg },
+  { key: "🪕 어쿠스틱 기타 🪕", Icon: GuitarImg },
+  { key: "🎵 베이스 🎵", Icon: BassImg },
+  { key: "🥁 드럼 🥁", Icon: DrumImg },
+  { key: "🎹 키보드 🎹", Icon: PianoImg },
+  { key: "🎻 바이올린 🎻", Icon: ViolinImg },
+  { key: "🎺 트럼펫 🎺", Icon: TrumpetImg },
 ] as const;
 
 type SessionKey = (typeof sessionList)[number]["key"];
 type SessionState = Record<SessionKey, boolean>;
 
 type age = "10대" | "20대" | "30대" | "40대" | "50대" | "60대" | "무관";
-type gender = "남녀무관" | "남자 선호" | "여자 선호";
+type gender = "OTHER" | "MALE" | "FEMALE";
 type sido =
   | "서울"
   | "경기"
@@ -82,7 +82,11 @@ type WannaBuddy = {
 };
 
 const ages = ["10대", "20대", "30대", "40대", "50대", "60대", "무관"];
-const genders = ["남녀무관", "남자 선호", "여자 선호"];
+const genders = [
+  { label: "남녀무관", value: "OTHER" },
+  { label: "남자 선호", value: "MALE" },
+  { label: "여자 선호", value: "FEMALE" },
+];
 const sidoList = regions;
 
 interface ExistMember {
@@ -99,7 +103,84 @@ interface ExistMember {
   existSession: SessionState;
 }
 
+interface CreateBandPayload {
+  snsLinks: {
+    additionalProp1: string;
+    additionalProp2: string;
+    additionalProp3: string;
+  };
+  gender: string;
+  averageAge: string;
+  maleCount: number;
+  femaleCount: number;
+  genres: string[];
+  ageStart: number;
+  artistSpotifyIds: string[];
+  autoClose: boolean;
+  endDate: string;
+  trackSpotifyIds: string[];
+  name: string;
+  district: string;
+  representativeSong: string;
+  status: string;
+  region: string;
+  currentSessions: string[];
+  session: string[];
+  ageEnd: number;
+  description: string;
+  job: string[];
+}
+
+interface EditBandPayload extends CreateBandPayload {
+  bandId: string;
+}
+
+interface FetchedBandPayload {
+  status: string;
+  profileImageUrl: string | null;
+  representativeSong: {
+    spotifyId: string;
+    artist: string;
+    trackTitle: string;
+  };
+  name: string;
+  endDate: string;
+  autoClose: boolean;
+  description: string;
+  sessions: SessionKey[];
+  genres: string[];
+  artists: [
+    {
+      spotifyId: string;
+      name: string;
+      imageUrl: string | null;
+    }
+  ];
+  tracks: [
+    {
+      spotifyId: string;
+      title: string;
+      imageUrl: string | null;
+    }
+  ];
+  ageStart: number;
+  ageEnd: number;
+  gender: gender;
+  region: sido;
+  averageAge: age;
+  jobs: string[];
+  maleCount: number;
+  femaleCount: number;
+  currentSessions: SessionKey[];
+  snsLink: {
+    additionalProp1: string;
+    additionalProp2: string;
+    additionalProp3: string;
+  };
+}
+
 const CreateBand = () => {
+  const [isRecruiting, setIsRecruiting] = useState(true);
   const [name, setName] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
@@ -115,7 +196,7 @@ const CreateBand = () => {
   const [wannaBuddy, setWannaBuddy] = useState<WannaBuddy>({
     startAge: "무관",
     endAge: "무관",
-    gender: "남녀무관",
+    gender: "OTHER",
     location: {
       sido: "서울",
       sigungu: "",
@@ -154,16 +235,98 @@ const CreateBand = () => {
   const navigate = useNavigate();
   const outlet = useOutlet();
 
+  const location = useLocation();
+  const { isEditing = false, bandId = "" } = location.state ?? {};
+
+  useEffect(() => {
+    const fetchExistedData = async () => {
+      const { data } = await API.get<FetchedBandPayload>(
+        `/api/recruitments/${bandId}`
+      );
+      console.log("data:", data);
+
+      setName(data.name);
+      setEndDate(new Date(data.endDate));
+      setAutomaticClosing(data.autoClose);
+      setBandIntro(data.description);
+      setRecruitSession(
+        data.sessions.reduce<SessionState>((acc, session) => {
+          acc[session] = true;
+          return acc;
+        }, {} as SessionState)
+      );
+
+      let startAge: age, endAge: age;
+      if (data.ageStart === 0) {
+        startAge = "무관";
+      } else {
+        startAge = (data.ageStart.toString() + "대") as age;
+      }
+      if (data.ageEnd === 0) {
+        endAge = "무관";
+      } else {
+        endAge = (data.ageEnd.toString() + "대") as age;
+      }
+
+      setWannaBuddy({
+        startAge,
+        endAge,
+        gender: data.gender,
+        location: {
+          sido: data.region,
+          sigungu: "",
+        },
+      });
+      setExistMember({
+        averageAge: data.averageAge,
+        job: {
+          colleague: data.jobs.includes("colleague"),
+          worker: data.jobs.includes("worker"),
+          freelancer: data.jobs.includes("freelancer"),
+        },
+        genderRatio: {
+          male: data.maleCount.toString(),
+          female: data.femaleCount.toString(),
+        },
+        existSession: data.currentSessions.reduce((acc, session) => {
+          acc[session] = true;
+          return acc;
+        }, {} as SessionState),
+      });
+      setSnsLink({
+        youtube: data.snsLink.additionalProp1,
+        instagram: data.snsLink.additionalProp2,
+        tiktok: data.snsLink.additionalProp3,
+      });
+      // valtio
+      createBandActions.setGenres(data.genres);
+      createBandActions.setArtists(
+        data.artists.map((artist) => ({
+          spotifyId: artist.spotifyId,
+          name: artist.name,
+          imageUrl: artist.imageUrl,
+        }))
+      );
+      createBandActions.setSongs(
+        data.tracks.map((track) => ({
+          spotifyId: track.spotifyId,
+          title: track.title,
+          imageUrl: track.imageUrl,
+        }))
+      );
+    };
+    if (isEditing) {
+      fetchExistedData();
+    }
+  }, [isEditing]);
+
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImgSrc(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) {
+      return;
     }
+    const url = URL.createObjectURL(file);
+    setImgSrc(url);
   };
 
   const openFileSelector = () => {
@@ -197,18 +360,17 @@ const CreateBand = () => {
         .filter(([_, on]) => on)
         .map(([key]) => key);
 
-      const payload = {
-        status: "RECRUITING",
-        profileImageUrl: imgSrc,
+      const payload: CreateBandPayload | EditBandPayload = {
+        status: isRecruiting ? "RECRUITING" : "ACTIVE",
         representativeSong: songs[0]?.spotifyId.toString() ?? "",
         name,
         endDate: endDate.toISOString(),
         autoClose: automaticClosing,
         description: bandIntro,
-        session, // e.g. ["guitar","drum",…]
-        genre: toggledGenre, // e.g. [0,2,5]
-        artist: artists.map((a) => a.spotifyId),
-        track: songs.map((s) => s.spotifyId),
+        session, // e.g. ["🎤 보컬 🎤", "🎸 일렉 기타 🎸", …] // 수정 API 호출 시 주석 처리 필요
+        genres: [...toggledGenre],
+        artistSpotifyIds: artists.map((a) => a.spotifyId),
+        trackSpotifyIds: songs.map((s) => s.spotifyId),
         ageStart: parseInt(wannaBuddy.startAge), // convert "20대"→20
         ageEnd: parseInt(wannaBuddy.endAge),
         gender: wannaBuddy.gender,
@@ -219,12 +381,50 @@ const CreateBand = () => {
         maleCount: Number(existMember.genderRatio.male) || 0,
         femaleCount: Number(existMember.genderRatio.female) || 0,
         currentSessions,
-        snsLinks: snsLink,
+        snsLinks: {
+          additionalProp1: snsLink.youtube,
+          additionalProp2: snsLink.instagram,
+          additionalProp3: snsLink.tiktok,
+        },
+        ...(isEditing && { bandId }),
       };
 
-      await API.post("/api/recruitments", payload);
+      console.log(payload);
 
-      // navigate("/join");
+      const formData = new FormData();
+
+      formData.append("data", JSON.stringify(payload));
+
+      formData.append(
+        "data",
+        new Blob([JSON.stringify(payload)], {
+          type: "application/json; charset=UTF-8",
+        })
+      );
+
+      if (fileInputRef.current?.files?.[0]) {
+        formData.append("image", fileInputRef.current.files[0]);
+      }
+
+      if (!isEditing) {
+        await API.post("/api/recruitments", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      } else {
+        await API.patch("/api/recruitments", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
+      alert("성공!");
+      createBandActions.setArtists([]);
+      createBandActions.setGenres([]);
+      createBandActions.setSongs([]);
+      navigate("/join");
     } catch (err) {
       console.error(err);
     }
@@ -242,14 +442,29 @@ const CreateBand = () => {
 
       <div className="flex flex-col gap-[48px] px-[24px] pt-[8px]">
         <section>
-          <IOSSwitch defaultChecked />
+          {isEditing && (
+            <IOSSwitch
+              defaultChecked={isRecruiting}
+              checked={isRecruiting}
+              onChange={() => {
+                setIsRecruiting(!isRecruiting);
+              }}
+            />
+          )}
 
           <div className="flex justify-center">
-            <div className="relative mt-[30px] size-[162px] rounded-[10px] bg-[#CACACA] flex items-center justify-center">
+            <div
+              className="flex items-center justify-center relative mt-[30px] size-[162px] rounded-[10px] bg-[#CACACA]"
+              style={{
+                backgroundImage: imgSrc ? `url(${imgSrc})` : "",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
               <img
-                src={imgSrc || happy}
+                src={happy}
                 alt="happy mood"
-                className="size-[112px]"
+                className={clsx("size-[112px]", imgSrc ? "hidden" : "")}
               />
               <button
                 className="absolute right-[0] bottom-[0] p-[0] size-[39px] bg-transparent border-none cursor-pointer"
@@ -284,7 +499,7 @@ const CreateBand = () => {
         <section className="flex flex-col gap-[20px]">
           <p className="text-hakgyo-b-17 text-[#E9E9E9]">모집 마감일</p>
           <div className="flex w-full">
-            <DateSelect setDate={setEndDate} />
+            <DateSelect date={endDate} setDate={setEndDate} />
           </div>
           <ToggleBtn toggle={automaticClosing} setToggle={setAutomaticClosing}>
             지정한 날이 되면 자동으로 모집 마감
@@ -362,7 +577,7 @@ const CreateBand = () => {
                     setToggledGenre(toggledGenre.filter((id) => id !== genre))
                   }
                 >
-                  {genres[genre].content}
+                  {genres.find((g) => g.text === genre)?.content}
                 </GenreStatusBlackBtn>
               ))}
             </div>
@@ -506,14 +721,23 @@ const CreateBand = () => {
               </div>
               <div className="flex items-center gap-[12px]">
                 <SelectWithArrow
-                  value={wannaBuddy.gender}
-                  onChange={(e) =>
-                    setWannaBuddy({
-                      ...wannaBuddy,
-                      gender: e.target.value as gender,
-                    })
+                  value={
+                    genders.find((g) => g.value === wannaBuddy.gender)?.label ??
+                    ""
                   }
-                  options={genders}
+                  onChange={(e) => {
+                    const selectedLabel = e.target.value;
+                    const selectedGender = genders.find(
+                      (g) => g.label === selectedLabel
+                    );
+                    if (selectedGender) {
+                      setWannaBuddy({
+                        ...wannaBuddy,
+                        gender: selectedGender.value as gender,
+                      });
+                    }
+                  }}
+                  options={genders.map((g) => g.label)}
                 />
               </div>
             </div>
@@ -800,17 +1024,17 @@ const CreateBand = () => {
                 }}
               >
                 예
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageSelect}
-                />
               </CommonBtn>
             </div>
           </div>
         </MuiDialog>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageSelect}
+        />
       </div>
     </main>
   );

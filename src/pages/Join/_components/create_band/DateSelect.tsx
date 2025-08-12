@@ -6,21 +6,35 @@ interface DateSelectProps {
   minYear?: number;
   /** 최대 연도 (기본: 30년 후) */
   maxYear?: number;
+  date?: Date;
   setDate?: (date: Date) => void;
 }
 
 const DateSelect: React.FC<DateSelectProps> = ({
   minYear = new Date().getFullYear(),
   maxYear = minYear + 30,
+  date,
   setDate,
 }) => {
-  const [year, setYear] = useState<number>(minYear);
-  const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
-  const [day, setDay] = useState<number>(new Date().getDate());
+  const [year, setYear] = useState<number>(date ? date.getFullYear() : minYear);
+  const [month, setMonth] = useState<number>(
+    date ? date.getMonth() + 1 : new Date().getMonth() + 1
+  );
+  const [day, setDay] = useState<number>(
+    date ? date.getDate() : new Date().getDate()
+  );
+
+  useEffect(() => {
+    if (date) {
+      setYear(date.getFullYear());
+      setMonth(date.getMonth() + 1);
+      setDay(date.getDate());
+    }
+  }, [date]);
 
   useEffect(() => {
     setDate?.(new Date(year, month - 1, day));
-  }, [year, month, day]);
+  }, [year, month, day, setDate]);
 
   // 연도 리스트
   const years = useMemo(
