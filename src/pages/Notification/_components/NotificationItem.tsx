@@ -2,6 +2,7 @@ import right from "@/assets/icons/notification/chevronright.svg";
 import { type Notification } from "@/types/notification";
 import { useOtherProfile } from "@/features/profile/hooks/useOtherProfile";
 import noImg from "@/assets/icons/profile/no_img.svg";
+import NotificationItemSkeleton from "./NotificationItemSkeleton";
 
 interface NotificationItemProps {
   notification: Notification;
@@ -9,10 +10,15 @@ interface NotificationItemProps {
 }
 
 export default function NotificationItem({ notification, onClick }: NotificationItemProps) {
-  const { profile } = useOtherProfile(notification.senderId);
+  const { profile, isLoading: profileLoading } = useOtherProfile(notification.senderId);
+
+  // 프로필 로딩 중일 때는 스켈레톤 표시
+  if (profileLoading) {
+    return <NotificationItemSkeleton />;
+  }
 
   const getMessage = (notification: Notification, nickname?: string) => {
-    const senderName = nickname || notification.title;
+    const senderName = nickname || "알 수 없는 사용자";
     
     switch (notification.type) {
       case "CHAT":
@@ -42,7 +48,7 @@ export default function NotificationItem({ notification, onClick }: Notification
         )}
       </div>
       <span className="text-[#FFFFFF] flex-1 text-left text-hakgyo-r-16">{message}</span>
-      <img src={right} alt="right" className="w-[12.2vw] h-[12.2vw] max-w-[48px] max-h-[48px] text-left ml-[2vw]" />
+      <img src={right} alt="right" className="w-[12.2vw] h-[12.2vw] max-w-[48px] max-h-[48px] text-left ml-[8px]" />
     </div>
   );
 }
