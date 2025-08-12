@@ -16,7 +16,7 @@ const routeNameMap: Record<string, string> = {
 
 const nonHeaderRouteNames = [
   "/join",
-  "/join/band-recruit",
+  "/join/band-recruit/:id",
   "/join/create-chat",
   "/join/create-chat/2",
   "/join/create-band",
@@ -31,7 +31,14 @@ const Header = () => {
   const routeName = routeNameMap[location.pathname] || "";
   const depth = location.pathname.split("/").filter(Boolean).length;
 
-  if (nonHeaderRouteNames.includes(location.pathname)) {
+  // Check if current path matches any non-header routes (including dynamic routes)
+  const isNonHeaderRoute = nonHeaderRouteNames.some((route) =>
+    route.includes(":")
+      ? location.pathname.startsWith(route.split(":")[0])
+      : route === location.pathname
+  );
+
+  if (isNonHeaderRoute) {
     return null;
   }
 
