@@ -27,30 +27,7 @@ export const useChat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [snap.messages]);
 
-  // 채팅방 입장
-  const enterChatRoom = useCallback(
-    async (
-      roomId: string,
-      roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP"
-    ) => {
-      try {
-        // REST API로 채팅방 입장
-        await joinChatRoom(roomId);
-
-        // WebSocket으로 채팅방 구독
-        joinRoom(roomId, roomType);
-
-        // 기존 메시지 로드
-        await loadMessages(roomId);
-
-        console.log(`채팅방 ${roomId} 입장 완료`);
-      } catch (error) {
-        console.error("채팅방 입장 실패:", error);
-        throw error;
-      }
-    },
-    [joinRoom]
-  );
+  // 채팅방 입장 (loadMessages 이후에 선언되어야 함)
 
   // 채팅방 나가기
   const exitChatRoom = useCallback(async () => {
@@ -118,6 +95,37 @@ export const useChat = () => {
       }
     },
     [isLoadingMessages, snap.messages]
+  );
+
+  // 채팅방 입장 (loadMessages 선언 이후로 이동)
+  const enterChatRoom = useCallback(
+    async (
+      roomId: string,
+      roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP"
+    ) => {
+      // 현재 방 아이디를 먼저 설정하여 sendMessage 가드 통과
+      chatActions.setCurrentRoomId(roomId);
+      try {
+        // REST join 시도(이미 참가자 등록 시 실패 가능) → 실패해도 WS 진행
+        await joinChatRoom(roomId);
+      } catch (error) {
+        console.warn("REST join 실패, WS로 우회 진행:", error);
+      }
+
+      try {
+        // WebSocket 구독
+        joinRoom(roomId, roomType);
+
+        // 기존 메시지 로드
+        await loadMessages(roomId);
+
+        console.log(`채팅방 ${roomId} 입장 완료`);
+      } catch (error) {
+        console.error("채팅방 입장 실패:", error);
+        throw error;
+      }
+    },
+    [joinRoom, loadMessages]
   );
 
   // 메시지 전송

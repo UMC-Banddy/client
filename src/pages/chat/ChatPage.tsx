@@ -6,7 +6,6 @@ import ChatMessageList from "./_components/ChatMessageList";
 import ChatInputBar from "./_components/ChatInputBar";
 import Modal from "@/shared/components/MuiDialog";
 import SessionSelectModal from "./_components/SessionSelectModal";
-import type { ChatMessage } from "@/types/chat";
 import profile1Img from "@/assets/images/profile1.png";
 import { useChat } from "./hooks/useChat";
 
@@ -18,8 +17,14 @@ export default function ChatPage() {
   const [showSessionModal, setShowSessionModal] = useState(false);
 
   // 실사용 훅 연결
-  const { messages, isLoading, enterChatRoom, sendMessage, loadMoreMessages } =
-    useChat();
+  const {
+    messages,
+    isLoading,
+    enterChatRoom,
+    sendMessage,
+    loadMoreMessages,
+    exitChatRoom,
+  } = useChat();
 
   // Initialize current room and messages
   useEffect(() => {
@@ -32,11 +37,15 @@ export default function ChatPage() {
       // REST join + WS subscribe + 메시지 로드
       enterChatRoom(roomId, roomTypeParam);
     }
-  }, [searchParams, enterChatRoom]);
+    return () => {
+      exitChatRoom();
+    };
+  }, [searchParams, enterChatRoom, exitChatRoom]);
 
   const handleBack = useCallback(() => {
+    exitChatRoom();
     navigate(-1);
-  }, [navigate]);
+  }, [navigate, exitChatRoom]);
 
   const handleReport = useCallback(() => {
     console.log("신고하기");
@@ -52,8 +61,9 @@ export default function ChatPage() {
 
   const handleConfirmLeave = useCallback(() => {
     console.log("채팅방 나가기 확인");
+    exitChatRoom();
     navigate("/");
-  }, [navigate]);
+  }, [navigate, exitChatRoom]);
 
   const handleSessionConfirm = useCallback((selectedSession: string) => {
     console.log("선택된 세션:", selectedSession);
@@ -76,82 +86,18 @@ export default function ChatPage() {
     [searchParams, sendMessage]
   );
 
-  // 데모용 이미지 전송
-  const handleSendImage = useCallback((imageFile: File) => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: "me",
-      name: "나",
-      avatar: profile1Img,
-      text: `📷 이미지: ${imageFile.name}`,
-      time: new Date().toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }),
-      unreadCount: 0,
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-    console.log("이미지 전송됨:", imageFile.name);
-  }, []);
-
-  // 데모용 캘린더 전송
-  const handleSendCalendar = useCallback(() => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: "me",
-      name: "나",
-      avatar: profile1Img,
-      text: "📅 연습 일정을 확인해주세요!",
-      time: new Date().toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }),
-      unreadCount: 0,
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-    console.log("캘린더 전송됨");
-  }, []);
-
-  // 데모용 오디오 전송
-  const handleSendAudio = useCallback((duration: number) => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: "me",
-      name: "나",
-      avatar: profile1Img,
-      audio: {
-        duration: duration,
-        isPlaying: false,
-        onPlay: () => {
-          console.log("내 오디오 재생 시작:", duration, "초");
-        },
-      },
-      time: new Date().toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }),
-      unreadCount: 0,
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-    console.log("오디오 전송됨:", duration, "초");
-  }, []);
+  // 데모 핸들러 제거 (실사용 시 불필요)
 
   // 데모용 더 많은 메시지 로드 (실제로는 아무것도 하지 않음)
   const handleLoadMore = useCallback(() => {
-    console.log("더 많은 메시지 로드 시도 (데모에서는 아무것도 하지 않음)");
-  }, []);
+    loadMoreMessages();
+  }, [loadMoreMessages]);
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#121212]">
       <ChatHeader
-        bandName={currentRoom?.roomName || "우리밴드 정상영업합니다"}
-        bandAvatar={currentRoom?.roomImage || profile1Img}
+        bandName={"채팅"}
+        bandAvatar={profile1Img}
         onBack={handleBack}
         onReport={handleReport}
         onBlock={handleBlock}
@@ -177,9 +123,6 @@ export default function ChatPage() {
       <div className="fixed bottom-0 left-0 right-0 z-10">
         <ChatInputBar
           onSendMessage={handleSendMessage}
-          onSendImage={handleSendImage}
-          onSendCalendar={handleSendCalendar}
-          onSendAudio={handleSendAudio}
           onShowActionsChange={setShowActions}
         />
       </div>

@@ -341,6 +341,8 @@ const HomePage = () => {
     // 훅 데이터가 갱신되면 다시 바인딩
   }, [recommended]);
 
+  // 홈에서는 WS 자동 연결을 수행하지 않음 (전역 AuthProvider에서 1회만 연결)
+
   if (loading || isFetching) {
     return <HomeSkeleton />;
   }

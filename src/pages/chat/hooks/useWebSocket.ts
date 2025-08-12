@@ -3,9 +3,12 @@ import { useSnapshot } from "valtio";
 import { chatStore, chatActions } from "@/store/chatStore";
 import webSocketService from "@/services/WebSocketService";
 import type { WebSocketMessage } from "@/types/chat";
+import { authStore } from "@/store/authStore";
+import { useSnapshot as useVSnapshot } from "valtio";
 
 export const useWebSocket = () => {
   const snap = useSnapshot(chatStore);
+  const authSnap = useVSnapshot(authStore);
   const [isConnecting, setIsConnecting] = useState(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -13,9 +16,12 @@ export const useWebSocket = () => {
   const isConnected = snap.webSocketConnected;
   const currentRoomId = snap.currentRoomId;
 
-  // 자동 연결 관리
+  // 자동 연결 관리 (토큰이 있을 때만 시도)
   useEffect(() => {
     const connectWebSocket = async () => {
+      if (!authSnap.accessToken) {
+        return;
+      }
       if (!isConnected && !isConnecting) {
         setIsConnecting(true);
         try {
@@ -38,27 +44,36 @@ export const useWebSocket = () => {
       }
       webSocketService.disconnect();
     };
-  }, []);
+  }, [isConnected, isConnecting, authSnap.accessToken]);
 
   // 연결 함수
   const connect = useCallback(async () => {
+    if (!authSnap.accessToken) return;
     if (isConnected || isConnecting) return;
 
     setIsConnecting(true);
     try {
       await webSocketService.connect();
-      // 연결되면 안읽음 알림 구독 시작 (임시 로그 처리)
-      webSocketService.subscribeToUnread((payload) => {
-        console.log("UNREAD_MESSAGE 수신:", payload);
-        // TODO: chatStore에 unread 카운트 반영
-      });
     } catch (error) {
       console.error("WebSocket 연결 실패:", error);
       throw error;
     } finally {
       setIsConnecting(false);
     }
-  }, [isConnected, isConnecting]);
+  }, [isConnected, isConnecting, authSnap.accessToken]);
+
+  // 연결 완료 후에만 unread 구독 시도 (StrictMode 이펙트 이중 호출 대응)
+  useEffect(() => {
+    if (!isConnected) return;
+    try {
+      webSocketService.subscribeToUnread((payload) => {
+        console.log("UNREAD_MESSAGE 수신:", payload);
+        // TODO: chatStore에 unread 카운트 반영
+      });
+    } catch (e) {
+      console.warn("UNREAD 구독 실패, 연결 상태 재확인 필요", e);
+    }
+  }, [isConnected]);
 
   // 연결 해제 함수
   const disconnect = useCallback(() => {

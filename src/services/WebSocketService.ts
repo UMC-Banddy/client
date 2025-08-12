@@ -31,8 +31,8 @@ class WebSocketService {
   }
 
   private initClient() {
-    const baseUrl =
-      import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+    // WS 기본 URL: 환경변수 우선, 없으면 운영 도메인으로 폴백
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "https://banddy.site";
     // SockJS는 HTTP URL을 사용해야 함 (ws://로 변환하지 않음)
     const wsUrl = baseUrl + "/ws";
 
@@ -115,7 +115,11 @@ class WebSocketService {
   }
 
   async connect(): Promise<void> {
-    if (!this.stompClient || this.isConnecting) return;
+    // 클라이언트 미생성 또는 이전에 inactive 상태면 재초기화
+    if (!this.stompClient || (this.stompClient && !this.stompClient.active)) {
+      this.initClient();
+    }
+    if (this.isConnecting) return;
 
     return new Promise((resolve, reject) => {
       if (!this.stompClient) {
@@ -126,7 +130,8 @@ class WebSocketService {
       this.isConnecting = true;
 
       // 접속 시 헤더 설정 (Authorization, heart-beat 등)
-      const token = authStore.accessToken || "";
+      const token = (authStore.accessToken || "").trim();
+      // @ts-expect-error 타입 정의에 없지만 런타임에서 지원됨
       this.stompClient.connectHeaders = {
         "accept-version": "1.1,1.0",
         "heart-beat": "10000,10000",
