@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import blackStar from "../../assets/logos/black-star.svg";
-import { verifyEmailCode } from "../../store/auth";
+import { verifyEmailCode, sendEmailCode } from "../../store/auth";
+import { authStore } from "../../store/authStore";
 import SignupHeader from "./_components/SignupHeader";
 import SignupStepTitle from "./_components/SignupStepTitle";
 import SignupButton from "./_components/SignupButton";
@@ -15,6 +16,7 @@ const SignupVerifyPage: React.FC = () => {
   const [popupMessage, setPopupMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -65,6 +67,34 @@ const SignupVerifyPage: React.FC = () => {
     }
   };
 
+  const handleResend = async () => {
+    // 이메일이 없다면 첫 단계로 유도
+    if (!authStore.email) {
+      setError("이메일 정보가 없습니다. 처음 단계에서 다시 시도해 주세요.");
+      return;
+    }
+    try {
+      setResendLoading(true);
+      await sendEmailCode(authStore.email); // 재전송 API 호출
+      // 팝업 알림 + 타이머/입력 초기화
+      setPopupMessage("인증번호가 발송되었습니다.");
+      setIsSuccess(false); // 팝업 확인 시 이동 없이 닫히도록 함
+      setShowPopup(true);
+
+      setTimeLeft(299);
+      setCode(["", "", "", "", ""]);
+      setError("");
+
+      const firstInput = document.getElementById("code-0");
+      if (firstInput) firstInput.focus();
+    } catch (err) {
+      console.error("인증번호 재발송 실패", err);
+      setError("인증번호 재발송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handlePopupClose = () => {
     setShowPopup(false);
     if (isSuccess) {
@@ -110,16 +140,11 @@ const SignupVerifyPage: React.FC = () => {
         <div className="text-sm mt-6">
           <span className="text-[#666666]">인증번호가 오지 않았나요? </span>
           <button
-            onClick={() => {
-              setTimeLeft(299);
-              setCode(["", "", "", "", ""]);
-              setError("");
-              const firstInput = document.getElementById("code-0");
-              if (firstInput) firstInput.focus();
-            }}
-            className="text-[#64B1A4] focus:outline-none"
+            onClick={handleResend}
+            disabled={resendLoading}
+            className="text-[#64B1A4] focus:outline-none disabled:opacity-50"
           >
-            재전송
+            {resendLoading ? "재전송 중..." : "재전송"}
           </button>
         </div>
 

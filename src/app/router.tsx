@@ -41,6 +41,7 @@ import ArchivePage from "@/pages/Archive/ArchivePage";
 import AddPage from "@/pages/Archive/AddPage";
 import ArtistPage from "@/pages/Archive/Artist/ArtistPage";
 import AlbumPage from "@/pages/Archive/Album/AlbumPage";
+import AlbumDetailPage from "@/pages/Archive/Album/AlbumDetailPage";
 import OtherProfile from "@/pages/Profile/OtherProfile";
 import ProfileDetailPage from "@/pages/Profile/ProfileDetailPage";
 import ProtectedRoute from "@/shared/components/ProtectedRoute";
@@ -223,6 +224,14 @@ const routes = [
         element: (
           <ProtectedRoute requireAuth={true}>
             <AlbumPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/my/archive/album/:albumId",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <AlbumDetailPage />
           </ProtectedRoute>
         ),
       },

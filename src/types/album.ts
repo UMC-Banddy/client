@@ -40,3 +40,14 @@ export interface SavedAlbumResponse {
 }
 
 export type SavedAlbumsResponse = SavedAlbumResponse[];
+
+export interface AlbumItem {
+  image: string;
+  title: string;
+  externalUrl?: string;
+  albumId?: string;
+}
+
+export interface AlbumGridProps {
+  items: AlbumItem[];
+}
