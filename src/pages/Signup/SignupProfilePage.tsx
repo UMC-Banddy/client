@@ -48,7 +48,9 @@ const SignupProfilePage: React.FC = () => {
 
     authStore.age = Number(age);
     authStore.gender = gender === "male" ? "남성" : "여성";
-    authStore.region = region === "-" ? "" : region;
+    //authStore.region = region === "-" ? "" : region;
+    authStore.region = region;
+
 
     try {
       await signupMember({
