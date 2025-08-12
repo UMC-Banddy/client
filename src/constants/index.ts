@@ -99,8 +99,11 @@ export const API_ENDPOINTS = {
     SUBSCRIBE_PRIVATE: (roomId: string | number) =>
       `/user/queue/room/${roomId}`,
     SUBSCRIBE_UNREAD: "/user/queue/unread",
-    SEND_MESSAGE: (roomId: string | number) =>
-      `/app/chat/sendMessage/${roomId}`,
+    // 전송 경로 분리 (그룹/개인)
+    SEND_MESSAGE_GROUP: (roomId: string | number) =>
+      `/app/chat/group.sendMessage/${roomId}`,
+    SEND_MESSAGE_PRIVATE: (roomId: string | number) =>
+      `/app/chat/private.sendMessage/${roomId}`,
     BASE: "ws",
   },
 

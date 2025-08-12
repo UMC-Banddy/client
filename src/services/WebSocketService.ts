@@ -284,7 +284,10 @@ class WebSocketService {
       return;
     }
 
-    const destination = API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE(roomId);
+    const destination =
+      roomType === "PRIVATE"
+        ? API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_PRIVATE(roomId)
+        : API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_GROUP(roomId);
     const message: WebSocketSendMessage = {
       content,
       roomId: parseInt(roomId, 10),
