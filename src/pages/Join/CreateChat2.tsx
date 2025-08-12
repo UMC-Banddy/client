@@ -6,6 +6,7 @@ import CommonBtn from "@/shared/components/CommonBtn";
 import { useLocation, useNavigate } from "react-router-dom";
 import { API } from "@/api/API";
 import JoinHeader from "./_components/JoinHeader";
+import clsx from "clsx";
 
 const CreateChat2 = () => {
   const [name, setName] = useState("");
@@ -25,13 +26,11 @@ const CreateChat2 = () => {
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImgSrc(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) {
+      return;
     }
+    const url = URL.createObjectURL(file);
+    setImgSrc(url);
   };
 
   const openFileSelector = () => {
@@ -39,10 +38,26 @@ const CreateChat2 = () => {
   };
 
   const handleCreateChat = async () => {
-    await API.post("/api/chat/rooms", {
+    const formData = new FormData();
+    const payload = {
       memberIds: checkedList,
-      imageUrl: imgSrc,
       roomName: name,
+    };
+    formData.append(
+      "data",
+      new Blob([JSON.stringify(payload)], {
+        type: "application/json; charset=UTF-8",
+      })
+    );
+
+    if (fileInputRef.current?.files?.[0]) {
+      formData.append("image", fileInputRef.current.files[0]);
+    }
+
+    await API.post("/api/chat/rooms", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
     navigate("/join");
   };
@@ -54,8 +69,19 @@ const CreateChat2 = () => {
         onClick={handleCreateChat}
       />
 
-      <div className="relative mt-[30px] mb-[40px] size-[162px] rounded-full bg-[#CACACA] flex items-center justify-center">
-        <img src={imgSrc || happy} alt="happy mood" className="size-[112px]" />
+      <div
+        className="relative mt-[30px] mb-[40px] size-[162px] rounded-full bg-[#CACACA] flex items-center justify-center"
+        style={{
+          backgroundImage: imgSrc ? `url(${imgSrc})` : "",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <img
+          src={happy}
+          alt="happy mood"
+          className={clsx("size-[112px]", imgSrc ? "hidden" : "")}
+        />
         <button
           className="absolute right-[0] bottom-[0] p-[0] size-[39px] bg-transparent border-none cursor-pointer"
           onClick={() => setOpenDialog(true)}
@@ -63,6 +89,14 @@ const CreateChat2 = () => {
           <img className="size-full" src={cameraBtn} alt="camera" />
         </button>
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageSelect}
+      />
 
       <div className="mx-[8px] flex justify-between py-[12px] w-full border-b-[0.75px] border-[#959595]">
         <input
@@ -102,13 +136,6 @@ const CreateChat2 = () => {
               }}
             >
               예
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageSelect}
-              />
             </CommonBtn>
           </div>
         </div>
