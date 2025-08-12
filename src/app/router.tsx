@@ -317,7 +317,7 @@ const routes = [
         ),
         children: [
           { index: true, element: <Join /> },
-          { path: "band-recruit", element: <BandRecruit /> },
+          { path: "band-recruit/:id", element: <BandRecruit /> },
           {
             path: "create-band",
             element: <CreateBand />,
