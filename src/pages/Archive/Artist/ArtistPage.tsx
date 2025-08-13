@@ -1,32 +1,57 @@
-import { useState } from "react";
 import ArtistGrid from "./ArtistGrid";
 import ArtistGridSkeleton from "./ArtistGridSkeleton";
 import ArtistList from "./ArtistList";
 import ArtistListSkeleton from "./ArtistListSkeleton";
 import SectionDivider from "@/pages/My/_components/SectionDivider";
+import { useNavigate } from "react-router-dom";
 import plus from "@/assets/icons/archive/plus.svg";
-import folder from "@/assets/icons/archive/folder.svg";
+import folder from "@/assets/icons/archive/folder1.svg";
 import folder_plus from "@/assets/icons/archive/folderplus.svg";
 import lock from "@/assets/icons/archive/lock.svg";
 import unlock from "@/assets/icons/archive/unlock.svg";
-import { useNavigate } from "react-router-dom";
 import { useSimilarArtists } from "@/features/archive/hooks/useSimilarArtists";
 import { useArchivedArtists } from "@/features/archive/hooks/useArchivedArtists";
+import { useFolderLogic } from "@/features/archive/hooks/useFolderLogic";
+import { useArtistFolders } from "@/features/archive/hooks/useArtistFolders";
+import { useArtistsInFolder } from "@/features/archive/hooks/useArtistsInFolder";
+import { useCreateArtistFolder } from "@/features/archive/hooks/useCreateArtistFolder";
+import { useAddArtistsToFolder } from "@/features/archive/hooks/useAddArtistsToFolder";
+import { useDeleteArtist } from "@/features/archive/hooks/useDeleteArtist";
+import { useArtistFolderCounts } from "@/features/archive/hooks/useArtistFolderCounts";
+import ColoredFolder from "../Music/_components/ColoredFolder";
+import AddFolderModal from "../Music/_components/AddFolderModal";
+import SelectFolderModal from "../Music/_components/SelectFolderModal";
+import ActionBar from "../_components/ActionBar";
+import Toast from "@/shared/ui/atoms/Toast";
+import { ErrorState, EmptyState } from "../_components/StatusComponents";
+import DeleteConfirmModal from "../_components/DeleteConfirmModal";
 
 export default function ArtistPage() {
-  const [activeFilter, setActiveFilter] = useState("전체");
-  const [locked, setLocked] = useState(false);
   const navigate = useNavigate();
+  
+  // 기본 데이터 훅들
   const { artists, isLoading, error } = useSimilarArtists();
   const { artists: archivedArtists, isLoading: archivedArtistsLoading, error: archivedArtistsError } = useArchivedArtists();
+  
+  // 폴더 로직 훅 사용
+  const folderLogic = useFolderLogic({
+    useFolders: useArtistFolders,
+    useItemsInFolder: useArtistsInFolder,
+    useCreateFolder: useCreateArtistFolder,
+    useAddItemsToFolder: useAddArtistsToFolder,
+    useDeleteItem: useDeleteArtist,
+    useItemCounts: useArtistFolderCounts,
+    archivedItems: archivedArtists || [],
+    archivedItemsLoading: archivedArtistsLoading,
+    archivedItemsError: archivedArtistsError,
+    similarItemsLoading: isLoading,
+    similarItemsError: error,
+    itemType: "아티스트",
+  });
 
-  // 에러가 있으면 처리
+  // 에러 처리
   if (error || archivedArtistsError) {
-    return (
-      <div className="min-h-[100vh] w-full flex items-center justify-center">
-        <div className="text-white">{error || archivedArtistsError}</div>
-      </div>
-    );
+    return <ErrorState message={error || archivedArtistsError || "알 수 없는 오류가 발생했습니다."} />;
   }
 
   return (
@@ -51,39 +76,97 @@ export default function ArtistPage() {
           <div className="flex items-center gap-[8px] text-[#FFFFFF]">
             <div
               className="flex items-center cursor-pointer"
-              onClick={() => setActiveFilter("전체")}
+              onClick={folderLogic.handleAllClick}
             >
-              <span className={`text-ibm-sb-16 p-[8px] ${activeFilter === "전체" ? "text-white" : "text-[#959595]"}`}>전체</span>
+              <span className={`text-ibm-sb-16 p-[8px] ${folderLogic.activeFilter === "전체" ? "text-white" : "text-[#959595]"}`}>전체</span>
             </div>
+            
+            {/* 동적 폴더 렌더링 */}
+            {folderLogic.foldersLoading ? (
+              <div className="cursor-pointer">
+                <img src={folder} alt="folder" className="w-[10vw] h-[10vw] max-w-[40px] max-h-[40px] grayscale brightness-75" style={{ filter: "grayscale(1) brightness(0.6)", opacity: 0.7 }} />
+              </div>
+            ) : (
+              folderLogic.limitedFolders.map((folderItem, index) => (
+                <ColoredFolder
+                  key={folderItem.folderId}
+                  color={folderItem.color}
+                  folderIndex={index + 1}
+                  onClick={() => folderLogic.handleFolderClick(folderItem.folderId)}
+                  className={folderLogic.activeFilter === `폴더${folderItem.folderId}` ? "" : "opacity-70"}
+                />
+              ))
+            )}
+            
             <div
               className="cursor-pointer"
-              onClick={() => setActiveFilter("폴더")}
+              onClick={folderLogic.handleFolderPlusClick}
             >
-              <img src={folder} alt="folder" className={`w-[10vw] h-[10vw] max-w-[40px] max-h-[40px] ${activeFilter === "폴더" ? "" : "grayscale brightness-75"}`} style={{ filter: activeFilter === "폴더" ? "none" : "grayscale(1) brightness(0.6)", opacity: activeFilter === "폴더" ? 1 : 0.7 }} />
-            </div>
-            <div
-              className="cursor-pointer"
-              onClick={() => setActiveFilter("폴더플러스")}
-            >
-              <img src={folder_plus} alt="folder_plus" className={`w-[10vw] h-[10vw] max-w-[40px] max-h-[40px] ${activeFilter === "폴더플러스" ? "" : "grayscale brightness-75"}`} style={{ filter: activeFilter === "폴더플러스" ? "none" : "grayscale(1) brightness(0.6)", opacity: activeFilter === "폴더플러스" ? 1 : 0.7 }} />
+              <img src={folder_plus} alt="folder_plus" className="w-[10vw] h-[10vw] max-w-[40px] max-h-[40px]" />
             </div>
           </div>
-          {locked ? (
-            <img src={lock} alt="lock" className="w-[10vw] h-[10vw] cursor-pointer max-w-[40px] max-h-[40px]" onClick={() => setLocked(false)} />
+          {folderLogic.locked ? (
+            <img src={lock} alt="lock" className="w-[10vw] h-[10vw] cursor-pointer max-w-[40px] max-h-[40px]" onClick={() => folderLogic.setLocked(false)} />
           ) : (
-            <img src={unlock} alt="unlock" className="w-[10vw] h-[10vw] cursor-pointer max-w-[40px] max-h-[40px]" onClick={() => setLocked(true)} />
+            <img src={unlock} alt="unlock" className="w-[10vw] h-[10vw] cursor-pointer max-w-[40px] max-h-[40px]" onClick={() => folderLogic.setLocked(true)} />
           )}
         </div>
-        {archivedArtistsLoading ? (
+        {folderLogic.currentLoading ? (
           <ArtistListSkeleton />
+        ) : folderLogic.currentItems.length === 0 ? (
+          <EmptyState message={folderLogic.activeFilter === "전체" ? "저장된 아티스트가 없습니다." : "이 폴더에 아티스트가 없습니다."} />
         ) : (
-          <ArtistList items={(archivedArtists || []).map(artist => ({
-            image: artist.imageUrl,
-            title: artist.name,
-            externalUrl: artist.externalUrl
-          }))} />
+          <ArtistList 
+            items={folderLogic.currentItems.map(artist => ({
+              artistId: artist.artistId,
+              image: artist.imageUrl,
+              title: artist.name,
+              externalUrl: artist.externalUrl
+            }))}
+            selectedArtists={folderLogic.selectedItems}
+            onArtistSelect={folderLogic.handleItemSelect}
+            onLongPress={folderLogic.handleLongPress}
+            isSelectionMode={folderLogic.isSelectionMode}
+          />
         )}
       </div>
+
+      {/* 폴더 추가 모달 */}
+      <AddFolderModal
+        isOpen={folderLogic.isAddFolderModalOpen}
+        onClose={folderLogic.closeAddFolderModal}
+        onAdd={folderLogic.handleAddFolder}
+        currentFolderCount={folderLogic.folders.length}
+      />
+
+      {/* 폴더 선택 모달 */}
+      <SelectFolderModal
+        isOpen={folderLogic.isSelectFolderModalOpen}
+        onClose={folderLogic.handleCloseSelectFolderModal}
+        onSelectFolder={folderLogic.handleSelectFolder}
+        folders={folderLogic.folders}
+        trackCounts={folderLogic.itemCounts}
+      />
+
+      {/* 액션 바 */}
+      <ActionBar
+        isVisible={folderLogic.showActionBar}
+        onAddToFolder={folderLogic.handleAddToFolder}
+        onDelete={folderLogic.handleDeleteClick}
+        onCancel={folderLogic.handleCancelSelection}
+      />
+
+      {/* 삭제 확인 모달 */}
+      <DeleteConfirmModal
+        isOpen={folderLogic.isDeleteModalOpen}
+        onClose={folderLogic.handleDeleteCancel}
+        onConfirm={folderLogic.handleDeleteConfirm}
+        itemType={folderLogic.itemType}
+        itemCount={folderLogic.selectedItems.length}
+      />
+
+      {/* 토스트 메시지 */}
+      <Toast message={folderLogic.toast.message} visible={folderLogic.toast.visible} />
     </>
   );
 }

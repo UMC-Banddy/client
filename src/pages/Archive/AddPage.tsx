@@ -9,6 +9,8 @@ import Cancel from "@/assets/icons/archive/cancel.svg";
 import { useAutocomplete } from "@/features/archive/hooks/useAutocomplete";
 import { useSearch } from "@/features/archive/hooks/useSearch";
 import { useSaveItem } from "@/features/archive/hooks/useSaveItem";
+import { useArtistQuestion } from "@/features/archive/hooks/useArtistQuestion";
+import { useSearchTracks } from "@/features/archive/hooks/useSearchTracks";
 import useDebounce from "@/features/archive/hooks/useDebounce";
 import { type Song } from "@/types/song";
 
@@ -23,21 +25,37 @@ interface AddPageProps {
   defaultRecommendedSongs?: Song[];
 }
 
-const defaultRecommendedUser: RecommendedUser = {
-  name: "붉은사슴뿔버섯",
-  favoriteArtist: "The cabs",
-  recommendedSongs: [
-    { image: "https://cdn-ak.f.st-hatena.com/images/fotolife/a/arakibass/20250110/20250110230234.jpg", title: "二月の兵隊", artist: "The cabs" },
-    { image: "https://cdn-ak.f.st-hatena.com/images/fotolife/a/arakibass/20250110/20250110230234.jpg", title: "No future for us", artist: "The cabs" },
-    { image: "https://cdn-ak.f.st-hatena.com/images/fotolife/a/arakibass/20250110/20250110230234.jpg", title: "兵隊", artist: "The cabs" },
-  ]
-};
-
 export default function AddPage({ 
-  recommendedUser = defaultRecommendedUser,
+  recommendedUser,
   defaultRecommendedSongs 
 }: AddPageProps) {
   const [search, setSearch] = useState("");
+  
+  // API 연동
+  const { data: artistQuestionData, isLoading: artistQuestionLoading } = useArtistQuestion();
+  const { data: recommendedTracksData, isLoading: recommendedTracksLoading } = useSearchTracks({
+    q: artistQuestionData?.result?.artistName || "",
+    limit: 3,
+    offset: 0
+  });
+  
+  // API 데이터로 추천 유저 정보 구성
+  const apiRecommendedUser: RecommendedUser = {
+    name: artistQuestionData?.result?.memberNickname || "사용자",
+    favoriteArtist: artistQuestionData?.result?.artistName || "아티스트",
+    recommendedSongs: recommendedTracksData?.result?.map(track => ({
+      image: track.imageUrl,
+      title: track.title,
+      artist: track.artist,
+      spotifyId: track.spotifyId,
+      type: "track" as const
+    })) || []
+  };
+  
+  // 실제 사용할 추천 유저 데이터 (API 데이터 우선, props로 전달된 데이터는 fallback)
+  const finalRecommendedUser = apiRecommendedUser.recommendedSongs.length > 0 
+    ? apiRecommendedUser 
+    : recommendedUser;
   const [toast, setToast] = useState<{ 
     message: string; 
     visible: boolean; 
@@ -109,7 +127,7 @@ export default function AddPage({
     setSearch("");
   };
 
-  const showSongs = search ? (searchedSongs as Song[]) : (defaultRecommendedSongs || recommendedUser.recommendedSongs);
+  const showSongs = search ? (searchedSongs as Song[]) : (defaultRecommendedSongs || finalRecommendedUser?.recommendedSongs || []);
 
   return (
     <div className="min-h-[100dvh] w-full flex flex-col px-[24px]"> 
@@ -123,7 +141,7 @@ export default function AddPage({
         />
         {!search && (
           <div className="text-wanted-sb-12 text-[#71717A] mb-[1.4vh] mt-[2.3vh] text-left">
-            {recommendedUser.name} 님이 좋아하는 {recommendedUser.favoriteArtist}의 곡은 어때요?
+            {finalRecommendedUser?.name || "사용자"} 님이 좋아하는 {finalRecommendedUser?.favoriteArtist || "아티스트"}의 곡은 어때요?
           </div>
         )}
         {search && (
@@ -136,7 +154,7 @@ export default function AddPage({
             />
           )
         )}
-        {searchLoading ? (
+        {(searchLoading || (!search && (artistQuestionLoading || recommendedTracksLoading))) ? (
           <SongListSkeleton />
         ) : (
           <SongList 
