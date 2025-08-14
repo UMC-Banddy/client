@@ -61,7 +61,7 @@ const Join = () => {
   useEffect(() => {
     const fetchData = async () => {
       const { data } = await API.get("/api/chat/rooms");
-      setChatRooms(data.chatRoomInfos);
+      setChatRooms(data.result.chatRoomInfos);
     };
     fetchData();
   }, []);

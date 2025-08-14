@@ -240,10 +240,11 @@ const CreateBand = () => {
 
   useEffect(() => {
     const fetchExistedData = async () => {
-      const { data } = await API.get<FetchedBandPayload>(
-        `/api/recruitments/${bandId}`
-      );
-      console.log("data:", data);
+      const { data: fetchedData } = await API.get<{
+        result: FetchedBandPayload;
+      }>(`/api/recruitments/${bandId}`);
+      console.log("data:", fetchedData);
+      const data = fetchedData.result;
 
       setName(data.name);
       setEndDate(new Date(data.endDate));
@@ -367,7 +368,7 @@ const CreateBand = () => {
         endDate: endDate.toISOString(),
         autoClose: automaticClosing,
         description: bandIntro,
-        session, // e.g. ["🎤 보컬 🎤", "🎸 일렉 기타 🎸", …] // 수정 API 호출 시 주석 처리 필요
+        session, // e.g. ["🎤 보컬 🎤", "🎸 일렉 기타 🎸", …]
         genres: [...toggledGenre],
         artistSpotifyIds: artists.map((a) => a.spotifyId),
         trackSpotifyIds: songs.map((s) => s.spotifyId),

@@ -52,14 +52,14 @@ const BandRecruit = () => {
   useEffect(() => {
     const fetchData = async () => {
       const { data } = await API.get(`/api/band/${id}/detail`);
-      console.log("bandDetail:", data);
+      // console.log("bandDetail:", data);
       setBandDetail(data);
     };
 
     const fetchChat = async () => {
       const { data } = await API.get(`/api/recruitments/${id}/applications`);
-      console.log("chat:", data);
-      setChats(data);
+      // console.log("chat:", data.result);
+      setChats(data.result);
     };
 
     fetchData();
@@ -223,7 +223,7 @@ const BandRecruit = () => {
               <p className="text-wanted-sb-13 text-[#CACACA]">일렉기타</p>
             </div> */}
             <div className="flex gap-[4px]">
-              {chats?.sessions.map((session, index) => {
+              {chats?.sessions?.map((session, index) => {
                 return (
                   <div key={index} className="flex gap-[4px] items-center">
                     <p className="text-wanted-sb-13 text-[#CACACA]">
