@@ -10,6 +10,22 @@ import {
 } from "@/store/userStore";
 import type { BandProfile, BandDetail } from "@/types/band";
 
+// 상세 정보 목업 (API 500/404 등 실패 시 안전 폴백)
+function getMockBandDetail(bandId: string): BandDetail {
+  return {
+    bandId: Number(bandId),
+    bandName: "밴디 (임시)",
+    profileImageUrl: "/assets/profile1.png",
+    ageRange: "20-30",
+    genderCondition: "무관",
+    region: "서울",
+    district: "강남구",
+    description: "임시 밴드 소개입니다. 서버 데이터가 없을 때 표시됩니다.",
+    endDate: undefined,
+    snsList: [],
+  };
+}
+
 // 안전 폴백: 추천 밴드가 없거나 404면 빈 배열
 export function useRecommendedBands() {
   return useQuery({
@@ -39,9 +55,15 @@ export function useBandProfile(bandId: string) {
           getBandProfile(bandId),
           getBandDetail(bandId).catch(() => undefined),
         ]);
-        return { profile: profile ?? {}, detail };
+        // 상세가 없으면 목업으로 대체
+        const safeDetail = detail ?? getMockBandDetail(bandId);
+        return { profile: profile ?? ({} as BandProfile), detail: safeDetail };
       } catch {
-        return { profile: {} as BandProfile };
+        // 프로필까지 모두 실패하면 최소 구조로 반환
+        return {
+          profile: {} as BandProfile,
+          detail: getMockBandDetail(bandId),
+        };
       }
     },
     enabled: !!bandId,
