@@ -152,6 +152,8 @@ export interface WebSocketMessage {
 export interface WebSocketSendMessage {
   content: string;
   roomId: number;
+  roomType?: "PRIVATE" | "GROUP" | "BAND";
+  receiverId?: number; // PRIVATE일 때 필수
 }
 
 // 기존 타입들 (호환성 유지)
