@@ -381,7 +381,9 @@ export const profileAPI = {
             if (Array.isArray(value) && value.length === 0) continue;
 
             if (key === "availableSessions" && Array.isArray(value)) {
-              const normalized = value
+              const normalized = (
+                value as Array<{ sessionType: string; level: string }>
+              )
                 .map((item) => ({
                   sessionType:
                     sessionTypeMapping[item.sessionType] ?? item.sessionType,
