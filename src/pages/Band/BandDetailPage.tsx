@@ -4,6 +4,9 @@ import {
   useBandDetail,
   useBandProfile,
 } from "@/features/band/hooks/useBandData";
+import profileFallback from "@/assets/images/profile1.png";
+import guitarBoy from "@/assets/images/guitar-boy.svg";
+import album1 from "@/assets/images/home-album1.svg";
 
 const Skeleton: React.FC = () => {
   return (
@@ -35,7 +38,8 @@ const BandDetailPage: React.FC = () => {
 
   const detail = detailOnly ?? data.detail;
   const profile = data.profile;
-  const nameParam = new URLSearchParams(location.search).get("name") || undefined;
+  const nameParam =
+    new URLSearchParams(location.search).get("name") || undefined;
   const bandName =
     detail?.bandName ||
     nameParam ||
@@ -48,16 +52,14 @@ const BandDetailPage: React.FC = () => {
       <div
         className="w-full h-[220px] bg-cover bg-center"
         style={{
-          backgroundImage: `url(${
-            detail?.profileImageUrl || "/assets/profile1.png"
-          })`,
+          backgroundImage: `url(${detail?.profileImageUrl || profileFallback})`,
         }}
       />
 
       {/* 프로필 요약 */}
       <div className="-mt-12 px-6">
         <img
-          src={detail?.profileImageUrl || "/assets/profile1.png"}
+          src={detail?.profileImageUrl || profileFallback}
           alt={detail?.bandName}
           className="w-24 h-24 rounded-full border-4 border-[#121212] object-cover"
         />
@@ -90,7 +92,7 @@ const BandDetailPage: React.FC = () => {
                     className="bg-[#1E1E1E] rounded-lg p-3"
                   >
                     <img
-                      src={t.imageUrl}
+                      src={t.imageUrl || album1}
                       alt={t.title}
                       className="w-full h-24 object-cover rounded"
                     />
@@ -117,7 +119,7 @@ const BandDetailPage: React.FC = () => {
                     className="flex flex-col items-center"
                   >
                     <img
-                      src={a.imageUrl}
+                      src={a.imageUrl || guitarBoy}
                       alt={a.name}
                       className="w-20 h-20 rounded-full object-cover"
                     />
