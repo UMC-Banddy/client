@@ -93,6 +93,23 @@ export const getChatMessages = async (
   return response.data;
 };
 
+// 채팅 메시지 조회 (새로운 API 스펙 - 무한 스크롤)
+export const getPriChatMessages = async (
+  roomId: string,
+  cursor?: number,
+  limit: number = 20
+): Promise<MessagesResponse> => {
+  const params: Record<string, number> = { limit };
+  if (cursor !== undefined) {
+    params.cursor = cursor;
+  }
+
+  const response = await API.get(
+    API_ENDPOINTS.CHAT.MESSAGES(roomId, cursor || 0, limit)
+  );
+  return response.data;
+};
+
 // 채팅방 참가자 정보 조회 (새로운 API)
 export const getChatRoomMembers = async (
   roomId: string

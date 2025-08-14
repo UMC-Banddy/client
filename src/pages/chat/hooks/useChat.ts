@@ -61,7 +61,7 @@ export const useChat = () => {
         const response = await getChatMessages(roomId, cursor);
 
         // API 응답을 ChatMessage 형식으로 변환
-        const chatMessages: ChatMessage[] = response.messages.map((msg) => ({
+        const chatMessages: ChatMessage[] = response.result.messages.map((msg) => ({
           id: msg.messageId.toString(),
           type: "other", // 기본값, 실제로는 현재 사용자 ID와 비교해야 함
           name: msg.senderName,
@@ -83,8 +83,8 @@ export const useChat = () => {
           chatActions.setMessages(chatMessages);
         }
 
-        setHasMoreMessages(response.hasNext);
-        setLastMessageId(response.lastMessageId);
+        setHasMoreMessages(response.result.hasNext);
+        setLastMessageId(response.result.lastMessageId);
 
         console.log(`${chatMessages.length}개의 메시지 로드 완료`);
       } catch (error) {
