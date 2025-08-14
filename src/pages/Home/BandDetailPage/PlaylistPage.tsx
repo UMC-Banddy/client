@@ -28,14 +28,14 @@ interface BandInfo {
 }
 
 // API 응답 타입 정의
-interface ApiTrack {
-  id?: number;
-  title?: string;
-  artist?: string;
-  albumImage?: string;
-  duration?: string;
-  imageUrl?: string;
-}
+// interface ApiTrack {
+//   id?: number;
+//   title?: string;
+//   artist?: string;
+//   albumImage?: string;
+//   duration?: string;
+//   imageUrl?: string;
+// }
 
 export default function PlaylistPage() {
   const { bandId = "1" } = useParams<{ bandId: string }>();
@@ -93,7 +93,7 @@ export default function PlaylistPage() {
         },
       ];
     }
-    return safe.map((t: any, index: number) => ({
+    return safe.map((t: Partial<Track>, index: number) => ({
       id: t?.id ?? index + 1,
       title: t?.title ?? `곡 ${index + 1}`,
       artist: t?.artist ?? "아티스트",
