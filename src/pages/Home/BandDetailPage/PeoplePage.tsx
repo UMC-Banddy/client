@@ -49,8 +49,10 @@ export default function PeoplePage() {
   };
 
   const { data: bandData, isLoading: loadingProfile } = useBandProfile(bandId);
-  const { data: membersData = [], isLoading: loadingMembers } =
-    useBandMembers(bandId);
+  // 서버에 /api/band/{id}/members 엔드포인트가 없어 404 발생 → 호출 비활성화
+  // const { data: membersData = [], isLoading: loadingMembers } = useBandMembers(bandId);
+  const membersData: unknown[] = [];
+  const loadingMembers = false;
 
   const profile = bandData?.profile ?? {};
   const detail = bandData?.detail;
