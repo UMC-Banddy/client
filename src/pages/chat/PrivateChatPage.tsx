@@ -75,7 +75,12 @@ const PrivateChatPage: React.FC = () => {
           chatName: room.chatName,
           imageUrl: room.imageUrl,
           memberInfo: room.memberInfo,
-          memberInfos: room.memberInfos,
+          memberInfos: room.memberInfos?.map(member => ({
+            memberId: member.memberId,
+            nickname: member.nickname,
+            profileImageUrl: member.profileImageUrl,
+            lastReadMessageId: member.lastReadMessageId || 0, // undefined인 경우 0으로 기본값 설정
+          })),
           unreadCount: room.unreadCount || 0,
           lastMessageAt: room.lastMessageAt,
           roomType: room.roomType,
