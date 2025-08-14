@@ -131,12 +131,9 @@ API.interceptors.response.use(
 
       try {
         // 인스턴스를 사용해 상대경로로 호출 (Vercel rewrite 및 baseURL 미설정 환경 호환)
-        const res = await API.post(
-          API_ENDPOINTS.AUTH.REFRESH_TOKEN,
-          {
-            refreshToken: authStore.refreshToken,
-          }
-        );
+        const res = await API.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
+          refreshToken: authStore.refreshToken,
+        });
 
         const newAccessToken = res.data.accessToken;
         authStore.accessToken = newAccessToken;
