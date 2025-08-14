@@ -25,6 +25,8 @@ class WebSocketService {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000; // 1초
   private isConnecting = false;
+  private lastErrorLogTime = 0;
+  private errorLogIntervalMs = 5000;
 
   constructor() {
     this.initClient();
@@ -44,11 +46,19 @@ class WebSocketService {
           heartbeat: 25000,
         }),
       debug: (str: string) => {
-        if (import.meta.env.DEV) {
-          console.log("STOMP Debug:", str);
+        try {
+          if (
+            import.meta.env.DEV &&
+            localStorage.getItem("STOMP_DEBUG") === "1"
+          ) {
+            console.log("STOMP Debug:", str);
+          }
+        } catch {
+          // localStorage 접근 실패 시 무시
         }
       },
-      reconnectDelay: this.reconnectDelay,
+      // 라이브러리의 자동 재연결은 비활성화하고, 내부 handleReconnect 로직만 사용
+      reconnectDelay: 0,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
@@ -70,21 +80,58 @@ class WebSocketService {
 
     // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
     this.stompClient.onStompError = (frame: StompFrame) => {
-      console.error("STOMP 에러:", frame);
+      // 콘솔 스팸 방지를 위해 주기적으로만 출력
+      const now = Date.now();
+      if (now - this.lastErrorLogTime >= this.errorLogIntervalMs) {
+        const message = frame?.headers?.message || "Unknown STOMP error";
+        try {
+          if (
+            import.meta.env.DEV &&
+            localStorage.getItem("STOMP_DEBUG") === "1"
+          ) {
+            console.warn(`STOMP ERROR: ${message}`);
+          }
+        } catch {
+          // ignore
+        }
+        this.lastErrorLogTime = now;
+      }
       chatActions.setError("WebSocket 연결 에러가 발생했습니다.");
       this.handleReconnect();
     };
 
     // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
     this.stompClient.onWebSocketError = (error: WebSocketError) => {
-      console.error("WebSocket 에러:", error);
+      const now = Date.now();
+      if (now - this.lastErrorLogTime >= this.errorLogIntervalMs) {
+        try {
+          if (
+            import.meta.env.DEV &&
+            localStorage.getItem("STOMP_DEBUG") === "1"
+          ) {
+            console.warn(`WebSocket ERROR: ${error?.message || "Unknown"}`);
+          }
+        } catch {
+          // ignore
+        }
+        this.lastErrorLogTime = now;
+      }
       chatActions.setError("WebSocket 연결이 끊어졌습니다.");
       this.handleReconnect();
     };
 
     // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
     this.stompClient.onWebSocketClose = () => {
-      console.log("WebSocket 연결 종료");
+      try {
+        if (
+          import.meta.env.DEV &&
+          localStorage.getItem("STOMP_DEBUG") === "1"
+        ) {
+          console.log("WebSocket 연결 종료");
+        }
+      } catch {
+        // ignore
+      }
       chatActions.setWebSocketConnected(false);
       this.subscriptions.clear();
       this.handleReconnect();
@@ -109,9 +156,11 @@ class WebSocketService {
       `재연결 시도 ${this.reconnectAttempts}/${this.maxReconnectAttempts}`
     );
 
+    // 서버 ERROR 프레임이 연속 발생할 때 콘솔 스팸 방지 및 백오프 적용
+    const delay = Math.min(10000, this.reconnectDelay * this.reconnectAttempts);
     setTimeout(() => {
       this.connect();
-    }, this.reconnectDelay * this.reconnectAttempts);
+    }, delay);
   }
 
   async connect(): Promise<void> {
@@ -133,13 +182,20 @@ class WebSocketService {
       const token = (authStore.accessToken || "").trim();
       // @ts-expect-error 타입 정의에 없지만 런타임에서 지원됨
       this.stompClient.connectHeaders = {
-        "accept-version": "1.1,1.0",
-        "heart-beat": "10000,10000",
-        Authorization: token,
+        "accept-version": "1.2,1.1,1.0",
+        "heart-beat": "4000,4000",
+        Authorization: token ? `Bearer ${token}` : "",
       } as unknown as Record<string, string>;
 
       // @stomp/stompjs v7.1.1에서는 activate() 메서드 사용
-      this.stompClient.activate();
+      try {
+        this.stompClient.activate();
+      } catch (e) {
+        // activate 중 throw되는 경우도 재연결 루프로 넘김
+        this.isConnecting = false;
+        this.handleReconnect();
+        return;
+      }
 
       // 연결 성공을 기다림
       const checkConnection = () => {
