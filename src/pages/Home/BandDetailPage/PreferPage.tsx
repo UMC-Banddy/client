@@ -24,12 +24,12 @@ interface BandInfo {
 }
 
 // API 응답 타입 정의
-interface ApiArtist {
-  id?: number;
-  name?: string;
-  image?: string;
-  imageUrl?: string;
-}
+// interface ApiArtist {
+//   id?: number;
+//   name?: string;
+//   image?: string;
+//   imageUrl?: string;
+// }
 
 // 임시 데이터 (API 연결 전까지 사용)
 const preferData = [
@@ -76,7 +76,7 @@ export default function PreferPage() {
   const artists: Artist[] = useMemo(() => {
     const safe = Array.isArray(artistsData) ? artistsData : [];
     if (safe.length === 0) return preferData;
-    return safe.map((a: any, index: number) => ({
+    return safe.map((a: Partial<Artist>, index: number) => ({
       id: a?.id ?? index + 1,
       name: a?.name ?? `아티스트 ${index + 1}`,
       image: a?.imageUrl ?? a?.image ?? guitarBoy,
