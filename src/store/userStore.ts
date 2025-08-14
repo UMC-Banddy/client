@@ -210,11 +210,8 @@ export const getRecommendedBands = async () => {
 
     // 먼저 백엔드 추천 API 시도
     try {
-      const response = await getRecommendedBandsFromAPI();
-      if (import.meta.env.DEV) {
-        console.log("백엔드 추천 API 성공:", response);
-      }
-      return response;
+      // 백엔드 추천 API 함수가 존재하지 않아 컴파일 오류 발생하여 비활성화
+      throw new Error("recommended API not available");
     } catch (apiError: unknown) {
       if (import.meta.env.DEV) {
         console.log(
