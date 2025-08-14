@@ -1,6 +1,9 @@
 import React from "react";
-import { useParams } from "react-router-dom";
-import { useBandProfile } from "@/features/band/hooks/useBandData";
+import { useLocation, useParams } from "react-router-dom";
+import {
+  useBandDetail,
+  useBandProfile,
+} from "@/features/band/hooks/useBandData";
 
 const Skeleton: React.FC = () => {
   return (
@@ -23,13 +26,21 @@ const Skeleton: React.FC = () => {
 
 const BandDetailPage: React.FC = () => {
   const { id = "" } = useParams<{ id: string }>();
+  const location = useLocation();
+  // 상세 스펙에 맞게 우선 상세만 조회, 프로필은 보조로 사용
+  const { data: detailOnly, isLoading: loadingDetail } = useBandDetail(id);
   const { data, isLoading } = useBandProfile(id);
 
-  if (isLoading || !data) return <Skeleton />;
+  if (loadingDetail || isLoading || !data) return <Skeleton />;
 
-  const detail = data.detail;
+  const detail = detailOnly ?? data.detail;
   const profile = data.profile;
-  const bandName = detail?.bandName || "밴디 (임시)";
+  const nameParam = new URLSearchParams(location.search).get("name") || undefined;
+  const bandName =
+    detail?.bandName ||
+    nameParam ||
+    profile?.goalTracks?.[0]?.title ||
+    (id ? `밴드 ${id}` : "밴드");
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#121212] text-white">
@@ -101,13 +112,18 @@ const BandDetailPage: React.FC = () => {
               <h2 className="text-lg font-semibold mb-3">{`${bandName}의 선호 아티스트`}</h2>
               <div className="grid grid-cols-4 gap-3">
                 {profile.preferredArtists.slice(0, 8).map((a, idx) => (
-                  <div key={`${a.name}-${idx}`} className="flex flex-col items-center">
+                  <div
+                    key={`${a.name}-${idx}`}
+                    className="flex flex-col items-center"
+                  >
                     <img
                       src={a.imageUrl}
                       alt={a.name}
                       className="w-20 h-20 rounded-full object-cover"
                     />
-                    <div className="mt-2 text-xs text-center truncate w-20">{a.name}</div>
+                    <div className="mt-2 text-xs text-center truncate w-20">
+                      {a.name}
+                    </div>
                   </div>
                 ))}
               </div>
