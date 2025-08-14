@@ -145,6 +145,7 @@ export const API_ENDPOINTS = {
     LIST: "/api/artists",
     DETAIL: (artistId: string) => `/api/artists/${artistId}`,
     SIMILAR: "/api/artists/similar",
+    QUESTION: "/api/artists/question",
   },
 
   ARTIST_FOLDERS: {
