@@ -190,7 +190,7 @@ class WebSocketService {
       // @stomp/stompjs v7.1.1에서는 activate() 메서드 사용
       try {
         this.stompClient.activate();
-      } catch (e) {
+      } catch {
         // activate 중 throw되는 경우도 재연결 루프로 넘김
         this.isConnecting = false;
         this.handleReconnect();
