@@ -10,6 +10,7 @@ import {
   getAllBands,
 } from "@/store/userStore";
 import { useRecommendedBands } from "@/features/band/hooks/useBandData";
+import type { BandDetail } from "@/types/band";
 
 // 이미지 import
 import homeAlbum3Img from "@/assets/images/home-album3.png";
@@ -59,18 +60,6 @@ interface Band {
   subtitle: string;
   tags: string[];
   profileData?: BandProfileData; // 원본 프로필 데이터 저장
-}
-
-interface BandDetail {
-  bandId: number;
-  bandName: string;
-  profileImageUrl: string;
-  goalTracks: TrackDto[];
-  preferredArtists: ArtistDto[];
-  composition: CompositionDto;
-  sns: SnsDto[];
-  sessions: string[];
-  jobs: string[];
 }
 
 // 세션 이름 정리 및 아이콘 매핑 함수
@@ -225,7 +214,6 @@ const HomePage = () => {
 
       // 사전테스트 중에는 기본 데이터만 사용하여 API 호출 최소화
       if (window.location.pathname.startsWith("/pre-test")) {
-        console.log("사전테스트 중 - 기본 데이터 사용");
         setMyBands(fallbackBandData);
         return;
       }
@@ -281,9 +269,6 @@ const HomePage = () => {
 
       // profiles가 빈 배열이거나 undefined인 경우 기본 데이터 사용
       if (!profiles || profiles.length === 0) {
-        if (import.meta.env.DEV) {
-          console.log("조회된 밴드가 없어서 기본 데이터 사용");
-        }
         setMyBands(fallbackBandData);
         return;
       }
@@ -299,9 +284,6 @@ const HomePage = () => {
       ) as BandProfileData[];
 
       if (validProfiles.length === 0) {
-        if (import.meta.env.DEV) {
-          console.log("유효한 밴드 데이터가 없어서 기본 데이터 사용");
-        }
         setMyBands(fallbackBandData);
         return;
       }
@@ -315,14 +297,6 @@ const HomePage = () => {
           const goalTracks = profile.goalTracks || [];
           const preferredArtists = profile.preferredArtists || [];
           const sessions = profile.sessions || [];
-
-          // 디버깅용 로그
-          console.log(`밴드 ${index + 1} 데이터:`, {
-            goalTracks,
-            preferredArtists,
-            sessions,
-            profile,
-          });
 
           // 첫 번째 곡을 대표 이미지로 사용
           const representativeTrack = goalTracks[0];
@@ -339,8 +313,6 @@ const HomePage = () => {
                   "aiko",
                 ];
 
-          console.log(`밴드 ${index + 1} 최종 태그:`, tags);
-
           // 모든 데이터가 비어있으면 fallback 데이터 사용
           const hasValidData =
             goalTracks.length > 0 ||
@@ -349,10 +321,6 @@ const HomePage = () => {
           const fallbackBand = fallbackBandData[index];
 
           if (!hasValidData && fallbackBand) {
-            console.log(
-              `밴드 ${index + 1} 데이터가 비어있어 fallback 사용:`,
-              fallbackBand
-            );
             return fallbackBand;
           }
 

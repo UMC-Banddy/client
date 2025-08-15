@@ -73,14 +73,6 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
     return MicImg;
   };
 
-  // 디버깅용 로그
-  console.log("BandInfoModal props:", {
-    title,
-    subtitle,
-    youtubeUrl,
-    instagramUrl,
-    bandId,
-  });
   return (
     <div
       className="relative bg-[#F5E9EA] rounded-[28px] w-full max-w-[420px] min-w-0 min-h-[420px] max-h-[95vh] flex flex-col px-6 sm:px-7 md:px-8 pt-10 pb-8 overflow-hidden"
