@@ -19,9 +19,9 @@ const SignupCompletePage: React.FC = () => {
 
         <h1 className="text-lg font-semibold mb-2">회원가입이 완료되었습니다.</h1>
         <p className="text-sm text-[#CACACA] mb-10 leading-relaxed">
-          사전테스트를 통해
+          사전테스트는 선택사항입니다.
           <br />
-          나와 더 잘 맞는 밴드를 찾아 보세요!
+          지금 하거나 나중에 언제든지 할 수 있어요!
         </p>
 
         <SignupButton
@@ -32,10 +32,10 @@ const SignupCompletePage: React.FC = () => {
         </SignupButton>
 
         <SignupButton
-          onClick={() => navigate("/login")}
+          onClick={() => navigate("/")}
           variant="secondary"
         >
-          로그인 하러 가기
+          홈으로 바로 가기
         </SignupButton>
       </div>
     </div>

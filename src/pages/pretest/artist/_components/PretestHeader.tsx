@@ -44,6 +44,13 @@ const PretestHeader: React.FC<PretestHeaderProps> = ({
             건너뛰기
           </button>
         )}
+        {/* 언제든지 홈으로 이동 가능한 버튼 */}
+        <button
+          onClick={() => navigate("/")}
+          className="bg-none border-none text-[#7ED957] text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl font-medium mr-3 cursor-pointer"
+        >
+          홈으로
+        </button>
         {showNext && (
           <button
             onClick={onNext}
