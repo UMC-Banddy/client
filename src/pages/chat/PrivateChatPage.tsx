@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePrivateChat } from "./hooks/usePrivateChat";
 import ChatHeader from "./_components/ChatHeader";
 import ChatDateDivider from "./_components/ChatDateDivider";
@@ -7,6 +7,7 @@ import ChatMessageList from "./_components/PrivateChatMessageList";
 import ChatInputBar from "./_components/ChatInputBar";
 import profile1Img from "@/assets/images/profile1.png";
 import type { ChatMessage as ChatMessageType, ChatRoomsResponse, ChatRoomInfo, MemberInfo } from "@/types/chat";
+import { useCurrentUser } from "@/features/setting/hooks/useCurrentUser";
 
 interface ChatRoom {
   roomId: number;
@@ -32,6 +33,12 @@ interface ChatRoom {
 
 const PrivateChatPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // URL에서 roomId와 roomType 파라미터 읽기
+  const urlRoomId = searchParams.get("roomId");
+  const urlRoomType = searchParams.get("roomType");
+  
   const {
     currentRoomId,
     messages,
@@ -64,6 +71,19 @@ const PrivateChatPage: React.FC = () => {
       }));
   }, [chatRooms]);
 
+  // URL 파라미터가 있으면 바로 해당 채팅방으로 입장
+  useEffect(() => {
+    if (urlRoomId && urlRoomType === "PRIVATE" && privateChatRooms.length > 0) {
+      const roomId = parseInt(urlRoomId);
+      const room = privateChatRooms.find((r: ChatRoomInfo) => r.roomId === roomId);
+      if (room) {
+        console.log("🎯 URL 파라미터로 채팅방 입장:", roomId);
+        enterChatRoom(roomId);
+        handleEnterRoom(room);
+      }
+    }
+  }, [urlRoomId, urlRoomType, privateChatRooms, enterChatRoom]);
+
   // 현재 채팅방 정보 찾기
   useEffect(() => {
     if (currentRoomId && privateChatRooms.length > 0) {
@@ -92,9 +112,11 @@ const PrivateChatPage: React.FC = () => {
     }
   }, [currentRoomId, privateChatRooms]);
 
+  const { data: currentUser } = useCurrentUser();
+  
   // ChatMessageList용 메시지 형식으로 변환
   const convertedMessages: ChatMessageType[] = messages.map((msg) => {
-    const currentMemberId = parseInt(localStorage.getItem("memberId") || "0");
+    const currentMemberId = currentUser?.memberId || 0;
     const isMyMessage = msg.senderId === currentMemberId;
     const showReadIndicator = shouldShowReadIndicator(msg);
     
@@ -161,7 +183,7 @@ const PrivateChatPage: React.FC = () => {
     await enterChatRoom(room.roomId);
     
     // 상대방 ID 설정 (개인채팅이므로 상대방은 1명)
-    const currentMemberId = parseInt(localStorage.getItem("memberId") || "0");
+    const currentMemberId = currentUser?.memberId || 0;
     console.log("🔍 현재 사용자 ID:", currentMemberId);
     
     if (room.roomType === "PRIVATE") {
@@ -214,6 +236,7 @@ const PrivateChatPage: React.FC = () => {
   const handleBack = () => {
     if (currentRoomId) {
       leaveChatRoom();
+      navigate(-1); // 채팅방 퇴장 후 뒤로가기
     } else {
       navigate(-1);
     }
@@ -240,8 +263,9 @@ const PrivateChatPage: React.FC = () => {
     }
   };
 
+  // URL 파라미터가 있으면 채팅방 목록을 보여주지 않음
   // 채팅방이 선택되지 않은 경우 채팅방 목록 표시
-  if (!currentRoomId) {
+  if (!currentRoomId && !urlRoomId) {
     return (
       <div className="min-h-screen w-full flex flex-col bg-[#121212]">
         <div className="w-full bg-[#181818] pb-6">
