@@ -24,6 +24,7 @@ type ChatRoom = {
   roomId: number;
   chatName: string;
   imageUrl: string | null;
+  pinnedAt: string | null;
 } & (
   | {
       roomType: "PRIVATE";
@@ -36,7 +37,6 @@ type ChatRoom = {
   | {
       roomType: "BAND-MANAGER";
       unreadCount: number | null;
-      pinnedAt: string | null;
       lastMessageAt: string | null;
       bandId: number;
       bandImageUrl: string | null;
@@ -84,8 +84,10 @@ const Join = () => {
           return (
             <NormalChat
               key={room.roomId}
+              roomId={room.roomId}
               name={room.chatName}
               thumbnail={room.imageUrl}
+              pinnedAt={room.pinnedAt}
               members={[room.memberInfo.nickname]}
               unreadCount={room.unreadCount}
             />
@@ -94,8 +96,10 @@ const Join = () => {
           return (
             <NormalChat
               key={room.roomId}
+              roomId={room.roomId}
               name={room.chatName}
               thumbnail={room.imageUrl}
+              pinnedAt={room.pinnedAt}
               members={room.memberInfos.map((member) => member.nickname)}
               unreadCount={room.unreadCount}
             />
