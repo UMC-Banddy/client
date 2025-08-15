@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { webSocketService } from "@/services/WebSocketService";
 import { getChatRooms, getPriChatMessages } from "@/store/chatApi";
 import type { WebSocketMessage } from "@/types/chat";
+import { useCurrentUser } from "@/features/setting/hooks/useCurrentUser";
 
 interface ChatMessage {
   messageId: number;
@@ -40,6 +41,7 @@ interface SendMessageRequest {
 
 export const usePrivateChat = () => {
   const queryClient = useQueryClient();
+  const { data: currentUser } = useCurrentUser();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentRoomId, setCurrentRoomId] = useState<number | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -125,8 +127,8 @@ export const usePrivateChat = () => {
         console.log("📋 메시지 데이터:", parsedMessage);
         
         // 현재 사용자 ID 확인
-        const currentMemberId = parseInt(localStorage.getItem("memberId") || "0");
-        console.log("🔍 localStorage memberId:", localStorage.getItem("memberId"), "파싱된 ID:", currentMemberId, "메시지 발신자 ID:", parsedMessage.senderId);
+        const currentMemberId = currentUser?.memberId || 0;
+        console.log("🔍 API memberId:", currentUser?.memberId, "파싱된 ID:", currentMemberId, "메시지 발신자 ID:", parsedMessage.senderId);
         
         // 본인이 보낸 메시지인 경우 (서버 응답)
         if (parsedMessage.senderId === currentMemberId) {
@@ -187,7 +189,7 @@ export const usePrivateChat = () => {
           }, 1000); // 1초 후 읽음 상태 전송
           
           // 즉시 로컬에서 읽음 상태 업데이트
-          const currentMemberId = parseInt(localStorage.getItem("memberId") || "0");
+          const currentMemberId = currentUser?.memberId || 0;
           setMessages(prev => 
             prev.map(msg => 
               msg.messageId === newMessage.messageId
@@ -261,7 +263,7 @@ export const usePrivateChat = () => {
       setCurrentRoomId(roomId);
       
       // 참가자 정보 초기화 (임시로 현재 사용자 정보 설정)
-      const currentMemberId = parseInt(localStorage.getItem("memberId") || "0");
+      const currentMemberId = currentUser?.memberId || 0;
       const initialParticipants: ParticipantInfo[] = [
         {
           memberId: currentMemberId,
@@ -325,7 +327,7 @@ export const usePrivateChat = () => {
       console.log("📤 전송된 메시지:", variables);
       
       // 낙관적 업데이트: 발신자가 자신의 메시지를 즉시 볼 수 있도록
-      const currentMemberId = parseInt(localStorage.getItem("memberId") || "0");
+      const currentMemberId = currentUser?.memberId || 0;
       const temporaryId = Date.now();
       console.log("✨ 낙관적 업데이트 - 임시 ID 생성:", temporaryId);
       
@@ -461,7 +463,7 @@ export const usePrivateChat = () => {
   const getUnreadCount = useCallback(() => {
     if (messages.length === 0) return 0;
     
-    const currentMemberId = parseInt(localStorage.getItem("memberId") || "0");
+    const currentMemberId = currentUser?.memberId || 0;
     const currentParticipant = participants.find(p => p.memberId === currentMemberId);
     
     if (!currentParticipant) return 0;
@@ -479,7 +481,7 @@ export const usePrivateChat = () => {
 
   // 메시지 읽음 상태 확인 함수
   const isMessageRead = useCallback((message: ChatMessage) => {
-    const currentMemberId = parseInt(localStorage.getItem("memberId") || "0");
+    const currentMemberId = currentUser?.memberId || 0;
     
     // 본인이 보낸 메시지는 항상 읽음
     if (message.senderId === currentMemberId) {
@@ -488,11 +490,11 @@ export const usePrivateChat = () => {
     
     // 다른 사람이 보낸 메시지는 readBy 배열에 현재 사용자가 있으면 읽음
     return message.readBy?.includes(currentMemberId) || false;
-  }, []);
+  }, [currentUser?.memberId]);
 
   // 메시지별 읽음 표시 여부 확인 함수
   const shouldShowReadIndicator = useCallback((message: ChatMessage) => {
-    const currentMemberId = parseInt(localStorage.getItem("memberId") || "0");
+    const currentMemberId = currentUser?.memberId || 0;
     
     // 임시 ID인 경우 읽음 표시하지 않음 (서버 응답 대기 중)
     if (isTemporaryId(message.messageId)) {
@@ -523,7 +525,7 @@ export const usePrivateChat = () => {
     const shouldShow = !isRead;
     console.log("📥 상대방 메시지 읽음 표시:", shouldShow, "isRead:", isRead);
     return shouldShow;
-  }, [participants, isMessageRead, isTemporaryId]);
+  }, [participants, isMessageRead, isTemporaryId, currentUser?.memberId]);
 
   // 메시지 전송 함수
   const sendMessage = useCallback((content: string, receiverId: number) => {
