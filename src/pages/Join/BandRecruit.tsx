@@ -1,48 +1,129 @@
 import back from "@/assets/icons/join/ic_back.svg";
 import dotsVertical from "@/assets/icons/join/ic_dots_vertical.svg";
-import bandRecruit from "@/assets/icons/join/band_recruit.png";
-import mic from "@/assets/icons/join/ic_mic.svg";
-import micRed from "@/assets/icons/join/ic_mic_red.svg";
-import guitar from "@/assets/icons/join/ic_guitar_brighter.svg";
+// import mic from "@/assets/icons/join/ic_mic.svg";
+// import micRed from "@/assets/icons/join/ic_mic_red.svg";
+// import guitar from "@/assets/icons/join/ic_guitar_brighter.svg";
 import RecruitChat from "./_components/band_recruit/RecruitChat";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BandMenuContentBtn from "./_components/band_recruit/BandMenuContentBtn";
 import CheckBox from "./_components/band_recruit/CheckBox";
 import MuiDialog from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { API } from "@/api/API";
+import type { BandDetail } from "@/types/band";
+import { parseToKoreanText } from "./_utils/parseToKoreanText";
+import clsx from "clsx";
 
-const dummyData = [
-  {
-    id: 0,
-  },
-  {
-    id: 1,
-  },
-  {
-    id: 2,
-  },
-];
+interface Chat {
+  bandName: string;
+  bandImage: string;
+  sessions: string[];
+  status: string;
+  bandChatList: [
+    {
+      roomId: number;
+      nickname: string;
+      imageUrl: string | null;
+      session: string;
+      content: string;
+      lastMessageAt: string | null;
+      passFail: "PENDING" | "PASS" | "FAIL";
+    }
+  ];
+}
 
 const BandRecruit = () => {
   const [openMenu, setOpenMenu] = useState(false);
 
   const [checkEnabled, setCheckEnabled] = useState(false);
   const [checkedId, setCheckedId] = useState<number[]>([]);
+  const [checkedIdLimitedAt4, setCheckedIdLimitedAt4] = useState<number[]>([]);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openPassDialog, setOpenPassDialog] = useState(false);
   const [isPassDialog, setIsPassDialog] = useState(false);
 
   const navigate = useNavigate();
+  const { id } = useParams();
+
+  const [bandDetail, setBandDetail] = useState<BandDetail>();
+  const [chats, setChats] = useState<Chat>();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data } = await API.get(`/api/band/${id}/detail`);
+      // console.log("bandDetail:", data);
+      setBandDetail(data);
+    };
+
+    const fetchChat = async () => {
+      const { data } = await API.get(`/api/recruitments/${id}/applications`);
+      // console.log("chat:", data.result);
+      setChats(data.result);
+    };
+
+    fetchData();
+    fetchChat();
+  }, [id]);
+
+  useEffect(() => {
+    if (checkedId.length > 4) {
+      setCheckedIdLimitedAt4(checkedId.slice(0, 4));
+    } else {
+      setCheckedIdLimitedAt4(checkedId);
+    }
+  }, [checkedId]);
+
+  const handleDelete = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("data", JSON.stringify({ bandId: id, status: "ENDED" }));
+
+      await API.patch("/api/recruitments", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      navigate("/join");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlePass = async (status: "PASS" | "FAIL") => {
+    try {
+      checkedId.forEach(async (roomId) => {
+        await API.patch(`/api/recruitments/${id}`, {
+          applicantUpdate: [
+            {
+              roomId: roomId,
+              status: status,
+            },
+          ],
+        });
+      });
+
+      const message = status === "PASS" ? "합격" : "불합격";
+      alert(`일괄 ${message} 처리가 완료되었습니다.`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <main className="relative min-h-screen w-[393px] mx-auto">
       <section
         className="flex flex-col justify-between w-full h-[228px] bg-cover bg-center bg-no-repeat px-[16px] pt-[16px]"
-        style={{ backgroundImage: `url(${bandRecruit})` }}
+        style={{
+          background: `linear-gradient(0deg, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.50) 100%), url(${bandDetail?.profileImageUrl}) lightgray 50% / cover no-repeat`,
+        }}
       >
         <div className="flex justify-between">
-          <button className="p-[0] bg-transparent border-none cursor-pointer">
+          <button
+            className="p-[0] bg-transparent border-none cursor-pointer"
+            onClick={() => navigate("/join")}
+          >
             <img src={back} alt="back" />
           </button>
           <button
@@ -64,7 +145,12 @@ const BandRecruit = () => {
               </BandMenuContentBtn>
               <BandMenuContentBtn
                 onClick={() => {
-                  navigate("/join/create-band");
+                  navigate("/join/create-band", {
+                    state: {
+                      isEditing: true,
+                      bandId: id,
+                    },
+                  });
                   setOpenMenu(false);
                 }}
               >
@@ -88,8 +174,7 @@ const BandRecruit = () => {
           <div className="flex flex-col items-center pt-[62px] pb-[28px] px-[26px] w-[336px] h-[332px] bg-[#E9E9E9] text-center">
             <p className="text-hakgyo-b-24">
               정말
-              <br />
-              'Shinseikamattechan'을
+              <br />'{bandDetail?.bandName}'을
               <br />
               삭제하시겠습니까?
             </p>
@@ -105,7 +190,13 @@ const BandRecruit = () => {
               >
                 아니오
               </CommonBtn>
-              <CommonBtn color="red" onClick={() => setOpenDeleteDialog(false)}>
+              <CommonBtn
+                color="red"
+                onClick={() => {
+                  handleDelete();
+                  setOpenDeleteDialog(false);
+                }}
+              >
                 예
               </CommonBtn>
             </div>
@@ -113,36 +204,57 @@ const BandRecruit = () => {
         </MuiDialog>
 
         <div className="flex flex-col gap-[8px] mb-[20px]">
-          <p className="text-hakgyo-b-24 text-[#fff]">Shinsei Kamattechan</p>
+          <p className="text-hakgyo-b-24 text-[#fff]">{bandDetail?.bandName}</p>
           <div className="flex items-center gap-[12px]">
-            <div className="px-[11px] py-[4px] rounded-full bg-[#B42127] text-[#fff] text-wanted-sb-13">
-              모집중
+            <div
+              className={clsx(
+                "px-[11px] py-[4px] rounded-full text-[#fff] text-wanted-sb-13",
+                chats?.status === "RECRUITING" ? "bg-[#B42127]" : "bg-[#292929]"
+              )}
+            >
+              {chats?.status === "RECRUITING" ? "모집중" : "모집완료"}
             </div>
-            <div className="flex gap-[4px]">
+            {/* <div className="flex gap-[4px]">
               <img className="size-[16px]" src={mic} alt="mic" />
               <p className="text-wanted-sb-13 text-[#CACACA]">보컬</p>
             </div>
             <div className="flex gap-[4px]">
               <img className="size-[16px]" src={guitar} alt="guitar" />
               <p className="text-wanted-sb-13 text-[#CACACA]">일렉기타</p>
+            </div> */}
+            <div className="flex gap-[4px]">
+              {chats?.sessions?.map((session, index) => {
+                return (
+                  <div key={index} className="flex gap-[4px] items-center">
+                    <p className="text-wanted-sb-13 text-[#CACACA]">
+                      {parseToKoreanText(session)}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
       </section>
       <section className="flex flex-col gap-[20px] px-[16px] pt-[32px] w-full">
-        {dummyData.map((item) => {
-          const isChecked = checkedId.includes(item.id);
+        {chats?.bandChatList.map((item) => {
+          const isChecked = checkedId.includes(item.roomId);
           return (
             <RecruitChat
-              key={item.id}
+              key={item.roomId}
+              name={item.nickname}
+              thumbnail={item.imageUrl}
+              content={item.content}
+              lastMessageAt={item.lastMessageAt}
+              passFail={item.passFail}
               enableCheck={checkEnabled}
               checked={isChecked}
               onCheck={() => {
                 if (isChecked) {
                   // 선택 해제
-                  setCheckedId((prev) => prev.filter((i) => i !== item.id));
+                  setCheckedId((prev) => prev.filter((i) => i !== item.roomId));
                 } else {
-                  setCheckedId((prev) => [...prev, item.id]);
+                  setCheckedId((prev) => [...prev, item.roomId]);
                 }
               }}
             />
@@ -154,12 +266,14 @@ const BandRecruit = () => {
         <section className="flex justify-between items-center fixed bottom-[104px] px-[20px] w-[393px] h-[69px] rounded-t-[12px] bg-[#292929] z-[60]">
           <div className="flex items-center gap-[8px] ">
             <CheckBox
-              checked={checkedId.length === dummyData.length}
+              checked={checkedId.length === chats?.bandChatList.length}
               onClick={() => {
-                if (checkedId.length === dummyData.length) {
+                if (checkedId.length === chats?.bandChatList.length) {
                   setCheckedId([]);
                 } else {
-                  setCheckedId(dummyData.map((item) => item.id));
+                  setCheckedId(
+                    chats?.bandChatList.map((item) => item.roomId) || []
+                  );
                 }
               }}
               checkboxColor="#959595"
@@ -206,13 +320,40 @@ const BandRecruit = () => {
               </p>
 
               <section className="mt-[28px] w-full">
-                <div className="flex justify-between items-center w-full">
-                  <p>noko</p>
-                  <div className="flex items-center gap-[4px]">
-                    <img src={micRed} alt="mic" />
-                    <p className="text-wanted-sb-13 text-[#B42127]">보컬</p>
-                  </div>
-                </div>
+                {
+                  // checkedId === roomId인 유저의 정보
+                  // roomId가 4 이상이면 앞에 4개만 보여주고, 밑에 '...외 n명' 표시
+                  checkedIdLimitedAt4.map((roomId) => {
+                    return (
+                      <>
+                        <div className="flex justify-between items-center w-full">
+                          <p className="text-hakgyo-b-17">
+                            {
+                              chats?.bandChatList.find(
+                                (item) => item.roomId === roomId
+                              )?.nickname
+                            }
+                          </p>
+                          <div className="flex items-center gap-[4px]">
+                            {/* <img src={micRed} alt="mic" /> */}
+                            <p className="text-wanted-sb-13 text-[#B42127]">
+                              {parseToKoreanText(
+                                chats?.bandChatList.find(
+                                  (item) => item.roomId === roomId
+                                )?.session || ""
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        {checkedId.length > 4 && (
+                          <p className="text-wanted-sb-12 text-[#555] text-end">
+                            ...외 {checkedId.length - 4}명
+                          </p>
+                        )}
+                      </>
+                    );
+                  })
+                }
               </section>
 
               <div className="flex gap-[16px] mt-[39px]">
@@ -222,7 +363,14 @@ const BandRecruit = () => {
                 >
                   아니오
                 </CommonBtn>
-                <CommonBtn color="red" onClick={() => setOpenPassDialog(false)}>
+                <CommonBtn
+                  color="red"
+                  onClick={() => {
+                    handlePass(isPassDialog ? "PASS" : "FAIL");
+                    setOpenPassDialog(false);
+                    window.location.reload();
+                  }}
+                >
                   예
                 </CommonBtn>
               </div>

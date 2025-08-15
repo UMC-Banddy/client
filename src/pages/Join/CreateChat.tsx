@@ -60,7 +60,7 @@ const CreateChat = () => {
       {checkedList.length > 0 && (
         <section className="flex gap-[20px]">
           {checkedList.map((id) => {
-            const friend = friends.find((f) => f.friendId === id);
+            const friend = friends.find((f) => f.otherMemberId === id);
             return (
               <div key={id} className="flex flex-col items-center gap-[4px]">
                 <div
@@ -87,11 +87,11 @@ const CreateChat = () => {
       <section className="flex flex-col gap-[20px]">
         {friends.map((item) => (
           <RecruitChat
-            key={item.friendId}
+            key={item.otherMemberId}
             enableCheck={true}
-            checked={checkedList.includes(item.friendId)}
+            checked={checkedList.includes(item.otherMemberId)}
             onCheck={() => {
-              handleCheckboxClick(item.friendId);
+              handleCheckboxClick(item.otherMemberId);
             }}
             name={item.nickname}
             thumbnail={item?.profileImageUrl}
