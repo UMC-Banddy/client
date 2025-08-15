@@ -33,6 +33,7 @@ import NotificationPage from "@/pages/Notification/NotificationPage";
 import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
 import ChatPage from "@/pages/chat/ChatPage";
 import ChatDemoPage from "@/pages/chat/ChatDemoPage";
+import PrivateChatPage from "@/pages/chat/PrivateChatPage";
 import PretestArtistPage from "@/pages/pretest/artist/PretestArtistPage";
 import PretestSessionPage from "@/pages/pretest/session/PretestSessionPage";
 import PretestProfileCompletePage from "@/pages/pretest/profile/PretestProfileCompletePage";
@@ -304,6 +305,14 @@ const routes = [
         element: (
           <ProtectedRoute requireAuth={true}>
             <ChatPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/private-chat",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PrivateChatPage />
           </ProtectedRoute>
         ),
       },

@@ -362,8 +362,30 @@ class WebSocketService {
     this.stompClient.publish({
       destination,
       body: JSON.stringify(message),
+      headers: {
+        "content-type": "application/json;charset=UTF-8"
+      }
     });
     console.log("메시지 전송:", message);
+  }
+
+  // 읽음 상태 전송 함수
+  sendReadStatus(roomId: string, messageId: number): void {
+    if (!this.stompClient || !this.stompClient.connected) {
+      console.error("WebSocket이 연결되지 않았습니다.");
+      return;
+    }
+
+    const destination = `/app/chat/private.lastRead/${roomId}`;
+    
+    this.stompClient.publish({
+      destination,
+      body: messageId.toString(),
+      headers: {
+        "content-type": "text/plain;charset=UTF-8"
+      }
+    });
+    console.log("읽음 상태 전송:", { roomId, messageId });
   }
 
   isConnected(): boolean {
