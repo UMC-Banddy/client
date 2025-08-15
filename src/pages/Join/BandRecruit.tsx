@@ -4,7 +4,7 @@ import dotsVertical from "@/assets/icons/join/ic_dots_vertical.svg";
 // import micRed from "@/assets/icons/join/ic_mic_red.svg";
 // import guitar from "@/assets/icons/join/ic_guitar_brighter.svg";
 import RecruitChat from "./_components/band_recruit/RecruitChat";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import BandMenuContentBtn from "./_components/band_recruit/BandMenuContentBtn";
 import CheckBox from "./_components/band_recruit/CheckBox";
 import MuiDialog from "@/shared/components/MuiDialog";
@@ -49,22 +49,34 @@ const BandRecruit = () => {
   const [bandDetail, setBandDetail] = useState<BandDetail>();
   const [chats, setChats] = useState<Chat>();
 
+  // Toast state for custom UI alert
+  const [alertMsg, setAlertMsg] = useState("");
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertFading, setAlertFading] = useState(false);
+  const alertTimers = useRef<number[]>([]);
+
+  const fetchData = useCallback(async () => {
+    const { data } = await API.get(`/api/band/${id}/detail`);
+    setBandDetail(data);
+  }, [id]);
+
+  const fetchChat = useCallback(async () => {
+    const { data } = await API.get(`/api/recruitments/${id}/applications`);
+    setChats(data.result);
+  }, [id]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      const { data } = await API.get(`/api/band/${id}/detail`);
-      // console.log("bandDetail:", data);
-      setBandDetail(data);
-    };
-
-    const fetchChat = async () => {
-      const { data } = await API.get(`/api/recruitments/${id}/applications`);
-      // console.log("chat:", data.result);
-      setChats(data.result);
-    };
-
     fetchData();
     fetchChat();
-  }, [id]);
+  }, [fetchData, fetchChat]);
+
+  // Cleanup any pending alert timers on unmount
+  useEffect(() => {
+    return () => {
+      alertTimers.current.forEach((t) => clearTimeout(t));
+      alertTimers.current = [];
+    };
+  }, []);
 
   useEffect(() => {
     if (checkedId.length > 4) {
@@ -93,26 +105,68 @@ const BandRecruit = () => {
 
   const handlePass = async (status: "PASS" | "FAIL") => {
     try {
-      checkedId.forEach(async (roomId) => {
-        await API.patch(`/api/recruitments/${id}`, {
-          applicantUpdate: [
-            {
-              roomId: roomId,
-              status: status,
-            },
-          ],
-        });
-      });
+      // 일괄 PATCH 요청을 모두 대기
+      await Promise.all(
+        checkedId.map((roomId) =>
+          API.patch(`/api/recruitments/${id}`, {
+            applicantUpdate: [
+              {
+                roomId,
+                status,
+              },
+            ],
+          })
+        )
+      );
+
+      // 데이터 재조회 및 선택 초기화
+      await fetchChat();
+      setCheckedId([]);
+      setCheckEnabled(false);
 
       const message = status === "PASS" ? "합격" : "불합격";
-      alert(`일괄 ${message} 처리가 완료되었습니다.`);
+      showAlert(`일괄 ${message} 처리가 완료되었습니다.`);
+      setOpenPassDialog(false);
     } catch (error) {
       console.log(error);
+      showAlert("오류가 발생했습니다. 다시 시도해 주세요.");
     }
+  };
+
+  const showAlert = (message: string) => {
+    // Clear existing timers to restart animation
+    alertTimers.current.forEach((t) => clearTimeout(t));
+    alertTimers.current = [];
+
+    setAlertMsg(message);
+    setAlertVisible(true);
+    setAlertFading(false);
+
+    // Start fade after 2.5s, remove after 3s
+    const t1 = window.setTimeout(() => setAlertFading(true), 2500);
+    const t2 = window.setTimeout(() => {
+      setAlertVisible(false);
+      setAlertFading(false);
+    }, 3000);
+
+    alertTimers.current.push(t1, t2);
   };
 
   return (
     <main className="relative min-h-screen w-[393px] mx-auto">
+      {/* Toast Alert */}
+      {alertVisible && (
+        <div
+          className={
+            "fixed bottom-[20px] left-1/2 -translate-x-1/2 z-[100] transition-opacity duration-500 " +
+            (alertFading ? "opacity-0" : "opacity-100")
+          }
+        >
+          <div className="px-[17px] py-[8.5px] rounded-[20px] bg-[#121212] text-[#E9E9E9] text-hakgyo-r-16 shadow-md whitespace-nowrap">
+            {alertMsg}
+          </div>
+        </div>
+      )}
       <section
         className="flex flex-col justify-between w-full h-[228px] bg-cover bg-center bg-no-repeat px-[16px] pt-[16px]"
         style={{
@@ -367,8 +421,6 @@ const BandRecruit = () => {
                   color="red"
                   onClick={() => {
                     handlePass(isPassDialog ? "PASS" : "FAIL");
-                    setOpenPassDialog(false);
-                    window.location.reload();
                   }}
                 >
                   예
