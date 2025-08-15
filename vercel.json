@@ -1,5 +1,9 @@
 {
   "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "ignoreCommand": "echo 'Use Vercel cache'",
   "builds": [
     {
       "src": "package.json",

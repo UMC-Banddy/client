@@ -1,8 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import homeIcon from "@/assets/icons/bottombar/home.svg";
 import noHomeIcon from "@/assets/icons/bottombar/no_home.svg";
-import searchIcon from "@/assets/icons/bottombar/search.svg";
-import noSearchIcon from "@/assets/icons/bottombar/no_search.svg";
+// import searchIcon from "@/assets/icons/bottombar/search.svg";
+// import noSearchIcon from "@/assets/icons/bottombar/no_search.svg";
 import chatIcon from "@/assets/icons/bottombar/chat.svg";
 import noChatIcon from "@/assets/icons/bottombar/no_chat.svg";
 import myIcon from "@/assets/icons/bottombar/my.svg";
@@ -16,12 +16,12 @@ const navs = [
     inactiveIcon: noHomeIcon,
     path: "/",
   },
-  {
-    label: "탐색",
-    activeIcon: searchIcon,
-    inactiveIcon: noSearchIcon,
-    path: "/explore",
-  },
+  // {
+  //   label: "탐색",
+  //   activeIcon: searchIcon,
+  //   inactiveIcon: noSearchIcon,
+  //   path: "/explore",
+  // },
   {
     label: "밴드생성",
     activeIcon: chatIcon,

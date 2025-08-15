@@ -3,9 +3,11 @@ export interface Notification {
   title: string;
   type: string;
   imageUrl: string | null;
+  isRead: "READ" | "UNREAD";
   createdAt: string;
   senderId: number;
   friendRequestId: number | null;
+  message: string | null;
 }
 
 export interface NotificationResponse {

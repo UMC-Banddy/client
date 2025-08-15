@@ -8,9 +8,15 @@ import { useNavigate } from "react-router-dom";
 
 const CreateBandGenre = () => {
   const { genres: toggledGenre } = useSnapshot(createBandStore);
-  const setToggledGenre = createBandActions.setGenres;
-
   const navigate = useNavigate();
+
+  const handleToggle = (text: string) => {
+    const newToggled = toggledGenre.includes(text)
+      ? toggledGenre.filter((g) => g !== text)
+      : [...toggledGenre, text];
+    createBandActions.setGenres(newToggled);
+  };
+
   return (
     <main className="relative min-h-screen w-[393px] mx-auto px-[16px] pt-[16px] pb-[200px]">
       <JoinHeader
@@ -26,11 +32,9 @@ const CreateBandGenre = () => {
               {toggledGenre.map((genre) => (
                 <GenreStatusBtn
                   key={genre}
-                  onClick={() =>
-                    setToggledGenre(toggledGenre.filter((id) => id !== genre))
-                  }
+                  onClick={() => handleToggle(genre)}
                 >
-                  {genres[genre].content}
+                  {genres.find((g) => g.text === genre)?.content}
                 </GenreStatusBtn>
               ))}
             </div>
@@ -42,14 +46,8 @@ const CreateBandGenre = () => {
           {genres.map((genre) => (
             <GenreToggleBtn
               key={genre.id}
-              onClick={() => {
-                if (toggledGenre.includes(genre.id)) {
-                  setToggledGenre(toggledGenre.filter((id) => id !== genre.id));
-                } else {
-                  setToggledGenre([...toggledGenre, genre.id]);
-                }
-              }}
-              toggled={toggledGenre.includes(genre.id)}
+              toggled={toggledGenre.includes(genre.text)}
+              onClick={() => handleToggle(genre.text)}
             >
               {genre.content}
             </GenreToggleBtn>

@@ -1,21 +1,36 @@
 import clsx from "clsx";
 import { useState } from "react";
 import volumeOff from "@/assets/icons/join/ic_volume_off.svg";
-import thumbnail from "@/assets/images/home-album1.svg";
 import { useNavigate } from "react-router-dom";
 
 interface BandThumbnailProps {
   isRecruiting: boolean;
+  bandId: number;
+  name: string;
+  thumbnail: string | null;
+  memberSummary: string;
+  memberCount: number;
 }
 
-const BandThumbnail = ({ isRecruiting = false }: BandThumbnailProps) => {
+const BandThumbnail = ({
+  isRecruiting = false,
+  bandId,
+  name,
+  thumbnail,
+  memberSummary,
+  memberCount,
+}: BandThumbnailProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const navigate = useNavigate();
   return (
     <div
       className="flex flex-col gap-[12px]"
-      onClick={() => navigate("/join/saved-band/1")}
+      onClick={() =>
+        navigate(`/join/saved-band/${bandId}`, {
+          state: { memberSummary, memberCount },
+        })
+      }
     >
       <div className="relative size-[166px] bg-[#777]">
         <div
@@ -46,7 +61,7 @@ const BandThumbnail = ({ isRecruiting = false }: BandThumbnailProps) => {
           onClick={() => setIsPlaying((prev) => !prev)}
         />
       </div>
-      <p className="text-hakgyo-r-14 text-[#fff]">생태계교란종</p>
+      <p className="text-hakgyo-r-14 text-[#fff]">{name}</p>
     </div>
   );
 };

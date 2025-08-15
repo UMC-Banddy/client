@@ -14,11 +14,11 @@ import { createBandActions, createBandStore } from "@/store/createBandStore";
 export type Track = {
   spotifyId: string;
   title: string;
-  artist: string;
-  album: string;
-  duration: string;
-  imageUrl: string;
-  externalUrl: string;
+  artist?: string;
+  album?: string;
+  duration?: string;
+  imageUrl: string | null;
+  externalUrl?: string;
 };
 
 const CreateBandSong: React.FC = () => {

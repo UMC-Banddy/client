@@ -2,6 +2,7 @@ import axios from "axios";
 import { API_ENDPOINTS } from "@/constants";
 import { authStore } from "@/store/authStore";
 import { AxiosError } from "axios";
+import { handleRefreshTokenExpired } from "@/shared/utils/authCleanup";
 
 // 아티스트 타입 정의
 export interface Artist {
@@ -99,9 +100,11 @@ export interface AutocompleteResponse {
 }
 
 // Axios 인스턴스 생성
+const viteEnv =
+  (import.meta as unknown as { env?: Record<string, string | undefined> })
+    .env || {};
 export const API = axios.create({
-  // 환경변수 없으면 상대경로 사용 (Vite 프록시/VerceI rewrites로 처리)
-  baseURL: import.meta.env.VITE_API_BASE_URL || "",
+  baseURL: viteEnv.VITE_API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -158,9 +161,8 @@ API.interceptors.response.use(
         return API(originalRequest);
       } catch (refreshError) {
         console.error("토큰 재발급 실패", refreshError);
-        authStore.accessToken = null;
-        authStore.refreshToken = null;
-        authStore.isAuthenticated = false;
+        // refreshToken 만료/무효 시 전역 정리
+        handleRefreshTokenExpired();
         return Promise.reject(refreshError);
       }
     }

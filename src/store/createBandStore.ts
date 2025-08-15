@@ -3,7 +3,7 @@ import type { Track } from "@/pages/Join/create_band/CreateBandSong";
 import { proxy } from "valtio";
 
 interface CreateBandStore {
-  genres: number[];
+  genres: string[];
   artists: Artist[];
   songs: Track[];
 }
@@ -15,7 +15,7 @@ export const createBandStore = proxy<CreateBandStore>({
 });
 
 export const createBandActions = {
-  setGenres: (newGenres: number[]) => {
+  setGenres: (newGenres: string[]) => {
     createBandStore.genres = newGenres;
   },
   setArtists: (newArtists: Artist[]) => {

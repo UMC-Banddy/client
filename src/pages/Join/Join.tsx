@@ -11,24 +11,123 @@ import plus from "@/assets/icons/join/ic_plus.svg";
 import { API } from "@/api/API";
 import { useNavigate } from "react-router-dom";
 
+interface MemberInfo {
+  memberId: number;
+  nickname: string;
+  profileImageUrl: string | null;
+}
+
+type ChatRoom = {
+  roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER";
+  unreadCount: number | null;
+  lastMessageAt: string | null;
+  roomId: number;
+  chatName: string;
+  imageUrl: string | null;
+} & (
+  | {
+      roomType: "PRIVATE";
+      memberInfo: MemberInfo;
+    }
+  | {
+      roomType: "GROUP" | "BAND-APPLICANT";
+      memberInfos: MemberInfo[];
+    }
+  | {
+      roomType: "BAND-MANAGER";
+      unreadCount: number | null;
+      pinnedAt: string | null;
+      lastMessageAt: string | null;
+      bandId: number;
+      bandImageUrl: string | null;
+      bandName: string;
+      status: "RECRUITING" | "CLOSED";
+      bandSessionList: [];
+      chatRoomInfo: [];
+    }
+);
+
 const Join = () => {
   const [openChatCategory, setOpenChatCategory] = useState(false);
-  const [category, setCategory] = useState("전체 채팅방");
+  const [category, setCategory] = useState<
+    "전체 채팅방" | "일반 채팅방" | "밴드 채팅방"
+  >("전체 채팅방");
   const [openFloatingBtn, setOpenFloatingBtn] = useState(false);
 
-  const [chatRooms, setChatRooms] = useState([]);
+  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       const { data } = await API.get("/api/chat/rooms");
-      setChatRooms(data);
-      console.log(data);
-      console.log(chatRooms);
+      setChatRooms(data.result.chatRoomInfos);
     };
     fetchData();
   }, []);
+
+  const renderChatRooms = () => {
+    return chatRooms
+      .filter((room) => {
+        if (category === "일반 채팅방") {
+          return room.roomType === "PRIVATE" || room.roomType === "GROUP";
+        } else if (category === "밴드 채팅방") {
+          return (
+            room.roomType === "BAND-APPLICANT" ||
+            room.roomType === "BAND-MANAGER"
+          );
+        }
+        return true; // 전체 채팅방인 경우 모든 채팅방 표시
+      })
+      .map((room) => {
+        if (room.roomType === "PRIVATE") {
+          return (
+            <NormalChat
+              key={room.roomId}
+              roomId={room.roomId}
+              roomType="PRIVATE"
+              name={room.chatName}
+              thumbnail={room.imageUrl}
+              members={[room.memberInfo.nickname]}
+              unreadCount={room.unreadCount}
+            />
+          );
+        } else if (room.roomType === "GROUP") {
+          return (
+            <NormalChat
+              key={room.roomId}
+              name={room.chatName}
+              thumbnail={room.imageUrl}
+              members={room.memberInfos.map((member) => member.nickname)}
+              unreadCount={room.unreadCount}
+            />
+          );
+        } else if (room.roomType === "BAND-APPLICANT") {
+          return (
+            <BandChat
+              key={room.roomId}
+              id={room.roomId}
+              name={room.chatName}
+              thumbnail={room.imageUrl}
+              // members={room.memberInfos.map((member) => member.nickname)}
+              unreadCount={room.unreadCount}
+            />
+          );
+        } else if (room.roomType === "BAND-MANAGER") {
+          return (
+            <BandChat
+              key={room.roomId}
+              id={room.bandId}
+              name={room.bandName}
+              thumbnail={room.bandImageUrl}
+              unreadCount={room.unreadCount}
+              isHost={room.roomType === "BAND-MANAGER"}
+            />
+          );
+        }
+        return null;
+      });
+  };
 
   return (
     <main className="relative min-h-screen w-[393px] mx-auto px-[24px] pt-[12px]">
@@ -81,16 +180,7 @@ const Join = () => {
         </div>
       </div>
       <section className="flex flex-col gap-[19px] mt-[48px] w-full">
-        {/* 출력 부분 API 연결 */}
-        {(category === "전체 채팅방" || category === "일반 채팅방") && (
-          <NormalChat />
-        )}
-        {(category === "전체 채팅방" || category === "밴드 채팅방") && (
-          <BandChat isHost={true} />
-        )}
-        {(category === "전체 채팅방" || category === "밴드 채팅방") && (
-          <BandChat />
-        )}
+        {renderChatRooms()}
       </section>
 
       {/* floating btn */}
