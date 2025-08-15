@@ -100,7 +100,8 @@ export interface AutocompleteResponse {
 
 // Axios 인스턴스 생성
 export const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  // 환경변수 없으면 상대경로 사용 (Vite 프록시/VerceI rewrites로 처리)
+  baseURL: import.meta.env.VITE_API_BASE_URL || "",
   headers: {
     "Content-Type": "application/json",
   },
@@ -121,6 +122,15 @@ API.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // refreshToken 엔드포인트에서의 401은 재시도 금지 (무한 루프 방지)
+    const requestUrl: string = originalRequest?.url || "";
+    const isRefreshEndpoint = requestUrl.includes(
+      API_ENDPOINTS.AUTH.REFRESH_TOKEN
+    );
+    if (isRefreshEndpoint) {
+      return Promise.reject(error);
+    }
+
     // accessToken 만료 + retry 방지 플래그
     if (
       error.response?.status === 401 &&
@@ -130,8 +140,12 @@ API.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // 인스턴스를 사용해 상대경로로 호출 (Vercel rewrite 및 baseURL 미설정 환경 호환)
-        const res = await API.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
+        // 공용 인스턴스(API)가 아닌 별도 axios로 호출하여 인터셉터 재귀 방지
+        const apiBase = import.meta.env.VITE_API_BASE_URL || "";
+        const refreshUrl = apiBase
+          ? `${apiBase}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`
+          : API_ENDPOINTS.AUTH.REFRESH_TOKEN;
+        const res = await axios.post(refreshUrl, {
           refreshToken: authStore.refreshToken,
         });
 

@@ -19,6 +19,10 @@
       "destination": "https://banddy.site/auth/$1"
     },
     {
+      "source": "/ws",
+      "destination": "https://banddy.site/ws"
+    },
+    {
       "source": "/member",
       "destination": "https://banddy.site/member"
     },

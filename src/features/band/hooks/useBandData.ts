@@ -1,28 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { bandKeys } from "./keys";
-import {
-  getRecommendedFromSimilar,
-  getBandProfile,
-  getBandDetail,
-  getBandMembers,
-  getBandTracks,
-  getBandArtists,
-} from "@/store/userStore";
+import { getRecommendedFromSimilar, getBandProfile, getBandDetail, getBandMembers } from "@/store/userStore";
 import type { BandProfile, BandDetail } from "@/types/band";
 
-// 상세 정보 목업 (API 500/404 등 실패 시 안전 폴백)
-function getMockBandDetail(bandId: string): BandDetail {
+// 상세 폴백은 화면에서 에러 처리로 대체 (목업 제거)
+
+// 프로필 스키마 정규화 (빈 값 기본값 치환)
+function sanitizeProfile(data?: Partial<BandProfile>): BandProfile {
+  const goalTracks = Array.isArray(data?.goalTracks) ? data!.goalTracks! : [];
+  const preferredArtists = Array.isArray(data?.preferredArtists)
+    ? data!.preferredArtists!
+    : [];
+  const composition = data?.composition ?? undefined;
+  const sns = Array.isArray(data?.sns) ? data!.sns! : [];
+  const sessions = Array.isArray(data?.sessions) ? data!.sessions! : [];
+  const jobs = Array.isArray(data?.jobs) ? data!.jobs! : [];
+
   return {
-    bandId: Number(bandId),
-    bandName: "밴디 (임시)",
-    profileImageUrl: "/assets/profile1.png",
-    ageRange: "20-30",
-    genderCondition: "무관",
-    region: "서울",
-    district: "강남구",
-    description: "임시 밴드 소개입니다. 서버 데이터가 없을 때 표시됩니다.",
-    endDate: undefined,
-    snsList: [],
+    goalTracks,
+    preferredArtists,
+    composition,
+    sns,
+    sessions,
+    jobs,
   };
 }
 
@@ -42,6 +42,21 @@ export function useRecommendedBands() {
   });
 }
 
+// 상세만 단독 조회 (스펙: GET /api/band/{bandId}/detail)
+export function useBandDetail(bandId: string) {
+  return useQuery({
+    queryKey: [...bandKeys.profile(bandId), "detail-only"],
+    queryFn: async (): Promise<BandDetail> => {
+      // 에러는 상위 컴포넌트에서 에러 화면으로 처리하도록 전달
+      const detail = await getBandDetail(bandId);
+      if (!detail) throw new Error("Band detail not found");
+      return detail;
+    },
+    enabled: !!bandId,
+    staleTime: 60 * 1000,
+  });
+}
+
 // 안전 폴백: 밴드 프로필 500/404시 최소 스켈레톤 데이터
 export function useBandProfile(bandId: string) {
   return useQuery({
@@ -51,19 +66,11 @@ export function useBandProfile(bandId: string) {
       detail?: BandDetail;
     }> => {
       try {
-        const [profile, detail] = await Promise.all([
-          getBandProfile(bandId),
-          getBandDetail(bandId).catch(() => undefined),
-        ]);
-        // 상세가 없으면 목업으로 대체
-        const safeDetail = detail ?? getMockBandDetail(bandId);
-        return { profile: profile ?? ({} as BandProfile), detail: safeDetail };
+        const profile = await getBandProfile(bandId);
+        const safeProfile = sanitizeProfile(profile as Partial<BandProfile>);
+        return { profile: safeProfile };
       } catch {
-        // 프로필까지 모두 실패하면 최소 구조로 반환
-        return {
-          profile: {} as BandProfile,
-          detail: getMockBandDetail(bandId),
-        };
+        return { profile: sanitizeProfile(undefined) };
       }
     },
     enabled: !!bandId,
@@ -92,8 +99,14 @@ export function useBandTracks(bandId: string) {
     queryKey: [...bandKeys.profile(bandId), "tracks"],
     queryFn: async () => {
       try {
-        const data = await getBandTracks(bandId);
-        return Array.isArray(data) ? data : [];
+        // 서버에 /api/band/{id}/tracks 미구현(404) → 프로필의 goalTracks 사용
+        const profile: BandProfile = (await getBandProfile(
+          bandId
+        )) as BandProfile;
+        const tracks = Array.isArray(profile.goalTracks)
+          ? profile.goalTracks
+          : [];
+        return tracks;
       } catch {
         return [] as unknown[];
       }
@@ -108,8 +121,14 @@ export function useBandArtists(bandId: string) {
     queryKey: [...bandKeys.profile(bandId), "artists"],
     queryFn: async () => {
       try {
-        const data = await getBandArtists(bandId);
-        return Array.isArray(data) ? data : [];
+        // 서버에 /api/band/{id}/artists 미구현(404) → 프로필의 preferredArtists 사용
+        const profile: BandProfile = (await getBandProfile(
+          bandId
+        )) as BandProfile;
+        const artists = Array.isArray(profile.preferredArtists)
+          ? profile.preferredArtists
+          : [];
+        return artists;
       } catch {
         return [] as unknown[];
       }

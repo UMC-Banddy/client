@@ -70,7 +70,9 @@ export default function PlaylistPage() {
   );
 
   const tracks: Track[] = useMemo(() => {
-    const safe = Array.isArray(tracksData) ? tracksData : [];
+    const safe: Array<Partial<Track>> = Array.isArray(tracksData)
+      ? (tracksData as Array<Partial<Track>>)
+      : [];
     if (safe.length === 0) {
       return [
         {
@@ -93,7 +95,7 @@ export default function PlaylistPage() {
         },
       ];
     }
-    return safe.map((t: Partial<Track>, index: number) => ({
+    return safe.map((t, index: number) => ({
       id: t?.id ?? index + 1,
       title: t?.title ?? `곡 ${index + 1}`,
       artist: t?.artist ?? "아티스트",
