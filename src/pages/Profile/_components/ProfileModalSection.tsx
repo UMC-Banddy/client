@@ -1,14 +1,13 @@
 import ProfileRequestModal from "@/shared/ui/organisms/ProfileRequestModal";
-import Toast from "@/shared/ui/atoms/Toast";
 
 interface ProfileModalSectionProps {
   modalType: "chat" | "friend" | null;
   modalMsg: string;
   profileName: string;
-  onSend: () => void;
+  onSend: (toastMessage: string) => void;
   onClose: () => void;
   onMessageChange: (msg: string) => void;
-  toast: { message: string; visible: boolean };
+  targetMemberId: number;
 }
 
 export default function ProfileModalSection({
@@ -18,7 +17,7 @@ export default function ProfileModalSection({
   onSend,
   onClose,
   onMessageChange,
-  toast
+  targetMemberId
 }: ProfileModalSectionProps) {
 
   return (
@@ -32,9 +31,8 @@ export default function ProfileModalSection({
         onMessageChange={onMessageChange}
         onSend={onSend}
         onClose={onClose}
+        targetMemberId={targetMemberId}
       />
-      {/* 토스트 */}
-      <Toast message={toast.message} visible={toast.visible} />
     </>
   );
 } 
