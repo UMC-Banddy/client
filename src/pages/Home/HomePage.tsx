@@ -61,6 +61,18 @@ interface Band {
   profileData?: BandProfileData; // 원본 프로필 데이터 저장
 }
 
+interface BandDetail {
+  bandId: number;
+  bandName: string;
+  profileImageUrl: string;
+  goalTracks: TrackDto[];
+  preferredArtists: ArtistDto[];
+  composition: CompositionDto;
+  sns: SnsDto[];
+  sessions: string[];
+  jobs: string[];
+}
+
 // 세션 이름 정리 및 아이콘 매핑 함수
 const cleanSessionName = (sessionName: string): string => {
   // 이모지 제거
@@ -250,7 +262,7 @@ const HomePage = () => {
         57, 58, 59, 60,
       ];
 
-      let details: any[] = [];
+      let details: BandDetail[] = [];
       try {
         details = await probeSomeBandDetails({
           limit: Math.min(100, candidateIds?.length ?? 40),

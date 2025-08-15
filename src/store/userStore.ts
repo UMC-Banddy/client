@@ -187,7 +187,7 @@ export const getRecommendedBands = async () => {
   try {
     // 먼저 similar API를 통해 실제 존재하는 밴드들을 가져옴
     try {
-      const [tracksRes, artistsRes] = await Promise.all([
+      const [tracksRes] = await Promise.all([
         API.get(API_ENDPOINTS.TRACKS.SIMILAR),
         API.get(API_ENDPOINTS.ARTISTS.SIMILAR),
       ]);
@@ -199,22 +199,32 @@ export const getRecommendedBands = async () => {
         tracksRes.data.length > 0
       ) {
         const similarProfiles = tracksRes.data
-          .filter((track: any) => track.bandId || track.bandProfile)
-          .map((track: any) => {
-            // API 응답 구조에 따라 적절히 매핑
-            if (track.bandProfile) {
-              return track.bandProfile;
-            } else if (track.bandId) {
-              // bandId만 있다면 기본 프로필 구조로 변환
-              return {
-                bandId: track.bandId,
-                bandName: track.bandName || `밴드 ${track.bandId}`,
-                profileImageUrl: track.profileImageUrl || null,
-                // 기타 필요한 필드들...
-              };
+          .filter(
+            (track: { bandId?: number; bandProfile?: unknown }) =>
+              track.bandId || track.bandProfile
+          )
+          .map(
+            (track: {
+              bandId?: number;
+              bandProfile?: unknown;
+              bandName?: string;
+              profileImageUrl?: string;
+            }) => {
+              // API 응답 구조에 따라 적절히 매핑
+              if (track.bandProfile) {
+                return track.bandProfile;
+              } else if (track.bandId) {
+                // bandId만 있다면 기본 프로필 구조로 변환
+                return {
+                  bandId: track.bandId,
+                  bandName: track.bandName || `밴드 ${track.bandId}`,
+                  profileImageUrl: track.profileImageUrl || null,
+                  // 기타 필요한 필드들...
+                };
+              }
+              return null;
             }
-            return null;
-          })
+          )
           .filter(Boolean);
 
         if (similarProfiles.length > 0) {
@@ -225,8 +235,8 @@ export const getRecommendedBands = async () => {
       // similar API에서 프로필을 직접 제공하지 않는 경우, 상세 정보 조회
       const similarBandIds =
         tracksRes.data
-          ?.filter((track: any) => track.bandId)
-          ?.map((track: any) => track.bandId)
+          ?.filter((track: { bandId?: number }) => track.bandId)
+          ?.map((track: { bandId?: number }) => track.bandId)
           ?.slice(0, 10) || [];
 
       if (similarBandIds.length > 0) {
@@ -250,7 +260,7 @@ export const getRecommendedBands = async () => {
       }
 
       throw new Error("Similar API에서 유효한 밴드 정보를 찾을 수 없음");
-    } catch (similarError: unknown) {
+    } catch {
       // Similar API가 실패하면 fallback으로 기본 ID 시도 (최소한으로만)
       const fallbackBandIds = ["1", "2", "3", "4", "5"];
       const validProfiles = [];
@@ -270,7 +280,7 @@ export const getRecommendedBands = async () => {
 
       return validProfiles;
     }
-  } catch (error) {
+  } catch {
     // 최종 에러 시에도 빈 배열 반환하여 앱이 중단되지 않도록 함
     return [];
   }
@@ -397,7 +407,7 @@ export const getRecommendedFromSimilar = async (): Promise<BandProfile[]> => {
     }
 
     return result;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("대체 추천(유사 트랙/아티스트) 구성 실패:", error);
     return [];
   }
@@ -430,18 +440,20 @@ export const probeSomeBandDetails = async (options?: {
     if (tracksRes.data && Array.isArray(tracksRes.data)) {
       similarBandIds = tracksRes.data
         .filter(
-          (track: any) => track.bandId && typeof track.bandId === "number"
+          (track: { bandId?: number }): track is { bandId: number } =>
+            track.bandId !== undefined && typeof track.bandId === "number"
         )
-        .map((track: any) => track.bandId);
+        .map((track: { bandId: number }) => track.bandId);
     }
 
     // artistsRes.data에서도 bandId 추출 시도
     if (artistsRes.data && Array.isArray(artistsRes.data)) {
       const artistBandIds = artistsRes.data
         .filter(
-          (artist: any) => artist.bandId && typeof artist.bandId === "number"
+          (artist: { bandId?: number }): artist is { bandId: number } =>
+            artist.bandId !== undefined && typeof artist.bandId === "number"
         )
-        .map((artist: any) => artist.bandId);
+        .map((artist: { bandId: number }) => artist.bandId);
 
       // 중복 제거하면서 합치기
       similarBandIds = [...new Set([...similarBandIds, ...artistBandIds])];
