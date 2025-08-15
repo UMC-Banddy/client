@@ -127,9 +127,9 @@ const PretestProfileCompletePage: React.FC = () => {
         <div className="w-full max-w-2xl mx-auto">
           {/* 완성 메시지 */}
           <div className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16 xl:mb-20">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl text-white font-medium leading-tight">
-              프로필이 완성되었습니다!
-            </h1>
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl text-white font-medium leading-tight">
+          사전테스트가 완료되었습니다!
+        </h1>
           </div>
 
           {/* 로딩 상태 */}

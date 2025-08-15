@@ -106,6 +106,17 @@ export default defineConfig(({ mode }) => {
           ws: true,
           secure: false,
         },
+        // 백엔드가 기대하는 경로에 맞춰 추가 프록시 설정
+        "/member/login": {
+          target: apiBase,
+          changeOrigin: true,
+          secure: false,
+        },
+        "/member/signup": {
+          target: apiBase,
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
     preview: {

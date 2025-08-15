@@ -70,9 +70,9 @@ const PretestSessionPage = () => {
     }));
   };
 
-  // 건너뛰기 처리
+  // 건너뛰기 처리 - 홈으로 이동
   const handleSkip = () => {
-    navigate("/pre-test/profile/complete");
+    navigate("/");
   };
 
   // 다음 단계 처리
