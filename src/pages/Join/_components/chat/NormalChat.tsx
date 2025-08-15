@@ -3,6 +3,7 @@ import { showMembers } from "../../_utils/showMembers";
 import Modal from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
 import { API } from "@/api/API";
+import { useNavigate } from "react-router-dom";
 
 interface NormalChatProps {
   roomId: number;
@@ -24,6 +25,8 @@ const NormalChat = ({
   const [showMenu, setShowMenu] = useState(false);
   const [showExitChat, setShowExitChat] = useState(false);
   const timerRef = useRef<number | null>(null);
+
+  const navigate = useNavigate();
 
   const startPressTimer = () => {
     // 500ms 이상 누르면 롱프레스 인식
@@ -118,7 +121,16 @@ const NormalChat = ({
 
       <Modal open={showMenu} setOpen={setShowMenu}>
         <div className="w-[323px] h-[210px]">
-          <button className="p-[24px] w-full h-[70px] text-start text-hakgyo-b-17">
+          <button
+            className="p-[24px] w-full h-[70px] text-start text-hakgyo-b-17"
+            onClick={() => {
+              navigate("/join/change-chat-info", {
+                state: {
+                  roomId,
+                },
+              });
+            }}
+          >
             채팅방 정보 설정
           </button>
           <button
