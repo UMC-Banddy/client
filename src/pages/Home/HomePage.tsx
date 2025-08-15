@@ -225,7 +225,7 @@ const HomePage = () => {
         const allBands = await getAllBands();
         const ids = Array.isArray(allBands)
           ? allBands
-              .map((b: any) => Number(b?.bandId ?? b?.id))
+              .map((b) => Number(b?.bandId ?? b?.id))
               .filter((n: number) => Number.isFinite(n))
           : [];
         if (ids.length > 0) {
@@ -365,7 +365,9 @@ const HomePage = () => {
             });
           }
         }
-      } catch {}
+      } catch (error) {
+        console.error("error:", error);
+      }
 
       setMyBands(bands);
     } catch (error) {
@@ -380,7 +382,7 @@ const HomePage = () => {
   const handleJoinClick = async (band: Band) => {
     // bandId 49는 그룹 채팅방(roomId 52)로 바로 이동
     if (band.id === 49) {
-      navigate(`/home/chat?roomId=52&roomType=GROUP`);
+      navigate("/home/chat?roomId=52&roomType=GROUP");
       return;
     }
     // 기타는 기존 모달 열기

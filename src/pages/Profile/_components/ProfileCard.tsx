@@ -5,7 +5,6 @@ import ProfileGenreList from "./ProfileGenreList";
 import ProfileArtistList from "./ProfileArtistList";
 import ProfileTagList from "./ProfileTagList";
 import ProfileBio from "./ProfileBio";
-import Guide from "./Guide";
 import file_music from "@/assets/icons/profile/file-music.svg";
 import youtube from "@/assets/icons/profile/youtube.svg";
 
@@ -28,16 +27,12 @@ interface ProfileCardProps {
   profile: ProfileData;
   onChat: () => void;
   onFriend: () => void;
-  showGuide: boolean;
-  onGuideClose: () => void;
 }
 
 export default function ProfileCard({ 
   profile, 
   onChat, 
-  onFriend, 
-  showGuide, 
-  onGuideClose 
+  onFriend
 }: ProfileCardProps) {
   const navigate = useNavigate();
 
@@ -62,16 +57,13 @@ export default function ProfileCard({
         </button>
       </div>
       
-      {/* 프로필 이미지와 가이드 */}
+      {/* 프로필 이미지 */}
       <div className="relative">
         <div 
           className="w-[38vw] h-[38vw] max-w-[152px] max-h-[152px] rounded-full bg-[#808080] flex items-center justify-center overflow-hidden mt-[4vh] mb-[1vh] cursor-pointer"
         >
           <img src={profile.avatar} alt="avatar" className="w-full h-full object-cover" />
         </div>
-        
-        {/* 가이드 */}
-        <Guide showGuide={showGuide} onClose={onGuideClose} />
       </div>
       
       <div className="text-black text-hakgyo-b-24 mb-[0.8vh]">{profile.name}</div>
