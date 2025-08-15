@@ -2,7 +2,7 @@ name: Deploy to S3 + CloudFront (release)
 
 on:
   push:
-    branches: [ "release" ]
+    branches: ["release"]
   workflow_dispatch:
 
 # 동시 실행 방지 (배포는 순차로)
@@ -34,8 +34,6 @@ jobs:
 
       - name: Build
         env:
-          # 필요 시 Vite 환경변수를 추가로 전달하세요 (예: VITE_API_BASE_URL 등)
-          # VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           NODE_OPTIONS: --max_old_space_size=4096
         run: npm run build
 
@@ -67,10 +65,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Install AWS CLI (fallback)
-        if: ${{ always() }}
+      - name: Install AWS CLI v2
         run: |
-          which aws || sudo apt-get update && sudo apt-get install -y awscli
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+          aws --version
 
       - name: Upload static assets (long-cache) except HTML
         run: |
@@ -101,5 +101,3 @@ jobs:
           if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
             echo "CloudFront invalidation requested for distribution: $CLOUDFRONT_DISTRIBUTION_ID"
           fi
-
-
