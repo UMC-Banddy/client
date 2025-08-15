@@ -1,5 +1,5 @@
 import guitarActivated from "@/assets/icons/join/ic_guitar_activated.svg";
-import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
+// import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
 import BandThumbnail from "../_components/saved_band/BandThumbnail";
 import { API } from "@/api/API";
 import { useEffect, useState } from "react";
@@ -45,9 +45,9 @@ const SavedBand = () => {
         >
           <img src={guitarActivated} alt="" className="size-[48px]" />
         </button>
-        <button className="p-[0] bg-transparent border-none cursor-pointer">
+        {/* <button className="p-[0] bg-transparent border-none cursor-pointer">
           <img src={moodHeart} alt="" className="size-[48px]" />
-        </button>
+        </button> */}
       </div>
 
       <ToggleBtn toggle={showOnlyRecruiting} setToggle={setShowOnlyRecruiting}>

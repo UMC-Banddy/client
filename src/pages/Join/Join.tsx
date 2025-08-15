@@ -1,6 +1,6 @@
 import downArrow from "@/assets/icons/join/ic_down_arrow.svg";
 import guitar from "@/assets/icons/join/ic_guitar.svg";
-import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
+// import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
 import NormalChat from "./_components/chat/NormalChat";
 import BandChat from "./_components/chat/BandChat";
 import { useEffect, useState } from "react";
@@ -176,9 +176,9 @@ const Join = () => {
           >
             <img src={guitar} alt="" />
           </button>
-          <button className="p-[0] bg-transparent border-none cursor-pointer">
+          {/* <button className="p-[0] bg-transparent border-none cursor-pointer">
             <img src={moodHeart} alt="" />
-          </button>
+          </button> */}
         </div>
       </div>
       <section className="flex flex-col gap-[19px] mt-[48px] w-full">
