@@ -81,15 +81,6 @@ const TagList: React.FC<{
 
         const SessionIcon = isSessionTag ? getSessionIcon(tag) : null;
 
-        // 디버깅용 로그 (개발 환경에서만)
-        if (import.meta.env.DEV && idx === 0) {
-          console.log(
-            `태그 "${tag}" - isSessionTag: ${isSessionTag}, SessionIcon: ${
-              SessionIcon ? "있음" : "없음"
-            }`
-          );
-        }
-
         return (
           <CustomButton
             key={idx}
