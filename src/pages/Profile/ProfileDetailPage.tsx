@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Toast from "@/shared/ui/atoms/Toast";
 import { useParams } from "react-router-dom";
 import ProfileHeader from "./_components/ProfileHeader";
@@ -20,9 +20,6 @@ import {
 export default function ProfileDetailPage() {
   const { id } = useParams();
   const { profile: otherProfile, isLoading, error } = useOtherProfile(id ? parseInt(id) : null);
-  
-  // 가이드 상태 관리
-  const [showGuide, setShowGuide] = useState(false);
   
   // 모달 상태 관리
   const [modalType, setModalType] = useState<null | "chat" | "friend">(null);
@@ -70,7 +67,7 @@ export default function ProfileDetailPage() {
     return "🎵"; // 기본값
   };
   
-  // API 데이터를 기존 형식으로 변환
+  // API 데이터를 기반 형식으로 변환
   const profile = otherProfile ? {
     avatar: otherProfile.profileImageUrl,
     id: otherProfile.memberId,
@@ -94,20 +91,6 @@ export default function ProfileDetailPage() {
     bio: otherProfile.bio,
     youtubeUrl: otherProfile.youtubeUrl,
   } : null;
-
-  // 첫 접근 감지 및 가이드 표시
-  useEffect(() => {
-    const hasSeenGuide = localStorage.getItem("profile_guide_shown");
-    if (!hasSeenGuide) {
-      setShowGuide(true);
-    }
-  }, []);
-
-  // 가이드 닫기 핸들러
-  const handleGuideClose = () => {
-    setShowGuide(false);
-    localStorage.setItem("profile_guide_shown", "true");
-  };
 
   // 모달 보내기 (토스트 메시지와 함께)
   const handleSend = (toastMessage: string) => {
@@ -162,8 +145,6 @@ export default function ProfileDetailPage() {
           profile={profile}
           onChat={() => setModalType("chat")}
           onFriend={() => setModalType("friend")}
-          showGuide={showGuide}
-          onGuideClose={handleGuideClose}
         />
       </div>
       
