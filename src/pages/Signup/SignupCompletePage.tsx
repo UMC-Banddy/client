@@ -32,10 +32,10 @@ const SignupCompletePage: React.FC = () => {
         </SignupButton>
 
         <SignupButton
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/login")}
           variant="secondary"
         >
-          홈으로 가기
+          로그인 하러 가기
         </SignupButton>
       </div>
     </div>
