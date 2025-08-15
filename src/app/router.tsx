@@ -47,6 +47,7 @@ import OtherProfile from "@/pages/Profile/OtherProfile";
 import ProfileDetailPage from "@/pages/Profile/ProfileDetailPage";
 import ProtectedRoute from "@/shared/components/ProtectedRoute";
 import { Outlet } from "react-router-dom";
+import JoinChangeChatInfo from "@/pages/Join/JoinChangeChatInfo";
 
 const routes = [
   {
@@ -335,6 +336,7 @@ const routes = [
         ),
         children: [
           { index: true, element: <Join /> },
+          { path: "change-chat-info", element: <JoinChangeChatInfo /> },
           { path: "band-recruit/:id", element: <BandRecruit /> },
           {
             path: "create-band",

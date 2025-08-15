@@ -42,7 +42,7 @@ const BottomBar = () => {
     <div className="w-full">
       <nav
         className="
-          fixed bottom-0 left-0 w-full z-50
+          fixed bottom-0 left-0 px-[34.5px] w-full z-50
           custom-bottom-gradient rounded-t-2xl
           h-[12.2vh] flex items-center
         "
@@ -71,11 +71,7 @@ const BottomBar = () => {
                   src={active ? nav.activeIcon : nav.inactiveIcon}
                   alt={nav.label + " 아이콘"}
                   // className="w-[12vw] h-[12vw] min-w-6 min-h-6 transition-opacity"
-                  className="
-                    w-[12vw] h-[12vw] min-w-6 min-h-6
-                    md:w-12 md:h-12
-                    transition-opacity
-                  "
+                  className="w-12 h-12 min-w-6 min-h-6 transition-opacity"
                 />
                 <span
                   className={`

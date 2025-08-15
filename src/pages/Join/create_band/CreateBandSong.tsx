@@ -3,7 +3,6 @@ import SearchField from "../_components/SearchField";
 import plusIcon from "@/assets/icons/join/ic_plus_btn.svg";
 import checkIcon from "@/assets/icons/join/ic_check_transparent.svg";
 import deleteIcon from "@/assets/icons/join/ic_delete.svg";
-import dummyImage from "@/assets/images/home-album1.svg";
 import playIcon from "@/assets/icons/join/ic_play.svg";
 import { API } from "@/api/API";
 import JoinHeader from "../_components/JoinHeader";
@@ -87,7 +86,7 @@ const CreateBandSong: React.FC = () => {
                     <div
                       className="relative w-[50px] h-[50px] bg-cover bg-center"
                       style={{
-                        backgroundImage: `url(${track.imageUrl || dummyImage})`,
+                        backgroundImage: `url(${track.imageUrl || ""})`,
                       }}
                     >
                       <button
@@ -129,7 +128,7 @@ const CreateBandSong: React.FC = () => {
                 <div className="flex gap-[15px] items-center">
                   <div className="relative w-[55px] h-[55px] rounded bg-[#CACACA] overflow-hidden">
                     <img
-                      src={track.imageUrl || dummyImage}
+                      src={track.imageUrl || ""}
                       alt={track.title}
                       className="w-full h-full object-cover"
                     />

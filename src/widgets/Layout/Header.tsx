@@ -16,6 +16,7 @@ const routeNameMap: Record<string, string> = {
 
 const nonHeaderRouteNames = [
   "/join",
+  "/join/change-chat-info",
   "/join/band-recruit/:id",
   "/join/create-chat",
   "/join/create-chat/2",
@@ -28,13 +29,13 @@ const nonHeaderRouteNames = [
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // 임시 동적 라우트 처리 (앨범 아이디 처리)
   let routeName = routeNameMap[location.pathname] || "";
   if (!routeName && location.pathname.startsWith("/my/archive/album/")) {
     routeName = "Archive";
   }
-  
+
   const depth = location.pathname.split("/").filter(Boolean).length;
 
   // Check if current path matches any non-header routes (including dynamic routes)

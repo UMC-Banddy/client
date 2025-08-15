@@ -184,6 +184,7 @@ const CreateBand = () => {
   const [name, setName] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [automaticClosing, setAutomaticClosing] = useState(false);
   const [endDate, setEndDate] = useState(new Date());
   const [bandIntro, setBandIntro] = useState("");
@@ -228,6 +229,7 @@ const CreateBand = () => {
     useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
 
   const { genres: toggledGenre, artists, songs } = useSnapshot(createBandStore);
   const setToggledGenre = createBandActions.setGenres;
@@ -334,6 +336,13 @@ const CreateBand = () => {
     fileInputRef.current?.click();
   };
 
+  const handleAudioSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = (event.target.files && event.target.files[0]) || null;
+    setAudioFile(file);
+    // allow re-selecting the same file
+    event.target.value = "";
+  };
+
   const toggleJobInfoBtn = (key: keyof typeof existMember.job) => () => {
     setExistMember((prev) => {
       const newJobState = { ...prev.job, [key]: !prev.job[key] };
@@ -407,6 +416,11 @@ const CreateBand = () => {
         formData.append("image", fileInputRef.current.files[0]);
       }
 
+      // 오디오 파일 추가 API 연결 후 주석 제거
+      // if (audioFile) {
+      //   formData.append("audioFiles", audioFile);
+      // }
+
       if (!isEditing) {
         await API.post("/api/recruitments", formData, {
           headers: {
@@ -477,16 +491,53 @@ const CreateBand = () => {
           </div>
         </section>
 
-        <section className="flex flex-col gap-[32px]">
+        <section className="flex flex-col gap-[16px]">
           <div className="flex justify-between w-full">
-            <div className="flex gap-[8px]">
+            <div className="flex items-center gap-[8px]">
               <img src={music} alt="music" />
-              <p className="text-hakgyo-b-17 text-[#959595] whitespace-nowrap">
-                노래를 추가하세요.
+              <p className="max-w-[280px] text-hakgyo-b-17 text-[#959595] whitespace-nowrap overflow-x-auto">
+                {audioFile ? audioFile.name : "노래를 추가하세요."}
               </p>
             </div>
-            <button className="text-ibm-sb-16 text-[#D13D55]">추가</button>
+            <button
+              className="text-ibm-sb-16 text-[#D13D55]"
+              onClick={() => audioInputRef.current?.click()}
+            >
+              추가
+            </button>
           </div>
+
+          {/* Hidden audio input for uploading from device */}
+          <input
+            ref={audioInputRef}
+            type="file"
+            accept="audio/*"
+            onChange={handleAudioSelect}
+            className="hidden"
+          />
+
+          {/* Selected audio file preview */}
+          {/* {audioFile && (
+            <div className="flex flex-col gap-[8px]">
+              <div className="flex items-center justify-between bg-[#1E1E1E] rounded-[8px] px-[12px] py-[8px]">
+                <div className="flex flex-col">
+                  <p className="text-wanted-sb-12 text-white line-clamp-1">
+                    {audioFile.name}
+                  </p>
+                  <p className="text-wanted-sb-10 text-[#959595]">
+                    {Math.max(1, Math.round(audioFile.size / 1024))} KB
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="text-wanted-sb-12 text-[#D13D55]"
+                  onClick={removeAudio}
+                >
+                  제거
+                </button>
+              </div>
+            </div>
+          )} */}
 
           <JoinInputField
             type="text"
