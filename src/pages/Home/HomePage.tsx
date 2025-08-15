@@ -10,6 +10,7 @@ import {
   getAllBands,
 } from "@/store/userStore";
 import { useRecommendedBands } from "@/features/band/hooks/useBandData";
+import type { BandDetail } from "@/types/band";
 
 // 이미지 import
 import homeAlbum3Img from "@/assets/images/home-album3.png";
@@ -59,18 +60,6 @@ interface Band {
   subtitle: string;
   tags: string[];
   profileData?: BandProfileData; // 원본 프로필 데이터 저장
-}
-
-interface BandDetail {
-  bandId: number;
-  bandName: string;
-  profileImageUrl: string;
-  goalTracks: TrackDto[];
-  preferredArtists: ArtistDto[];
-  composition: CompositionDto;
-  sns: SnsDto[];
-  sessions: string[];
-  jobs: string[];
 }
 
 // 세션 이름 정리 및 아이콘 매핑 함수

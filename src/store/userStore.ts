@@ -342,7 +342,8 @@ export const getAllBands = async () => {
     return response.data;
   } catch (error) {
     // 404 에러 등은 정상적인 상황이므로 warn으로 처리
-    const status = (error as any)?.response?.status;
+    const status = (error as { response?: { status?: number } })?.response
+      ?.status;
     if (status === 404) {
       console.warn("모든 밴드 목록 API가 존재하지 않습니다 (404)");
     } else {
@@ -486,7 +487,7 @@ export const probeSomeBandDetails = async (options?: {
 
     // 결과 개수 제한
     results.push(...validDetails.slice(0, limit));
-  } catch (error) {
+  } catch {
     // Similar API 실패 시 fallback으로 기본 ID 사용
     const fallbackIds = options?.candidateIds ?? [1, 2, 3, 4, 5];
 
