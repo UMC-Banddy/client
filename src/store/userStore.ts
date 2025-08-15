@@ -157,30 +157,12 @@ export const getBandProfile = async (
   bandId: string
 ): Promise<BandProfile | null> => {
   try {
-    if (import.meta.env.DEV) {
-      console.log("밴드 프로필 조회 요청:", {
-        url: API_ENDPOINTS.BANDS.PROFILE(bandId),
-        bandId,
-      });
-    }
-
     const response = await API.get(API_ENDPOINTS.BANDS.PROFILE(bandId));
-
-    if (import.meta.env.DEV) {
-      console.log("밴드 프로필 조회 성공:", response.data);
-    }
-
-    // API 응답 구조에 따라 result 필드에서 데이터 추출
     const data = response.data.result || response.data;
     return (data || {}) as BandProfile;
   } catch (error) {
     // HTTP 500 에러 등 서버 오류 시 null 반환하여 에러 전파 방지
-    if (import.meta.env.DEV) {
-      console.warn(`밴드 ${bandId} 프로필 조회 실패 (null 반환):`, {
-        status: (error as any)?.response?.status,
-        message: (error as any)?.message,
-      });
-    }
+    console.warn(`밴드 ${bandId} 프로필 조회 실패:`, error);
     return null; // 에러 대신 null 반환
   }
 };
@@ -190,29 +172,12 @@ export const getBandDetail = async (
   bandId: string
 ): Promise<BandDetail | null> => {
   try {
-    if (import.meta.env.DEV) {
-      console.log("밴드 상세정보 조회 요청:", {
-        url: API_ENDPOINTS.BANDS.DETAIL(bandId),
-        bandId,
-      });
-    }
-
     const response = await API.get(API_ENDPOINTS.BANDS.DETAIL(bandId));
-
-    if (import.meta.env.DEV) {
-      console.log("밴드 상세정보 조회 성공:", response.data);
-    }
-
     const data = response.data.result || response.data;
     return data as BandDetail;
   } catch (error) {
     // HTTP 500 에러 등 서버 오류 시 null 반환하여 에러 전파 방지
-    if (import.meta.env.DEV) {
-      console.warn(`밴드 ${bandId} 상세정보 조회 실패 (null 반환):`, {
-        status: (error as any)?.response?.status,
-        message: (error as any)?.message,
-      });
-    }
+    console.warn(`밴드 ${bandId} 상세정보 조회 실패:`, error);
     return null; // 에러 대신 null 반환
   }
 };
@@ -228,7 +193,11 @@ export const getRecommendedBands = async () => {
       ]);
 
       // similar API에서 밴드 프로필 정보를 직접 제공하는 경우
-      if (tracksRes.data && Array.isArray(tracksRes.data) && tracksRes.data.length > 0) {
+      if (
+        tracksRes.data &&
+        Array.isArray(tracksRes.data) &&
+        tracksRes.data.length > 0
+      ) {
         const similarProfiles = tracksRes.data
           .filter((track: any) => track.bandId || track.bandProfile)
           .map((track: any) => {
@@ -254,10 +223,11 @@ export const getRecommendedBands = async () => {
       }
 
       // similar API에서 프로필을 직접 제공하지 않는 경우, 상세 정보 조회
-      const similarBandIds = tracksRes.data
-        ?.filter((track: any) => track.bandId)
-        ?.map((track: any) => track.bandId)
-        ?.slice(0, 10) || [];
+      const similarBandIds =
+        tracksRes.data
+          ?.filter((track: any) => track.bandId)
+          ?.map((track: any) => track.bandId)
+          ?.slice(0, 10) || [];
 
       if (similarBandIds.length > 0) {
         const validProfiles = [];
@@ -280,7 +250,6 @@ export const getRecommendedBands = async () => {
       }
 
       throw new Error("Similar API에서 유효한 밴드 정보를 찾을 수 없음");
-
     } catch (similarError: unknown) {
       // Similar API가 실패하면 fallback으로 기본 ID 시도 (최소한으로만)
       const fallbackBandIds = ["1", "2", "3", "4", "5"];
@@ -359,23 +328,15 @@ export const getBandArtists = async (bandId: string) => {
 // 모든 밴드 목록 조회 API
 export const getAllBands = async () => {
   try {
-    if (import.meta.env.DEV) {
-      console.log("모든 밴드 목록 조회 요청");
-    }
     const response = await API.get(API_ENDPOINTS.BANDS.LIST);
-    if (import.meta.env.DEV) {
-      console.log("모든 밴드 목록 조회 성공:", response.data);
-    }
     return response.data;
   } catch (error) {
     // 404 에러 등은 정상적인 상황이므로 warn으로 처리
-    if (import.meta.env.DEV) {
-      const status = (error as any)?.response?.status;
-      if (status === 404) {
-        console.warn("모든 밴드 목록 API가 존재하지 않습니다 (404)");
-      } else {
-        console.warn("모든 밴드 목록 조회 실패:", error);
-      }
+    const status = (error as any)?.response?.status;
+    if (status === 404) {
+      console.warn("모든 밴드 목록 API가 존재하지 않습니다 (404)");
+    } else {
+      console.warn("모든 밴드 목록 조회 실패:", error);
     }
     // 에러 발생 시 빈 배열 반환하여 앱 중단 방지
     return { result: [], isSuccess: false, message: "API not available" };
@@ -513,7 +474,6 @@ export const probeSomeBandDetails = async (options?: {
 
     // 결과 개수 제한
     results.push(...validDetails.slice(0, limit));
-
   } catch (error) {
     // Similar API 실패 시 fallback으로 기본 ID 사용
     const fallbackIds = options?.candidateIds ?? [1, 2, 3, 4, 5];
