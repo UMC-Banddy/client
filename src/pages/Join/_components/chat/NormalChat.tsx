@@ -3,7 +3,7 @@ import { showMembers } from "../../_utils/showMembers";
 import Modal from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
 import { API } from "@/api/API";
-import { useNavigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface NormalChatProps {
   roomId?: number;
@@ -22,6 +22,7 @@ const NormalChat = ({
   members,
   unreadCount,
   pinnedAt,
+  roomType,
 }: NormalChatProps) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showExitChat, setShowExitChat] = useState(false);
