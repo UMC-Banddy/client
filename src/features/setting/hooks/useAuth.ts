@@ -7,6 +7,7 @@ import { API_ENDPOINTS } from "@/constants";
 export const logout = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("memberId");
 
   authStore.accessToken = null;
   authStore.refreshToken = null;

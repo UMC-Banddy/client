@@ -9,42 +9,30 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "source": "/api/(.*)",
+      "destination": "https://banddy.site/api/$1"
     },
     {
-      "src": "/registerSW.js",
-      "dest": "/registerSW.js",
-      "headers": {
-        "Content-Type": "application/javascript"
-      }
+      "source": "/auth/(.*)",
+      "destination": "https://banddy.site/auth/$1"
     },
     {
-      "src": "/sw.js",
-      "dest": "/sw.js",
-      "headers": {
-        "Content-Type": "application/javascript"
-      }
+      "source": "/member",
+      "destination": "https://banddy.site/member"
     },
     {
-      "src": "/manifest.webmanifest",
-      "dest": "/manifest.webmanifest",
-      "headers": {
-        "Content-Type": "application/manifest+json"
-      }
+      "source": "/member/(.*)",
+      "destination": "https://banddy.site/member/$1"
     },
     {
-      "src": "/pwa-(.*).png",
-      "dest": "/pwa-$1.png",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

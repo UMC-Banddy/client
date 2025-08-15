@@ -4,6 +4,7 @@ import ProfileHeader from "./_components/ProfileHeader";
 import ProfileCard from "./_components/ProfileCard";
 import ProfileModalSection from "./_components/ProfileModalSection";
 import { useOtherProfile } from "@/features/profile/hooks/useOtherProfile";
+import { useSendFriendRequest } from "@/features/notification/hooks/useSendFriendRequest";
 import { 
   MicImg, 
   DrumImg, 
@@ -25,10 +26,12 @@ export default function ProfileDetailPage() {
   // 모달 상태 관리
   const [modalType, setModalType] = useState<null | "chat" | "friend">(null);
   const [modalMsg, setModalMsg] = useState("");
-  const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: "", visible: false });
   
   // 메뉴 상태 관리
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // 커스텀 훅 사용
+  const { toast, handleSendFriendRequest } = useSendFriendRequest();
 
   // 세션 이름에 따라 적절한 컴포넌트를 반환하는 함수
   const getSessionComponent = (sessionName: string) => {
@@ -106,11 +109,20 @@ export default function ProfileDetailPage() {
   };
 
   // 모달 보내기
-  const handleSend = () => {
-    setModalType(null);
-    setModalMsg("");
-    setToast({ message: modalType === "chat" ? "채팅 요청을 보냈습니다." : "친구 신청을 보냈습니다.", visible: true });
-    setTimeout(() => setToast(t => ({ ...t, visible: false })), 2000);
+  const handleSend = async () => {
+    if (modalType === "friend" && id) {
+      // 친구 신청 API 호출
+      const success = await handleSendFriendRequest(parseInt(id));
+      if (success) {
+        setModalType(null);
+        setModalMsg("");
+      }
+    } else if (modalType === "chat") {
+      // 채팅 요청 (기존 로직 유지)
+      console.log("채팅 요청 보내기");
+      setModalType(null);
+      setModalMsg("");
+    }
   };
 
   // 모달 닫기

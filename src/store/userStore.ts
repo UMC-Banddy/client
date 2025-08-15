@@ -1,6 +1,7 @@
 import { proxy } from "valtio";
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
+import type { BandProfile, BandDetail } from "@/types/band";
 
 interface User {
   id: string;
@@ -152,7 +153,7 @@ export const getRecommendedProfiles = async () => {
 };
 
 // 밴드 프로필 조회 API
-export const getBandProfile = async (bandId: string) => {
+export const getBandProfile = async (bandId: string): Promise<BandProfile> => {
   try {
     if (import.meta.env.DEV) {
       console.log("밴드 프로필 조회 요청:", {
@@ -168,7 +169,8 @@ export const getBandProfile = async (bandId: string) => {
     }
 
     // API 응답 구조에 따라 result 필드에서 데이터 추출
-    return response.data.result || response.data;
+    const data = response.data.result || response.data;
+    return (data || {}) as BandProfile;
   } catch (error) {
     console.error("밴드 프로필 조회 실패:", error);
     throw error;
@@ -176,7 +178,7 @@ export const getBandProfile = async (bandId: string) => {
 };
 
 // 밴드 상세정보 조회 API
-export const getBandDetail = async (bandId: string) => {
+export const getBandDetail = async (bandId: string): Promise<BandDetail> => {
   try {
     if (import.meta.env.DEV) {
       console.log("밴드 상세정보 조회 요청:", {
@@ -191,7 +193,8 @@ export const getBandDetail = async (bandId: string) => {
       console.log("밴드 상세정보 조회 성공:", response.data);
     }
 
-    return response.data;
+    const data = response.data.result || response.data;
+    return data as BandDetail;
   } catch (error) {
     console.error("밴드 상세정보 조회 실패:", error);
     throw error;
@@ -207,11 +210,8 @@ export const getRecommendedBands = async () => {
 
     // 먼저 백엔드 추천 API 시도
     try {
-      const response = await getRecommendedBandsFromAPI();
-      if (import.meta.env.DEV) {
-        console.log("백엔드 추천 API 성공:", response);
-      }
-      return response;
+      // 백엔드 추천 API 함수가 존재하지 않아 컴파일 오류 발생하여 비활성화
+      throw new Error("recommended API not available");
     } catch (apiError: unknown) {
       if (import.meta.env.DEV) {
         console.log(
@@ -337,19 +337,83 @@ export const getAllBands = async () => {
 };
 
 // 추천 밴드 목록 조회 API
-export const getRecommendedBandsFromAPI = async () => {
+// 사용 중단: 서버에 엔드포인트가 없어 호출하지 않음
+
+// 대체 추천 소스: 비슷한 트랙/아티스트로 추천 카드(프로필 호환) 구성
+export const getRecommendedFromSimilar = async (): Promise<BandProfile[]> => {
   try {
-    if (import.meta.env.DEV) {
-      console.log("추천 밴드 목록 조회 요청");
+    const [tracksRes, artistsRes] = await Promise.all([
+      API.get(API_ENDPOINTS.TRACKS.SIMILAR),
+      API.get(API_ENDPOINTS.ARTISTS.SIMILAR),
+    ]);
+
+    const tracks: Array<{
+      title?: string;
+      artist?: string;
+      imageUrl?: string;
+    }> = Array.isArray(tracksRes.data) ? tracksRes.data : [];
+    const artists: Array<{ name?: string; imageUrl?: string }> = Array.isArray(
+      artistsRes.data
+    )
+      ? artistsRes.data
+      : [];
+
+    const maxLen = Math.max(tracks.length, artists.length, 0);
+    const result: BandProfile[] = [];
+
+    for (let i = 0; i < maxLen; i += 1) {
+      const t = tracks[i];
+      const a = artists[i];
+      result.push({
+        goalTracks: t
+          ? [
+              {
+                title: t.title || "",
+                artist: t.artist || "",
+                imageUrl: t.imageUrl || "",
+              },
+            ]
+          : [],
+        preferredArtists: a
+          ? [
+              {
+                name: a.name || "",
+                imageUrl: a.imageUrl || "",
+              },
+            ]
+          : [],
+        composition: undefined,
+        sns: [],
+        sessions: [],
+        jobs: [],
+      });
     }
-    const response = await API.get(API_ENDPOINTS.BANDS.RECOMMENDED);
-    if (import.meta.env.DEV) {
-      console.log("추천 밴드 목록 조회 성공:", response.data);
-    }
-    // API 응답 구조에 따라 result 필드에서 데이터 추출
-    return response.data.result || response.data;
+
+    return result;
   } catch (error) {
-    console.error("추천 밴드 목록 조회 실패:", error);
-    throw error;
+    console.error("대체 추천(유사 트랙/아티스트) 구성 실패:", error);
+    return [];
   }
+};
+
+// 선택적 보강: 일부 밴드 상세 정보를 소량 조회하여 카드 타이틀/이미지에 반영
+export const probeSomeBandDetails = async (options?: {
+  limit?: number;
+  candidateIds?: number[];
+}): Promise<BandDetail[]> => {
+  const limit = options?.limit ?? 5;
+  const candidateIds = options?.candidateIds ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const results: BandDetail[] = [];
+  for (const id of candidateIds) {
+    if (results.length >= limit) break;
+    try {
+      const detail = await getBandDetail(String(id));
+      if (detail && detail.bandName) {
+        results.push(detail);
+      }
+    } catch {
+      continue;
+    }
+  }
+  return results;
 };

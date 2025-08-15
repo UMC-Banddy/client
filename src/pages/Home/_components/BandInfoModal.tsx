@@ -28,6 +28,7 @@ interface BandInfoModalProps {
   youtubeUrl?: string;
   instagramUrl?: string;
   bandId?: string; // 추가
+  imageUrl?: string; // 캐러셀에서 사용한 이미지 전달
 }
 
 const BandInfoModal: React.FC<BandInfoModalProps> = ({
@@ -40,6 +41,7 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
   youtubeUrl,
   instagramUrl,
   bandId, // 추가
+  imageUrl,
 }) => {
   // 세션별 아이콘 매핑 함수
   const getSessionIcon = (tagName: string) => {
@@ -79,7 +81,7 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
   });
   return (
     <div
-      className="relative bg-[#F5E9EA] rounded-[28px] w-full max-w-[410px] min-w-[320px] min-h-[420px] max-h-[95vh] flex flex-col px-8 pt-10 pb-8"
+      className="relative bg-[#F5E9EA] rounded-[28px] w-full max-w-[420px] min-w-0 min-h-[420px] max-h-[95vh] flex flex-col px-6 sm:px-7 md:px-8 pt-10 pb-8 overflow-hidden"
       style={{ boxShadow: "0px 4px 13px 0px #00000040" }}
     >
       {/* 닫기 버튼 */}
@@ -91,12 +93,16 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
         <IoClose className="w-5 h-5 text-black" />
       </button>
       {/* 제목/부제목 */}
-      <div className="text-center mb-2 mt-2">
-        <h2 className="text-3xl font-extrabold mb-2">{title}</h2>
-        <p className="text-lg text-gray-700 mb-6">{subtitle}</p>
+      <div className="text-center mb-2 mt-2 px-1">
+        <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 break-words break-keep">
+          {title}
+        </h2>
+        <p className="text-base sm:text-lg text-gray-700 mb-6 break-words break-keep">
+          {subtitle}
+        </p>
       </div>
-      {/* 아이콘 리스트 */}
-      <div className="flex justify-center gap-4 mb-6">
+      {/* 아이콘 리스트 (반응형, 1줄 고정) */}
+      <div className="flex justify-center gap-2 sm:gap-3 md:gap-4 mb-6 flex-nowrap">
         {[
           {
             Comp: Prefer,
@@ -136,13 +142,26 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
           },
         ].map(({ Comp, color, link, hasLink }, idx) => {
           const iconElement = (
-            <Comp size={40} color={color as "red-400" | "gray-700"} />
+            <div className="shrink-0 aspect-square w-9 sm:w-10 md:w-12 flex items-center justify-center">
+              <Comp size={28} color={color as "red-400" | "gray-700"} />
+            </div>
           );
 
           if (hasLink && link) {
             if (link.startsWith("/")) {
               return (
-                <Link key={idx} to={link} style={{ display: "inline-block" }}>
+                <Link
+                  key={idx}
+                  to={link}
+                  state={{
+                    initialBand: {
+                      bandId,
+                      title,
+                      imageUrl,
+                    },
+                  }}
+                  style={{ display: "inline-block" }}
+                >
                   {iconElement}
                 </Link>
               );
@@ -170,7 +189,7 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
       </div>
       {/* 태그/정보 + 세로 구분선 */}
       <div
-        className="flex items-center mb-6 font-bold text-base w-full min-w-0 overflow-x-auto"
+        className="flex items-center mb-6 font-bold text-base w-full min-w-0 overflow-x-auto overflow-y-hidden px-1"
         style={{ scrollbarWidth: "none" }}
       >
         <svg
@@ -221,16 +240,13 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
         </div>
       </div>
       {/* 본문/설명 스크롤 영역 */}
-      <div
-        className="flex-1 min-h-[120px] max-h-[160px] overflow-y-auto w-full px-0 mb-8"
-        style={{ overflowX: "hidden" }}
-      >
-        <div className="whitespace-pre-line leading-relaxed text-[16px]">
+      <div className="flex-1 min-h-[120px] max-h-[160px] overflow-y-auto w-full px-1 mb-8 overflow-x-hidden">
+        <div className="whitespace-pre-line leading-relaxed text-[16px] break-words break-keep">
           {description}
         </div>
       </div>
       {/* 마감일 좌측 하단 고정 */}
-      <div className="absolute left-8 bottom-8 text-gray-700 text-[13px] font-bold">
+      <div className="absolute left-6 sm:left-8 bottom-8 text-gray-700 text-[13px] font-bold">
         마감: {deadline}
       </div>
     </div>

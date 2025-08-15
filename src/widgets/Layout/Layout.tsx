@@ -17,6 +17,7 @@ export default function Layout() {
     "/profile-detail",
     "/pre-test",
     "/chat-demo",
+    "/home/private-chat",
   ].some((path) => location.pathname.startsWith(path));
   const hideHeader =
     [
@@ -28,6 +29,7 @@ export default function Layout() {
       "/my/setting",
       "/chat-demo",
       "/login",
+      "/home/private-chat",
     ].some((path) => location.pathname.startsWith(path)) ||
     location.pathname === "/my";
 

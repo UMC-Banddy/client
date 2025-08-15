@@ -6,10 +6,12 @@ import { API_ENDPOINTS } from "@/constants";
 export const login = async (data: { email: string; password: string }) => {
   try {
     const res = await API.post(API_ENDPOINTS.AUTH.LOGIN, data);
-    const { accessToken, refreshToken } = res.data;
-
+    // const { accessToken, refreshToken } = res.data;
+    const { accessToken, refreshToken, memberId } = res.data;
+    
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("memberId", memberId.toString());
 
     authStore.accessToken = accessToken;
     authStore.refreshToken = refreshToken;

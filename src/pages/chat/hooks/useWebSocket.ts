@@ -3,9 +3,12 @@ import { useSnapshot } from "valtio";
 import { chatStore, chatActions } from "@/store/chatStore";
 import webSocketService from "@/services/WebSocketService";
 import type { WebSocketMessage } from "@/types/chat";
+import { authStore } from "@/store/authStore";
+import { useSnapshot as useVSnapshot } from "valtio";
 
 export const useWebSocket = () => {
   const snap = useSnapshot(chatStore);
+  const authSnap = useVSnapshot(authStore);
   const [isConnecting, setIsConnecting] = useState(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -13,9 +16,12 @@ export const useWebSocket = () => {
   const isConnected = snap.webSocketConnected;
   const currentRoomId = snap.currentRoomId;
 
-  // 자동 연결 관리
+  // 자동 연결 관리 (토큰이 있을 때만 시도)
   useEffect(() => {
     const connectWebSocket = async () => {
+      if (!authSnap.accessToken) {
+        return;
+      }
       if (!isConnected && !isConnecting) {
         setIsConnecting(true);
         try {
@@ -38,10 +44,11 @@ export const useWebSocket = () => {
       }
       webSocketService.disconnect();
     };
-  }, []);
+  }, [isConnected, isConnecting, authSnap.accessToken]);
 
   // 연결 함수
   const connect = useCallback(async () => {
+    if (!authSnap.accessToken) return;
     if (isConnected || isConnecting) return;
 
     setIsConnecting(true);
@@ -53,7 +60,20 @@ export const useWebSocket = () => {
     } finally {
       setIsConnecting(false);
     }
-  }, [isConnected, isConnecting]);
+  }, [isConnected, isConnecting, authSnap.accessToken]);
+
+  // 연결 완료 후에만 unread 구독 시도 (StrictMode 이펙트 이중 호출 대응)
+  useEffect(() => {
+    if (!isConnected) return;
+    try {
+      webSocketService.subscribeToUnread((payload) => {
+        console.log("UNREAD_MESSAGE 수신:", payload);
+        // TODO: chatStore에 unread 카운트 반영
+      });
+    } catch (e) {
+      console.warn("UNREAD 구독 실패, 연결 상태 재확인 필요", e);
+    }
+  }, [isConnected]);
 
   // 연결 해제 함수
   const disconnect = useCallback(() => {
@@ -62,11 +82,11 @@ export const useWebSocket = () => {
 
   // 채팅방 입장
   const joinRoom = useCallback(
-    (roomId: string) => {
+    (roomId: string, roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP") => {
       if (!isConnected) {
         console.warn("WebSocket이 연결되지 않았습니다. 연결을 시도합니다.");
         connect().then(() => {
-          joinRoom(roomId);
+          joinRoom(roomId, roomType);
         });
         return;
       }
@@ -74,11 +94,16 @@ export const useWebSocket = () => {
       // 현재 채팅방 ID 설정
       chatActions.setCurrentRoomId(roomId);
 
-      // 채팅방 구독
-      webSocketService.subscribeToRoom(roomId, (message: WebSocketMessage) => {
+      // 채팅방 구독 (roomType에 따라 분기)
+      const onMessage = (message: WebSocketMessage) => {
         console.log("실시간 메시지 수신:", message);
         chatActions.addRealtimeMessage(message);
-      });
+      };
+      if (roomType === "PRIVATE") {
+        webSocketService.subscribeToPrivateRoom(roomId, onMessage);
+      } else {
+        webSocketService.subscribeToGroupRoom(roomId, onMessage);
+      }
 
       console.log(`채팅방 ${roomId} 입장 완료`);
     },
@@ -96,7 +121,11 @@ export const useWebSocket = () => {
 
   // 메시지 전송
   const sendMessage = useCallback(
-    (content: string) => {
+    (
+      content: string,
+      roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP",
+      receiverId?: number
+    ) => {
       if (!currentRoomId) {
         console.error("현재 채팅방이 설정되지 않았습니다.");
         return;
@@ -105,13 +134,18 @@ export const useWebSocket = () => {
       if (!isConnected) {
         console.warn("WebSocket이 연결되지 않았습니다. 연결을 시도합니다.");
         connect().then(() => {
-          sendMessage(content);
+          sendMessage(content, roomType, receiverId);
         });
         return;
       }
 
       try {
-        webSocketService.sendMessage(currentRoomId, content);
+        webSocketService.sendMessage(
+          currentRoomId,
+          content,
+          roomType,
+          receiverId
+        );
         console.log("메시지 전송 완료:", content);
       } catch (error) {
         console.error("메시지 전송 실패:", error);

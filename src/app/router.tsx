@@ -33,6 +33,7 @@ import NotificationPage from "@/pages/Notification/NotificationPage";
 import NotificationDetailPage from "@/pages/Notification/NotificationDetailPage";
 import ChatPage from "@/pages/chat/ChatPage";
 import ChatDemoPage from "@/pages/chat/ChatDemoPage";
+import PrivateChatPage from "@/pages/chat/PrivateChatPage";
 import PretestArtistPage from "@/pages/pretest/artist/PretestArtistPage";
 import PretestSessionPage from "@/pages/pretest/session/PretestSessionPage";
 import PretestProfileCompletePage from "@/pages/pretest/profile/PretestProfileCompletePage";
@@ -41,6 +42,7 @@ import ArchivePage from "@/pages/Archive/ArchivePage";
 import AddPage from "@/pages/Archive/AddPage";
 import ArtistPage from "@/pages/Archive/Artist/ArtistPage";
 import AlbumPage from "@/pages/Archive/Album/AlbumPage";
+import AlbumDetailPage from "@/pages/Archive/Album/AlbumDetailPage";
 import OtherProfile from "@/pages/Profile/OtherProfile";
 import ProfileDetailPage from "@/pages/Profile/ProfileDetailPage";
 import ProtectedRoute from "@/shared/components/ProtectedRoute";
@@ -228,6 +230,14 @@ const routes = [
         ),
       },
       {
+        path: "/my/archive/album/:albumId",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <AlbumDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "/profile-other/:id",
         element: (
           <ProtectedRoute requireAuth={true}>
@@ -296,6 +306,14 @@ const routes = [
         element: (
           <ProtectedRoute requireAuth={true}>
             <ChatPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/home/private-chat",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <PrivateChatPage />
           </ProtectedRoute>
         ),
       },

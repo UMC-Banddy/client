@@ -7,8 +7,21 @@ export const useArchivedAlbums = () => {
   const { data: albums = [], isLoading, error } = useQuery<ArchivedAlbum[]>({
     queryKey: ["archivedAlbums"],
     queryFn: async () => {
-      const response = await getArchivedAlbums();
-      return response.result;
+      try {
+        const response = await getArchivedAlbums();
+        console.log("Archived Albums API Response:", response);
+        
+        // 안전한 배열 처리
+        if (response?.result && Array.isArray(response.result)) {
+          return response.result;
+        }
+        
+        console.warn("Archived Albums API returned non-array result:", response);
+        return [];
+      } catch (error) {
+        console.error("Archived Albums API Error:", error);
+        throw error;
+      }
     },
     enabled: !!authStore.accessToken,
   });

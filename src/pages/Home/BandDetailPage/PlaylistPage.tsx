@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import homeAlbum2 from "@/assets/images/home-album2.svg";
 import homeAlbum3Img from "@/assets/images/home-album3.png";
 import homeAlbum2Img from "@/assets/images/home-album2.svg";
 import homeAlbum1Img from "@/assets/images/home-album1.svg";
 import BandProfileHeader from "@/pages/Home/_components/people/BandProfileHeader";
 import PlaylistList from "@/pages/Home/_components/playlist/PlaylistList";
-import { getBandProfile, getBandTracks } from "@/store/userStore";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
+import {
+  useBandProfile,
+  useBandTracks,
+} from "@/features/band/hooks/useBandData";
 
 interface Track {
   id: number;
@@ -25,76 +28,51 @@ interface BandInfo {
 }
 
 // API 응답 타입 정의
-interface ApiTrack {
-  id?: number;
-  title?: string;
-  artist?: string;
-  albumImage?: string;
-  duration?: string;
-  imageUrl?: string;
-}
+// interface ApiTrack {
+//   id?: number;
+//   title?: string;
+//   artist?: string;
+//   albumImage?: string;
+//   duration?: string;
+//   imageUrl?: string;
+// }
 
 export default function PlaylistPage() {
-  const { bandId } = useParams<{ bandId: string }>();
-  const [bandInfo, setBandInfo] = useState<BandInfo>({
-    id: 1,
-    name: "냥커버!!",
-    description: "목표 곡",
-    profileImage: homeAlbum2,
-  });
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // 밴드 정보 조회 API
-  const fetchBandInfo = async () => {
-    try {
-      if (!bandId) return;
-
-      const profileData = await getBandProfile(bandId);
-
-      // BandProfileData를 BandInfo로 변환
-      setBandInfo({
-        id: parseInt(bandId),
-        name: profileData.goalTracks?.[0]?.title || "밴드명",
-        description: "목표 곡",
-        profileImage: profileData.goalTracks?.[0]?.imageUrl || homeAlbum2,
-      });
-    } catch (error) {
-      console.error("밴드 정보 조회 실패:", error);
-      // 에러 시 기본 데이터 사용
-      setBandInfo({
-        id: parseInt(bandId || "1"),
-        name: "냥커버!!",
-        description: "목표 곡",
-        profileImage: homeAlbum2,
-      });
-    }
+  const { bandId = "1" } = useParams<{ bandId: string }>();
+  const location = useLocation() as {
+    state?: {
+      initialBand?: { bandId?: string; title?: string; imageUrl?: string };
+    };
   };
+  const { data: bandData, isLoading: loadingProfile } = useBandProfile(bandId);
+  const { data: tracksData = [], isLoading: loadingTracks } =
+    useBandTracks(bandId);
 
-  // 밴드 목표 곡 목록 조회 API
-  const fetchBandTracks = async () => {
-    try {
-      setLoading(true);
-      if (!bandId) return;
+  const profile = bandData?.profile ?? {};
+  const detail = bandData?.detail;
 
-      const tracksData = await getBandTracks(bandId);
+  const bandInfo: BandInfo = useMemo(
+    () => ({
+      id: parseInt(bandId),
+      name:
+        detail?.bandName ||
+        profile?.goalTracks?.[0]?.title ||
+        location.state?.initialBand?.title ||
+        "냥커버!!",
+      description: "목표 곡",
+      profileImage:
+        detail?.profileImageUrl ||
+        profile?.goalTracks?.[0]?.imageUrl ||
+        location.state?.initialBand?.imageUrl ||
+        homeAlbum2,
+    }),
+    [bandId, profile, detail, location.state]
+  );
 
-      // API 응답을 Track 형식으로 변환
-      const transformedTracks: Track[] = tracksData.map(
-        (track: ApiTrack, index: number) => ({
-          id: track.id || index + 1,
-          title: track.title || `곡 ${index + 1}`,
-          artist: track.artist || "아티스트",
-          albumImage: track.imageUrl || track.albumImage,
-          duration: track.duration,
-        })
-      );
-
-      setTracks(transformedTracks);
-    } catch (error) {
-      console.error("밴드 곡 목록 조회 실패:", error);
-      // 에러 시 기본 데이터 사용
-      setTracks([
+  const tracks: Track[] = useMemo(() => {
+    const safe = Array.isArray(tracksData) ? tracksData : [];
+    if (safe.length === 0) {
+      return [
         {
           id: 1,
           title: "그래요 저 왜색 짙어요",
@@ -113,23 +91,18 @@ export default function PlaylistPage() {
           artist: "Various Artists",
           albumImage: homeAlbum1Img,
         },
-      ]);
-    } finally {
-      setLoading(false);
+      ];
     }
-  };
+    return safe.map((t: Partial<Track>, index: number) => ({
+      id: t?.id ?? index + 1,
+      title: t?.title ?? `곡 ${index + 1}`,
+      artist: t?.artist ?? "아티스트",
+      albumImage: t?.imageUrl ?? t?.albumImage,
+      duration: t?.duration,
+    }));
+  }, [tracksData]);
 
-  useEffect(() => {
-    fetchBandInfo();
-  }, [bandId]);
-
-  useEffect(() => {
-    if (bandInfo.id) {
-      fetchBandTracks();
-    }
-  }, [bandInfo.id]);
-
-  if (loading) {
+  if (loadingProfile || loadingTracks) {
     return (
       <main className="min-h-[calc(100vh-56px)] w-full flex flex-col bg-[#121212]/90 overflow-x-hidden px-6 pt-6 pb-0 overflow-y-auto scrollbar-hide">
         <div className="text-white text-center">로딩 중...</div>

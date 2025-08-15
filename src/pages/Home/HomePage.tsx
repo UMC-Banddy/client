@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
 import BandCarousel from "./_components/BandCarousel";
+import HomeSkeleton from "./_components/HomeSkeleton";
 import MuiDialog from "@/shared/components/MuiDialog";
 import BandInfoModal from "./_components/BandInfoModal";
-import { getRecommendedBands } from "@/store/userStore";
+import {
+  getRecommendedFromSimilar,
+  probeSomeBandDetails,
+} from "@/store/userStore";
+import { useRecommendedBands } from "@/features/band/hooks/useBandData";
 
 // 이미지 import
 import homeAlbum3Img from "@/assets/images/home-album3.png";
@@ -196,12 +201,23 @@ const HomePage = () => {
   const [open, setOpen] = useState(false);
   const [selectedBand, setSelectedBand] = useState<Band | null>(null);
   const [loading, setLoading] = useState(true);
+  const { data: recommended = [], isFetching } = useRecommendedBands();
 
   // 추천 밴드 프로필 조회 API
   const fetchRecommendedBands = async () => {
     try {
       setLoading(true);
-      const profiles = await getRecommendedBands();
+      // 홈은 추천 결과 우선, 없으면 유사 트랙/아티스트 기반으로 대체 구성
+      let profiles: BandProfileData[] =
+        recommended && recommended.length > 0
+          ? (recommended as BandProfileData[])
+          : [];
+      if (!profiles || profiles.length === 0) {
+        profiles = (await getRecommendedFromSimilar()) as BandProfileData[];
+      }
+
+      // 선택적 보강: 일부 detail을 받아 제목/이미지 보강
+      const details = await probeSomeBandDetails({ limit: 5 });
 
       // profiles가 빈 배열이거나 undefined인 경우 기본 데이터 사용
       if (!profiles || profiles.length === 0) {
@@ -213,12 +229,14 @@ const HomePage = () => {
       }
 
       // API 응답이 있지만 유효하지 않은 경우도 fallback 사용
-      const validProfiles = profiles.filter(
-        // (profile: any) =>
-        (profile: BandProfileData) =>
+      const validProfiles = profiles.filter((profile) =>
+        Boolean(
           profile &&
-          (profile.goalTracks || profile.preferredArtists || profile.sessions)
-      );
+            ((profile as BandProfileData).goalTracks ||
+              (profile as BandProfileData).preferredArtists ||
+              (profile as BandProfileData).sessions)
+        )
+      ) as BandProfileData[];
 
       if (validProfiles.length === 0) {
         if (import.meta.env.DEV) {
@@ -232,6 +250,7 @@ const HomePage = () => {
       // const bands: Band[] = validProfiles.map((profile: any, index: number) => {
       const bands: Band[] = validProfiles.map(
         (profile: BandProfileData, index: number) => {
+          const detail = details[index];
           // API 응답 구조에 따라 안전하게 접근
           const goalTracks = profile.goalTracks || [];
           const preferredArtists = profile.preferredArtists || [];
@@ -280,11 +299,13 @@ const HomePage = () => {
           return {
             id: index + 1, // 임시 ID
             image:
+              detail?.profileImageUrl ||
               representativeTrack?.imageUrl ||
               representativeArtist?.imageUrl ||
               fallbackBandData[index]?.image ||
               homeAlbum3Img,
             title:
+              detail?.bandName ||
               representativeTrack?.title ||
               representativeArtist?.name ||
               fallbackBandData[index]?.title ||
@@ -317,14 +338,13 @@ const HomePage = () => {
 
   useEffect(() => {
     fetchRecommendedBands();
-  }, []);
+    // 훅 데이터가 갱신되면 다시 바인딩
+  }, [recommended]);
 
-  if (loading) {
-    return (
-      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-[420px] mx-auto">
-        <div className="text-white">로딩 중...</div>
-      </main>
-    );
+  // 홈에서는 WS 자동 연결을 수행하지 않음 (전역 AuthProvider에서 1회만 연결)
+
+  if (loading || isFetching) {
+    return <HomeSkeleton />;
   }
 
   return (
@@ -339,6 +359,10 @@ const HomePage = () => {
       </main>
       <MuiDialog open={open} setOpen={setOpen}>
         <BandInfoModal
+          imageUrl={
+            selectedBand?.profileData?.goalTracks?.[0]?.imageUrl ||
+            selectedBand?.image
+          }
           title={
             selectedBand?.profileData?.goalTracks?.[0]?.title ||
             selectedBand?.title ||

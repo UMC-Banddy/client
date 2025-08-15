@@ -13,21 +13,32 @@ export interface ChatMessage {
   };
   time: string;
   unreadCount?: number;
+  showReadIndicator?: boolean; // 읽음 표시 여부
 }
 
 // API 스펙에 맞는 새로운 타입들
 export interface MemberInfo {
   memberId: number;
   nickname: string;
-  profileImageUrl: string;
+  profileImageUrl: string | null;
+  lastReadMessageId?: number;
 }
 
 export interface ChatRoomInfo {
+  roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER";
+  roomId: number;
   chatName: string;
-  imageUrl: string;
-  memberInfos: MemberInfo[];
-  unreadCount: number;
-  lastMessageAt: string;
+  imageUrl: string | null;
+  memberInfo?: {
+    memberId: number;
+    nickname: string;
+    profileImageUrl: string | null;
+    lastReadMessageId: number;
+  };
+  memberInfos?: MemberInfo[];
+  unreadCount: number | null;
+  lastMessageAt: string | null;
+  pinnedAt?: string | null;
 }
 
 export interface RoomMemberInfo {
@@ -57,9 +68,14 @@ export interface AppliedRoomInfo {
 }
 
 export interface ChatRoomsResponse {
-  chatRoomInfos: ChatRoomInfo[];
-  managedRoomInfos: ManagedRoomInfo[];
-  appliedRoomInfos: AppliedRoomInfo[];
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    chatRoomInfos: ChatRoomInfo[];
+    managedRoomInfos?: ManagedRoomInfo[];
+    appliedRoomInfos?: AppliedRoomInfo[];
+  };
 }
 
 // 친구 채팅방 타입
@@ -115,16 +131,20 @@ export interface CreateChatResponse {
 }
 
 export interface MessagesResponse {
-  roomId: number;
-  messages: {
-    messageId: number;
-    senderId: number;
-    senderName: string;
-    content: string;
-    timestamp: string;
-  }[];
-  hasNext: boolean;
-  lastMessageId: number;
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    messages: {
+      messageId: number;
+      senderId: number;
+      senderName: string;
+      content: string;
+      timestamp: string;
+    }[];
+    hasNext: boolean;
+    lastMessageId: number;
+  };
 }
 
 export interface JoinResponse {
@@ -152,6 +172,8 @@ export interface WebSocketMessage {
 export interface WebSocketSendMessage {
   content: string;
   roomId: number;
+  roomType?: "PRIVATE" | "GROUP" | "BAND";
+  receiverId?: number; // PRIVATE일 때 필수
 }
 
 // 기존 타입들 (호환성 유지)

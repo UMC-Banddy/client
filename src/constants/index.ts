@@ -76,6 +76,7 @@ export const API_ENDPOINTS = {
   CHAT: {
     ROOMS: "/api/chat/rooms",
     CREATE_GROUP: "/api/chat/rooms",
+    UPDATE_GROUP: "/api/chat/rooms",
     FRIENDS: "/api/chat/friends",
     CREATE_WITH_FRIEND: "/api/chat/friends",
     PRIVATE: "/api/chat/rooms/friends",
@@ -88,13 +89,21 @@ export const API_ENDPOINTS = {
     JOIN: (roomId: string) => `/api/chat/rooms/${roomId}/members/join`,
     LEAVE: (roomId: string) => `/api/chat/rooms/${roomId}/members/exit`,
     BAND_JOIN: (bandId: string) => `/api/chat/bands/${bandId}/join`,
+    PIN: "/api/chat/rooms/pin",
+    UNPIN: "/api/chat/rooms/unpin",
   },
 
   WEBSOCKET: {
-    // 웹소켓 관련 엔드포인트 (실제 구현 시 백엔드와 협의 필요)
-    SUBSCRIBE: (roomId: string) => `/topic/chat/${roomId}`,
-    SEND_MESSAGE: (roomId: string) => `/app/chat/sendMessage/${roomId}`,
-    UNSUBSCRIBE: (roomId: string) => `/user/${roomId}/queue`,
+    // 웹소켓 관련 엔드포인트 (서버 스펙 준수)
+    SUBSCRIBE_GROUP: (roomId: string | number) => `/topic/room/${roomId}`,
+    SUBSCRIBE_PRIVATE: (roomId: string | number) =>
+      `/user/queue/room/${roomId}`,
+    SUBSCRIBE_UNREAD: "/user/queue/unread",
+    // 전송 경로 분리 (그룹/개인)
+    SEND_MESSAGE_GROUP: (roomId: string | number) =>
+      `/app/chat/group.sendMessage/${roomId}`,
+    SEND_MESSAGE_PRIVATE: (roomId: string | number) =>
+      `/app/chat/private.sendMessage/${roomId}`,
     BASE: "ws",
   },
 
@@ -136,6 +145,7 @@ export const API_ENDPOINTS = {
     LIST: "/api/artists",
     DETAIL: (artistId: string) => `/api/artists/${artistId}`,
     SIMILAR: "/api/artists/similar",
+    QUESTION: "/api/artists/question",
   },
 
   ARTIST_FOLDERS: {
