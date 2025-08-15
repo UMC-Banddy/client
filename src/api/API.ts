@@ -454,50 +454,33 @@ export const surveyAPI = {
         ...(memberId && { memberId }), // memberId가 있으면 포함
       };
 
-      // 파일이 있는 경우에만 FormData 사용, 없으면 JSON 사용
-      if (data.profileImage || data.mediaFile) {
-        const formData = new FormData();
+      // API 스펙에 따라 항상 multipart/form-data로 전송
+      const formData = new FormData();
 
-        console.log("Survey 제출 데이터 (FormData):", requestData);
-        formData.append("request", JSON.stringify(requestData));
+      console.log("Survey 제출 데이터:", requestData);
+      formData.append("request", JSON.stringify(requestData));
 
-        // 파일이 있는 경우에만 추가
-        if (data.profileImage) {
-          formData.append("profileImage", data.profileImage);
-        }
-
-        if (data.mediaFile) {
-          formData.append("mediaFile", data.mediaFile);
-        }
-
-        console.log("FormData 내용:");
-        for (const [key, value] of formData.entries()) {
-          console.log(`${key}:`, value);
-        }
-
-        const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-
-        return response.data;
-      } else {
-        // 파일이 없으면 JSON 형식으로 전송
-        console.log("Survey 제출 데이터 (JSON):", requestData);
-
-        const response = await API.post(
-          API_ENDPOINTS.SURVEY.SUBMIT,
-          requestData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        return response.data;
+      // 파일이 있는 경우에만 추가
+      if (data.profileImage) {
+        formData.append("profileImage", data.profileImage);
       }
+
+      if (data.mediaFile) {
+        formData.append("mediaFile", data.mediaFile);
+      }
+
+      console.log("FormData 내용:");
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return response.data;
     } catch (error: unknown) {
       console.error("Survey 제출 실패:", error);
       console.error("에러 상세 정보:", (error as AxiosError).response?.data);
@@ -566,6 +549,8 @@ export const surveyAPI = {
         selectedSessions: data.selectedSessions,
         ...(memberId && { memberId }), // memberId가 있으면 포함
       };
+      
+      console.log("Session 제출 데이터:", requestData);
       formData.append("request", JSON.stringify(requestData));
 
       const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {

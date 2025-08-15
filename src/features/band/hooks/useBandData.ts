@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { bandKeys } from "./keys";
-import { getRecommendedFromSimilar, getBandProfile, getBandDetail, getBandMembers } from "@/store/userStore";
+import {
+  getRecommendedFromSimilar,
+  getBandProfile,
+  getBandDetail,
+  getBandMembers,
+} from "@/store/userStore";
 import type { BandProfile, BandDetail } from "@/types/band";
 
 // 상세 폴백은 화면에서 에러 처리로 대체 (목업 제거)
@@ -38,7 +43,7 @@ export function useRecommendedBands() {
         return [];
       }
     },
-    enabled: !window.location.pathname.startsWith('/pre-test'), // 사전테스트 중에는 비활성화
+    enabled: !window.location.pathname.startsWith("/pre-test"), // 사전테스트 중에는 비활성화
     staleTime: 60 * 1000,
   });
 }

@@ -210,14 +210,14 @@ const HomePage = () => {
   const fetchRecommendedBands = async () => {
     try {
       setLoading(true);
-      
+
       // 사전테스트 중에는 기본 데이터만 사용하여 API 호출 최소화
-      if (window.location.pathname.startsWith('/pre-test')) {
-        console.log('사전테스트 중 - 기본 데이터 사용');
+      if (window.location.pathname.startsWith("/pre-test")) {
+        console.log("사전테스트 중 - 기본 데이터 사용");
         setMyBands(fallbackBandData);
         return;
       }
-      
+
       // 홈은 추천 결과 우선, 없으면 유사 트랙/아티스트 기반으로 대체 구성
       let profiles: BandProfileData[] =
         recommended && recommended.length > 0
@@ -250,11 +250,22 @@ const HomePage = () => {
         57, 58, 59, 60,
       ];
 
-      const details = await probeSomeBandDetails({
-        limit: Math.min(100, candidateIds?.length ?? 40),
-        candidateIds:
-          candidateIds && candidateIds.length > 0 ? candidateIds : fallbackIds,
-      });
+      let details: any[] = [];
+      try {
+        details = await probeSomeBandDetails({
+          limit: Math.min(100, candidateIds?.length ?? 40),
+          candidateIds:
+            candidateIds && candidateIds.length > 0
+              ? candidateIds
+              : fallbackIds,
+        });
+      } catch (error) {
+        // probeSomeBandDetails 실패 시 빈 배열 사용
+        if (import.meta.env.DEV) {
+          console.warn("밴드 상세정보 조회 실패, 빈 배열 사용:", error);
+        }
+        details = [];
+      }
 
       // profiles가 빈 배열이거나 undefined인 경우 기본 데이터 사용
       if (!profiles || profiles.length === 0) {
@@ -404,7 +415,7 @@ const HomePage = () => {
 
   useEffect(() => {
     // 사전테스트 중에는 API 호출하지 않음
-    if (!window.location.pathname.startsWith('/pre-test')) {
+    if (!window.location.pathname.startsWith("/pre-test")) {
       fetchRecommendedBands();
     }
     // 훅 데이터가 갱신되면 다시 바인딩

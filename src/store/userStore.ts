@@ -4,21 +4,21 @@ import { API_ENDPOINTS } from "@/constants";
 import type { BandProfile, BandDetail } from "@/types/band";
 
 interface User {
-  id: string;
-  email: string;
-  nickname: string;
+  id?: string;
+  email?: string;
+  nickname?: string;
   profileImage?: string;
   bio?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface UserState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
+  user?: User | null;
+  isAuthenticated?: boolean;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
 export const userStore = proxy<UserState>({
@@ -153,7 +153,9 @@ export const getRecommendedProfiles = async () => {
 };
 
 // 밴드 프로필 조회 API
-export const getBandProfile = async (bandId: string): Promise<BandProfile> => {
+export const getBandProfile = async (
+  bandId: string
+): Promise<BandProfile | null> => {
   try {
     if (import.meta.env.DEV) {
       console.log("밴드 프로필 조회 요청:", {
@@ -172,13 +174,21 @@ export const getBandProfile = async (bandId: string): Promise<BandProfile> => {
     const data = response.data.result || response.data;
     return (data || {}) as BandProfile;
   } catch (error) {
-    console.error("밴드 프로필 조회 실패:", error);
-    throw error;
+    // HTTP 500 에러 등 서버 오류 시 null 반환하여 에러 전파 방지
+    if (import.meta.env.DEV) {
+      console.warn(`밴드 ${bandId} 프로필 조회 실패 (null 반환):`, {
+        status: (error as any)?.response?.status,
+        message: (error as any)?.message,
+      });
+    }
+    return null; // 에러 대신 null 반환
   }
 };
 
 // 밴드 상세정보 조회 API
-export const getBandDetail = async (bandId: string): Promise<BandDetail> => {
+export const getBandDetail = async (
+  bandId: string
+): Promise<BandDetail | null> => {
   try {
     if (import.meta.env.DEV) {
       console.log("밴드 상세정보 조회 요청:", {
@@ -196,8 +206,14 @@ export const getBandDetail = async (bandId: string): Promise<BandDetail> => {
     const data = response.data.result || response.data;
     return data as BandDetail;
   } catch (error) {
-    console.error("밴드 상세정보 조회 실패:", error);
-    throw error;
+    // HTTP 500 에러 등 서버 오류 시 null 반환하여 에러 전파 방지
+    if (import.meta.env.DEV) {
+      console.warn(`밴드 ${bandId} 상세정보 조회 실패 (null 반환):`, {
+        status: (error as any)?.response?.status,
+        message: (error as any)?.message,
+      });
+    }
+    return null; // 에러 대신 null 반환
   }
 };
 
@@ -246,7 +262,10 @@ export const getRecommendedBands = async () => {
           }
         } catch (error: unknown) {
           // 에러 로깅 최소화 - 개발 환경에서만 로그
-          if (import.meta.env.DEV && import.meta.env.VITE_VERBOSE_LOGGING === 'true') {
+          if (
+            import.meta.env.DEV &&
+            import.meta.env.VITE_VERBOSE_LOGGING === "true"
+          ) {
             console.log(
               `밴드 ${id} 조회 실패 (무시됨):`,
               (error as Error).message
@@ -407,12 +426,12 @@ export const probeSomeBandDetails = async (options?: {
   const limit = options?.limit ?? 5;
   const candidateIds = options?.candidateIds ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   const results: BandDetail[] = [];
-  
+
   // 사전테스트 중에는 API 호출 최소화
-  if (window.location.pathname.startsWith('/pre-test')) {
+  if (window.location.pathname.startsWith("/pre-test")) {
     return results;
   }
-  
+
   for (const id of candidateIds) {
     if (results.length >= limit) break;
     try {
@@ -420,8 +439,12 @@ export const probeSomeBandDetails = async (options?: {
       if (detail && detail.bandName) {
         results.push(detail);
       }
-    } catch {
-      // 에러 로깅 최소화
+      // detail이 null이어도 에러가 아니므로 계속 진행
+    } catch (error) {
+      // 예상치 못한 에러만 로깅
+      if (import.meta.env.DEV) {
+        console.warn(`밴드 ${id} 조회 중 예상치 못한 에러:`, error);
+      }
       continue;
     }
   }
