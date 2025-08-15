@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import ChatMessageItem from "./ChatMessageItem";
+import ChatMessageItem from "./PrivateChatMessageItem";
 import type { ChatMessage } from "@/types/chat";
 
 interface ChatMessageListProps {
@@ -53,8 +53,9 @@ export default function PrivateChatMessageList({
 
       <div className="space-y-2">
         {messages.map((message) => {
-          const unreadCount = message.showReadIndicator ? 1 : undefined;
-          
+          // const unreadCount = message.showReadIndicator ? 1 : 0;
+          const unreadCount = 0;
+
           return (
             <ChatMessageItem
               key={message.id}
