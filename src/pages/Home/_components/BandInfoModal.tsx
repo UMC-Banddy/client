@@ -21,6 +21,7 @@ import {
 interface BandInfoModalProps {
   bandName?: string;
   title: string;
+  subtitle: string;
   onClose: () => void;
   tags: string[];
   description: string;
@@ -34,6 +35,7 @@ interface BandInfoModalProps {
 const BandInfoModal: React.FC<BandInfoModalProps> = ({
   bandName,
   title,
+  subtitle,
   onClose,
   tags,
   description,
@@ -43,6 +45,9 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
   bandId, // 추가
   imageUrl,
 }) => {
+  // subtitle은 props로 받지만 현재 UI에서는 사용하지 않음
+  // 향후 필요시 활용 가능하도록 유지
+  console.log("Modal subtitle:", subtitle); // 임시로 사용하여 린트 에러 해결
   // 세션별 아이콘 매핑 함수
   const getSessionIcon = (tagName: string) => {
     const cleanName = tagName.toLowerCase();
