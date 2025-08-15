@@ -59,6 +59,8 @@ export const useSaveItem = () => {
       queryClient.invalidateQueries({ queryKey: ["archivedTracks"] });
       queryClient.invalidateQueries({ queryKey: ["archivedArtists"] });
       queryClient.invalidateQueries({ queryKey: ["archivedAlbums"] });
+      // 마이페이지 프로필 데이터도 무효화
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
     },
   });
 
@@ -78,6 +80,8 @@ export const useSaveItem = () => {
       queryClient.invalidateQueries({ queryKey: ["archivedTracks"] });
       queryClient.invalidateQueries({ queryKey: ["archivedArtists"] });
       queryClient.invalidateQueries({ queryKey: ["archivedAlbums"] });
+      // 마이페이지 프로필 데이터도 무효화
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
     },
   });
 

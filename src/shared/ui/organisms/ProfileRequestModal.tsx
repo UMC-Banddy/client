@@ -1,4 +1,6 @@
+import { useState } from "react";
 import CustomButton from "@/shared/ui/atoms/CustomButton";
+import { sendFriendRequest, sendChatRequest } from "@/store/friendApi";
 
 interface ProfileRequestModalProps {
   open: boolean;
@@ -6,8 +8,9 @@ interface ProfileRequestModalProps {
   profileName: string;
   message: string;
   onMessageChange: (msg: string) => void;
-  onSend: () => void;
+  onSend: (toastMessage: string) => void;
   onClose: () => void;
+  targetMemberId: number;
 }
 
 const ProfileRequestModal: React.FC<ProfileRequestModalProps> = ({
@@ -18,8 +21,48 @@ const ProfileRequestModal: React.FC<ProfileRequestModalProps> = ({
   onMessageChange,
   onSend,
   onClose,
+  targetMemberId,
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
   if (!open) return null;
+
+  // API 호출 및 토스트 처리
+  const handleSendRequest = async () => {
+    setIsLoading(true);
+    try {
+      if (type === "friend") {
+        await sendFriendRequest(targetMemberId, message);
+      } else if (type === "chat") {
+        await sendChatRequest(targetMemberId, message);
+      }
+      
+      // 모달 닫고 토스트 표시
+      onSend(type === "friend" ? "친구 신청을 보냈습니다." : "채팅 요청을 보냈습니다.");
+    } catch (error) {
+      console.error("요청 실패:", error);
+      
+      // 에러 메시지 처리
+      let errorMessage = "요청 전송에 실패했습니다.";
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 500) {
+          errorMessage = "이미 요청을 보냈습니다.";
+        } else if (axiosError.response?.status === 409) {
+          errorMessage = "이미 요청이 존재합니다.";
+        } else if (axiosError.response?.status === 404) {
+          errorMessage = "존재하지 않는 사용자입니다.";
+        } else if (axiosError.response?.status === 401) {
+          errorMessage = "로그인이 필요합니다.";
+        }
+      }
+      
+      onSend(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white rounded-2xl w-[85.49vw] flex flex-col items-center px-[48px] py-[40px] max-w-[342px]">
@@ -39,10 +82,13 @@ const ProfileRequestModal: React.FC<ProfileRequestModalProps> = ({
           onChange={e => onMessageChange(e.target.value)}
         />
         <div className="flex w-full gap-3 mt-[0.5vh]">
-          <CustomButton className="flex-1" bgColor="bg-[#CACACA]" textColor="text-[#B42127]" onClick={onClose}>아니오</CustomButton>
-          <CustomButton className="flex-1" bgColor="bg-[#B42127]" onClick={onSend}>보내기</CustomButton>
+          <CustomButton className="flex-1" bgColor="bg-[#CACACA]" textColor="text-[#B42127]" onClick={onClose} disabled={isLoading}>아니오</CustomButton>
+          <CustomButton className="flex-1" bgColor="bg-[#B42127]" onClick={handleSendRequest} disabled={isLoading}>
+            {isLoading ? "전송 중..." : "보내기"}
+          </CustomButton>
         </div>
       </div>
+      
     </div>
   );
 };

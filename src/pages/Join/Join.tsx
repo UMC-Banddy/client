@@ -84,6 +84,8 @@ const Join = () => {
           return (
             <NormalChat
               key={room.roomId}
+              roomId={room.roomId}
+              roomType="PRIVATE"
               name={room.chatName}
               thumbnail={room.imageUrl}
               members={[room.memberInfo.nickname]}

@@ -80,6 +80,8 @@ export const API_ENDPOINTS = {
     FRIENDS: "/api/chat/friends",
     CREATE_WITH_FRIEND: "/api/chat/friends",
     PRIVATE: "/api/chat/rooms/friends",
+    REQUESTS: "/api/chat/requests",
+    DELETE_REQUEST: (requestId: string) => `/api/chat/requests/${requestId}`,
     MESSAGES: (
       roomId: string | number,
       cursor: string | number = 0,
