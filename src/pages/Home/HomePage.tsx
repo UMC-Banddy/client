@@ -210,6 +210,14 @@ const HomePage = () => {
   const fetchRecommendedBands = async () => {
     try {
       setLoading(true);
+      
+      // 사전테스트 중에는 기본 데이터만 사용하여 API 호출 최소화
+      if (window.location.pathname.startsWith('/pre-test')) {
+        console.log('사전테스트 중 - 기본 데이터 사용');
+        setMyBands(fallbackBandData);
+        return;
+      }
+      
       // 홈은 추천 결과 우선, 없으면 유사 트랙/아티스트 기반으로 대체 구성
       let profiles: BandProfileData[] =
         recommended && recommended.length > 0
@@ -395,7 +403,10 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    fetchRecommendedBands();
+    // 사전테스트 중에는 API 호출하지 않음
+    if (!window.location.pathname.startsWith('/pre-test')) {
+      fetchRecommendedBands();
+    }
     // 훅 데이터가 갱신되면 다시 바인딩
   }, [recommended]);
 

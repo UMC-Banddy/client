@@ -245,8 +245,8 @@ export const getRecommendedBands = async () => {
             console.log(`밴드 ${id} 조회 성공`);
           }
         } catch (error: unknown) {
-          // 모든 에러를 무시하고 계속 진행
-          if (import.meta.env.DEV) {
+          // 에러 로깅 최소화 - 개발 환경에서만 로그
+          if (import.meta.env.DEV && import.meta.env.VITE_VERBOSE_LOGGING === 'true') {
             console.log(
               `밴드 ${id} 조회 실패 (무시됨):`,
               (error as Error).message
@@ -264,7 +264,10 @@ export const getRecommendedBands = async () => {
       return validProfiles;
     }
   } catch (error) {
-    console.error("추천 밴드 목록 조회 실패:", error);
+    // 에러 로깅 최소화
+    if (import.meta.env.DEV) {
+      console.warn("추천 밴드 목록 조회 실패 (fallback으로 빈 배열 반환)");
+    }
     // 최종 에러 시에도 빈 배열 반환하여 앱이 중단되지 않도록 함
     return [];
   }
@@ -404,6 +407,12 @@ export const probeSomeBandDetails = async (options?: {
   const limit = options?.limit ?? 5;
   const candidateIds = options?.candidateIds ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   const results: BandDetail[] = [];
+  
+  // 사전테스트 중에는 API 호출 최소화
+  if (window.location.pathname.startsWith('/pre-test')) {
+    return results;
+  }
+  
   for (const id of candidateIds) {
     if (results.length >= limit) break;
     try {
@@ -412,6 +421,7 @@ export const probeSomeBandDetails = async (options?: {
         results.push(detail);
       }
     } catch {
+      // 에러 로깅 최소화
       continue;
     }
   }

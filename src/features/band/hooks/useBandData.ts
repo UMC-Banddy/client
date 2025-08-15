@@ -38,6 +38,7 @@ export function useRecommendedBands() {
         return [];
       }
     },
+    enabled: !window.location.pathname.startsWith('/pre-test'), // 사전테스트 중에는 비활성화
     staleTime: 60 * 1000,
   });
 }
