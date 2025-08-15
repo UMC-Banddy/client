@@ -21,7 +21,6 @@ import {
 interface BandInfoModalProps {
   bandName?: string;
   title: string;
-  subtitle: string;
   onClose: () => void;
   tags: string[];
   description: string;
@@ -35,7 +34,6 @@ interface BandInfoModalProps {
 const BandInfoModal: React.FC<BandInfoModalProps> = ({
   bandName,
   title,
-  subtitle,
   onClose,
   tags,
   description,
