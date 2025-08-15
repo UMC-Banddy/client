@@ -12,10 +12,12 @@ import SignupButton from "./_components/SignupButton";
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState(authStore.email);
   const [showPopup, setShowPopup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   const handleSendCode = async () => {
     if (!email) return;
+    setErrorMessage(""); // Reset error message
     try {
       const message = await sendEmailCode(email);
       console.log("이메일 전송 응답:", message);
@@ -27,8 +29,9 @@ const SignupPage: React.FC = () => {
         setShowPopup(false);
         navigate("/signup/verify");
       }, 1500);
-    } catch (error) {
-      console.error("이메일 인증 요청 실패", error);
+    } catch (err: any) {
+      console.error("이메일 인증 요청 실패", err);
+      setErrorMessage(err.message || "알 수 없는 오류가 발생했습니다.");
     }
   };
 
@@ -44,8 +47,16 @@ const SignupPage: React.FC = () => {
           type="email"
           placeholder="example@banddy.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setErrorMessage("");
+          }}
         />
+        {errorMessage && (
+          <p className="text-sm mt-2 text-right text-[#DF0001]">
+            {errorMessage}
+          </p>
+        )}
       </div>
 
       {/* 인증번호 발송 버튼 */}
