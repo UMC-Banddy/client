@@ -230,24 +230,50 @@ const PretestArtistPage = () => {
           JSON.stringify(selectedArtistData)
         );
 
-        // 각 아티스트를 개별적으로 저장
-        const savePromises = selectedArtistData.map(async (spotifyId) => {
-          try {
-            const result = await artistSaveAPI.saveArtist(spotifyId);
-            console.log(`아티스트 ${spotifyId} 저장 성공:`, result);
-            return result;
-          } catch (error) {
-            console.error(`아티스트 ${spotifyId} 저장 실패:`, error);
-            throw error;
-          }
-        });
+        // memberId가 있으면 아이디 기반 저장, 없으면 토큰 기반 저장
+        const memberId = localStorage.getItem("memberId");
 
-        // 모든 아티스트 저장 완료 대기
-        await Promise.all(savePromises);
-        console.log("모든 아티스트 저장 완료");
+        if (memberId) {
+          // 아이디 기반 저장 (토큰 없이도 가능)
+          console.log("아이디 기반 저장 사용:", memberId);
 
-        // 성공 시 다음 페이지로 이동
-        navigate("/pre-test/session");
+          // 선택된 아티스트 정보를 localStorage에 저장 (세션 페이지에서 사용)
+          localStorage.setItem(
+            "selectedArtists",
+            JSON.stringify(selectedArtistData)
+          );
+
+          // 다음 페이지로 이동 (아이디 기반 저장은 백엔드에서 처리)
+          navigate("/pre-test/session");
+        } else {
+          // 토큰 기반 저장 (기존 방식)
+          console.log("토큰 기반 저장 사용");
+
+          // 선택된 아티스트 정보를 localStorage에 저장 (세션 페이지에서 사용)
+          localStorage.setItem(
+            "selectedArtists",
+            JSON.stringify(selectedArtistData)
+          );
+
+          // 각 아티스트를 개별적으로 저장
+          const savePromises = selectedArtistData.map(async (spotifyId) => {
+            try {
+              const result = await artistSaveAPI.saveArtist(spotifyId);
+              console.log(`아티스트 ${spotifyId} 저장 성공:`, result);
+              return result;
+            } catch (error) {
+              console.error(`아티스트 ${spotifyId} 저장 실패:`, error);
+              throw error;
+            }
+          });
+
+          // 모든 아티스트 저장 완료 대기
+          await Promise.all(savePromises);
+          console.log("모든 아티스트 저장 완료");
+
+          // 성공 시 다음 페이지로 이동
+          navigate("/pre-test/session");
+        }
       } catch (error) {
         console.error("아티스트 저장 실패:", error);
         // 에러가 발생해도 다음 페이지로 이동 (선택사항)

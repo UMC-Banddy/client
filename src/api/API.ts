@@ -100,7 +100,9 @@ export interface AutocompleteResponse {
 }
 
 // Axios 인스턴스 생성
-const viteEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env || {};
+const viteEnv =
+  (import.meta as unknown as { env?: Record<string, string | undefined> })
+    .env || {};
 export const API = axios.create({
   baseURL: viteEnv.VITE_API_BASE_URL,
   headers: {
@@ -111,9 +113,16 @@ export const API = axios.create({
 // 요청 인터셉터: accessToken 있으면 헤더에 자동 추가
 API.interceptors.request.use((config) => {
   const token = authStore.accessToken;
-  if (token) {
+
+  // 사전테스트 관련 API는 토큰이 없어도 호출 가능 (아이디 기반 저장)
+  const isPretestAPI =
+    config.url?.includes("/member/survey") ||
+    config.url?.includes("/member/check-nickname");
+
+  if (token && !isPretestAPI) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
@@ -122,6 +131,15 @@ API.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // refreshToken 엔드포인트에서의 401은 재시도 금지 (무한 루프 방지)
+    const requestUrl: string = originalRequest?.url || "";
+    const isRefreshEndpoint = requestUrl.includes(
+      API_ENDPOINTS.AUTH.REFRESH_TOKEN
+    );
+    if (isRefreshEndpoint) {
+      return Promise.reject(error);
+    }
 
     // accessToken 만료 + retry 방지 플래그
     if (
@@ -132,8 +150,12 @@ API.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // 인스턴스를 사용해 상대경로로 호출 (Vercel rewrite 및 baseURL 미설정 환경 호환)
-        const res = await API.post(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
+        // 공용 인스턴스(API)가 아닌 별도 axios로 호출하여 인터셉터 재귀 방지
+        const apiBase = import.meta.env.VITE_API_BASE_URL || "";
+        const refreshUrl = apiBase
+          ? `${apiBase}${API_ENDPOINTS.AUTH.REFRESH_TOKEN}`
+          : API_ENDPOINTS.AUTH.REFRESH_TOKEN;
+        const res = await axios.post(refreshUrl, {
           refreshToken: authStore.refreshToken,
         });
 
@@ -423,17 +445,18 @@ export const profileAPI = {
 
 // Survey 관련 API 함수들
 export const surveyAPI = {
-  // Survey 제출
-  submitSurvey: async (data: SurveyData): Promise<void> => {
+  // Survey 제출 (아이디 기반 저장 지원)
+  submitSurvey: async (data: SurveyData, memberId?: string): Promise<void> => {
     try {
+      // memberId가 있으면 아이디 기반 저장, 없으면 토큰 기반 저장
+      const requestData = {
+        selectedArtists: data.selectedArtists,
+        ...(memberId && { memberId }), // memberId가 있으면 포함
+      };
+
       // 파일이 있는 경우에만 FormData 사용, 없으면 JSON 사용
       if (data.profileImage || data.mediaFile) {
         const formData = new FormData();
-
-        // 서버가 요구하는 'request' 필드에 JSON 데이터를 담아서 전송
-        const requestData = {
-          selectedArtists: data.selectedArtists,
-        };
 
         console.log("Survey 제출 데이터 (FormData):", requestData);
         formData.append("request", JSON.stringify(requestData));
@@ -461,10 +484,6 @@ export const surveyAPI = {
         return response.data;
       } else {
         // 파일이 없으면 JSON 형식으로 전송
-        const requestData = {
-          selectedArtists: data.selectedArtists,
-        };
-
         console.log("Survey 제출 데이터 (JSON):", requestData);
 
         const response = await API.post(
@@ -534,14 +553,18 @@ export const surveyAPI = {
     }
   },
 
-  // Session 데이터 제출
-  submitSessionData: async (data: SessionData): Promise<void> => {
+  // Session 데이터 제출 (아이디 기반 저장 지원)
+  submitSessionData: async (
+    data: SessionData,
+    memberId?: string
+  ): Promise<void> => {
     try {
       const formData = new FormData();
 
-      // 서버가 요구하는 'request' 필드에 JSON 데이터를 담아서 전송
+      // memberId가 있으면 아이디 기반 저장, 없으면 토큰 기반 저장
       const requestData = {
         selectedSessions: data.selectedSessions,
+        ...(memberId && { memberId }), // memberId가 있으면 포함
       };
       formData.append("request", JSON.stringify(requestData));
 

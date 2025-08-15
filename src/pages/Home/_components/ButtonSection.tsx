@@ -21,11 +21,8 @@ const ButtonSection = ({
   const [open, setOpen] = useState(false);
 
   const handleJoinClick = () => {
-    if (onJoinClick) {
-      onJoinClick();
-    } else {
-      setOpen(true);
-    }
+    // 항상 확인 모달을 띄우고, onJoinClick 제공 시 확인에서 콜백 실행
+    setOpen(true);
   };
 
   return (
@@ -84,7 +81,11 @@ const ButtonSection = ({
               className="flex-1 bg-red-600 text-white font-bold py-3 rounded-full text-lg"
               onClick={() => {
                 setOpen(false);
-                navigate("/home/chat-demo");
+                if (onJoinClick) {
+                  onJoinClick();
+                } else {
+                  navigate("/home/chat-demo");
+                }
               }}
             >
               예

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import BandCarousel from "./_components/BandCarousel";
 import HomeSkeleton from "./_components/HomeSkeleton";
 import MuiDialog from "@/shared/components/MuiDialog";
@@ -6,6 +7,7 @@ import BandInfoModal from "./_components/BandInfoModal";
 import {
   getRecommendedFromSimilar,
   probeSomeBandDetails,
+  getAllBands,
 } from "@/store/userStore";
 import { useRecommendedBands } from "@/features/band/hooks/useBandData";
 
@@ -197,6 +199,7 @@ const fallbackBandData: Band[] = [
 ];
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [myBands, setMyBands] = useState<Band[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedBand, setSelectedBand] = useState<Band | null>(null);
@@ -216,8 +219,34 @@ const HomePage = () => {
         profiles = (await getRecommendedFromSimilar()) as BandProfileData[];
       }
 
-      // 선택적 보강: 일부 detail을 받아 제목/이미지 보강
-      const details = await probeSomeBandDetails({ limit: 5 });
+      // 선택적 보강: 전체 밴드 목록을 조회해 전 범위(candidateIds) 구성
+      let candidateIds: number[] | undefined;
+      try {
+        const allBands = await getAllBands();
+        const ids = Array.isArray(allBands)
+          ? allBands
+              .map((b: any) => Number(b?.bandId ?? b?.id))
+              .filter((n: number) => Number.isFinite(n))
+          : [];
+        if (ids.length > 0) {
+          candidateIds = Array.from(new Set(ids));
+        }
+      } catch {
+        // 서버 미구현/오류 시 무시하고 fallback 사용
+      }
+
+      const fallbackIds = [
+        49, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+        20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
+        38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 50, 51, 52, 53, 54, 55, 56,
+        57, 58, 59, 60,
+      ];
+
+      const details = await probeSomeBandDetails({
+        limit: Math.min(100, candidateIds?.length ?? 40),
+        candidateIds:
+          candidateIds && candidateIds.length > 0 ? candidateIds : fallbackIds,
+      });
 
       // profiles가 빈 배열이거나 undefined인 경우 기본 데이터 사용
       if (!profiles || profiles.length === 0) {
@@ -321,6 +350,23 @@ const HomePage = () => {
         }
       );
 
+      // memberId 36/37 계정에서 bandId 49를 캐러셀에 보장 노출
+      try {
+        const memberId = localStorage.getItem("memberId");
+        if (memberId === "36" || memberId === "37") {
+          const exists49 = bands.some((b) => b.id === 49);
+          if (!exists49) {
+            bands.unshift({
+              id: 49,
+              image: homeAlbum3Img,
+              title: "Banddy 밴드 #49",
+              subtitle: "관리자 36, 멤버 36·37",
+              tags: ["그룹채팅", "bandId 49", "roomId 52"],
+            });
+          }
+        }
+      } catch {}
+
       setMyBands(bands);
     } catch (error) {
       console.error("추천 밴드 조회 실패:", error);
@@ -332,6 +378,18 @@ const HomePage = () => {
   };
 
   const handleJoinClick = async (band: Band) => {
+    // bandId 49는 그룹 채팅방(roomId 52)로 바로 이동
+    if (band.id === 49) {
+      navigate(`/home/chat?roomId=52&roomType=GROUP`);
+      return;
+    }
+    // 기타는 기존 모달 열기
+    setSelectedBand(band);
+    setOpen(true);
+  };
+
+  // 이미지 클릭 시 밴드 상세 섹션 이동 등 확장용 (현재는 모달 오픈 동일 동작)
+  const handleImageClick = (band: Band) => {
     setSelectedBand(band);
     setOpen(true);
   };
@@ -353,7 +411,11 @@ const HomePage = () => {
         <div className="w-full flex flex-col items-center overflow-hidden">
           {/* 캐러셀 */}
           <div className="w-full overflow-hidden">
-            <BandCarousel bands={myBands} onJoinClick={handleJoinClick} />
+            <BandCarousel
+              bands={myBands}
+              onJoinClick={handleJoinClick}
+              onImageClick={handleImageClick}
+            />
           </div>
         </div>
       </main>

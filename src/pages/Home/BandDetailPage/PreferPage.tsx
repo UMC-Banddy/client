@@ -74,9 +74,11 @@ export default function PreferPage() {
   );
 
   const artists: Artist[] = useMemo(() => {
-    const safe = Array.isArray(artistsData) ? artistsData : [];
+    const safe: Array<Partial<Artist>> = Array.isArray(artistsData)
+      ? (artistsData as Array<Partial<Artist>>)
+      : [];
     if (safe.length === 0) return preferData;
-    return safe.map((a: Partial<Artist>, index: number) => ({
+    return safe.map((a, index: number) => ({
       id: a?.id ?? index + 1,
       name: a?.name ?? `아티스트 ${index + 1}`,
       image: a?.imageUrl ?? a?.image ?? guitarBoy,
