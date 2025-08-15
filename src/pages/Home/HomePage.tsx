@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import BandCarousel from "./_components/BandCarousel";
 import HomeSkeleton from "./_components/HomeSkeleton";
 import MuiDialog from "@/shared/components/MuiDialog";
@@ -197,6 +198,7 @@ const fallbackBandData: Band[] = [
 ];
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [myBands, setMyBands] = useState<Band[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedBand, setSelectedBand] = useState<Band | null>(null);
@@ -321,6 +323,23 @@ const HomePage = () => {
         }
       );
 
+      // memberId 36/37 계정에서 bandId 49를 캐러셀에 보장 노출
+      try {
+        const memberId = localStorage.getItem("memberId");
+        if (memberId === "36" || memberId === "37") {
+          const exists49 = bands.some((b) => b.id === 49);
+          if (!exists49) {
+            bands.unshift({
+              id: 49,
+              image: homeAlbum3Img,
+              title: "Banddy 밴드 #49",
+              subtitle: "관리자 36, 멤버 36·37",
+              tags: ["그룹채팅", "bandId 49", "roomId 52"],
+            });
+          }
+        }
+      } catch {}
+
       setMyBands(bands);
     } catch (error) {
       console.error("추천 밴드 조회 실패:", error);
@@ -332,6 +351,18 @@ const HomePage = () => {
   };
 
   const handleJoinClick = async (band: Band) => {
+    // bandId 49는 그룹 채팅방(roomId 52)로 바로 이동
+    if (band.id === 49) {
+      navigate(`/home/chat?roomId=52&roomType=GROUP`);
+      return;
+    }
+    // 기타는 기존 모달 열기
+    setSelectedBand(band);
+    setOpen(true);
+  };
+
+  // 이미지 클릭 시 밴드 상세 섹션 이동 등 확장용 (현재는 모달 오픈 동일 동작)
+  const handleImageClick = (band: Band) => {
     setSelectedBand(band);
     setOpen(true);
   };
@@ -353,7 +384,11 @@ const HomePage = () => {
         <div className="w-full flex flex-col items-center overflow-hidden">
           {/* 캐러셀 */}
           <div className="w-full overflow-hidden">
-            <BandCarousel bands={myBands} onJoinClick={handleJoinClick} />
+            <BandCarousel
+              bands={myBands}
+              onJoinClick={handleJoinClick}
+              onImageClick={handleImageClick}
+            />
           </div>
         </div>
       </main>
