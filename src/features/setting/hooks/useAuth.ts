@@ -1,23 +1,13 @@
 //로그아웃 등 유틸
 
 import { authStore } from "@/store/authStore";
+import { clearAuthState } from "@/shared/utils/authCleanup";
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
 
 export const logout = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("memberId");
-
-  authStore.accessToken = null;
-  authStore.refreshToken = null;
-  authStore.isAuthenticated = false;
-  authStore.role = null;
-  authStore.email = "";
-  authStore.password = "";
-
-  // 로그아웃 후 로그인 페이지로 리다이렉트
-  window.location.href = "/login";
+  // 이메일/비밀번호 입력 상태는 별도 관리라면 초기화 유지, 여기서는 토큰/상태만 정리
+  clearAuthState({ redirectTo: "/login" });
 };
 
 export const refreshAccessToken = async (): Promise<string> => {
