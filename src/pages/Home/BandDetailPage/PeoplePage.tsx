@@ -9,10 +9,7 @@ import ElectricGuitarImg from "@/shared/components/images/ElectricGuitarImg";
 import BassImg from "@/shared/components/images/BassImg";
 import RecruitBadge from "@/pages/Home/_components/people/RecruitBadge";
 import { useLocation, useParams } from "react-router-dom";
-import {
-  useBandProfile,
-  useBandMembers,
-} from "@/features/band/hooks/useBandData";
+import { useBandProfile } from "@/features/band/hooks/useBandData";
 
 interface BandMember {
   id: number;
@@ -49,8 +46,10 @@ export default function PeoplePage() {
   };
 
   const { data: bandData, isLoading: loadingProfile } = useBandProfile(bandId);
-  const { data: membersData = [], isLoading: loadingMembers } =
-    useBandMembers(bandId);
+  // 서버에 /api/band/{id}/members 엔드포인트가 없어 404 발생 → 호출 비활성화
+  // const { data: membersData = [], isLoading: loadingMembers } = useBandMembers(bandId);
+  const membersData: unknown[] = [];
+  const loadingMembers = false;
 
   const profile = bandData?.profile ?? {};
   const detail = bandData?.detail;
@@ -77,7 +76,9 @@ export default function PeoplePage() {
   }, [bandId, profile, detail, location.state]);
 
   const members: BandMember[] = useMemo(() => {
-    const safe = Array.isArray(membersData) ? membersData : [];
+    const safe: ApiBandMember[] = Array.isArray(membersData)
+      ? (membersData as ApiBandMember[])
+      : [];
     if (safe.length === 0) {
       return [
         { id: 1, name: "김기타", role: "electric_guitar", isRecruiting: false },
@@ -86,7 +87,7 @@ export default function PeoplePage() {
         { id: 4, name: "모집중", role: "guitar", isRecruiting: true },
       ];
     }
-    return safe.map((member: ApiBandMember, index: number) => ({
+    return safe.map((member, index: number) => ({
       id: member?.id || index + 1,
       name: member?.name || `멤버 ${index + 1}`,
       role: member?.role || "guitar",
