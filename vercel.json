@@ -1,5 +1,9 @@
 {
   "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "ignoreCommand": "echo 'Use Vercel cache'",
   "builds": [
     {
       "src": "package.json",
@@ -17,6 +21,10 @@
     {
       "source": "/auth/(.*)",
       "destination": "https://banddy.site/auth/$1"
+    },
+    {
+      "source": "/ws",
+      "destination": "https://banddy.site/ws"
     },
     {
       "source": "/member",

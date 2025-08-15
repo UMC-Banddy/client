@@ -13,24 +13,70 @@ const PretestProfileCompletePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 프로필 데이터 로드
+  // 프로필 데이터 로드 및 아이디 기반 저장 데이터 처리
   useEffect(() => {
     const loadProfile = async () => {
       try {
         setLoading(true);
-        const response = await profileAPI.getProfile();
-        console.log("프로필 데이터:", response);
 
-        if (response.isSuccess && response.result) {
-          setProfileData(response.result);
-        } else {
-          console.warn("프로필 데이터가 없습니다:", response);
+        // memberId가 있으면 아이디 기반 저장 데이터 처리
+        const memberId = localStorage.getItem("memberId");
+        if (memberId) {
+          console.log("아이디 기반 저장 데이터 처리:", memberId);
+
+          // localStorage에서 임시 저장된 데이터 가져오기
+          const pendingArtists = localStorage.getItem("pendingArtists");
+          const pendingSessions = localStorage.getItem("pendingSessions");
+
+          if (pendingArtists || pendingSessions) {
+            console.log("임시 저장된 데이터:", {
+              pendingArtists,
+              pendingSessions,
+            });
+
+            // 백엔드로 아이디 기반 저장 데이터 전송
+            try {
+              // 아티스트 데이터가 있으면 전송
+              if (pendingArtists) {
+                const artistData = JSON.parse(pendingArtists);
+                // TODO: 백엔드 API 호출하여 아이디 기반으로 아티스트 저장
+                console.log("아이디 기반 아티스트 저장:", artistData);
+                localStorage.removeItem("pendingArtists");
+              }
+
+              // 세션 데이터가 있으면 전송
+              if (pendingSessions) {
+                const sessionData = JSON.parse(pendingSessions);
+                // TODO: 백엔드 API 호출하여 아이디 기반으로 세션 저장
+                console.log("아이디 기반 세션 저장:", sessionData);
+                localStorage.removeItem("pendingSessions");
+              }
+            } catch (saveError) {
+              console.error("아이디 기반 저장 실패:", saveError);
+            }
+          }
+        }
+
+        // 프로필 데이터 로드 (토큰 기반)
+        try {
+          const response = await profileAPI.getProfile();
+          console.log("프로필 데이터:", response);
+
+          if (response.isSuccess && response.result) {
+            setProfileData(response.result);
+          } else {
+            console.warn("프로필 데이터가 없습니다:", response);
+            setProfileData(null);
+          }
+          setError(null);
+        } catch (profileError) {
+          console.error("프로필 데이터 로드 실패:", profileError);
+          // 프로필 로드 실패해도 에러로 표시하지 않음 (아이디 기반 저장은 성공했을 수 있음)
           setProfileData(null);
         }
-        setError(null);
       } catch (err) {
-        console.error("프로필 데이터 로드 실패:", err);
-        setError("프로필 데이터를 불러오는데 실패했습니다.");
+        console.error("데이터 로드 실패:", err);
+        setError("데이터를 불러오는데 실패했습니다.");
         setProfileData(null);
       } finally {
         setLoading(false);

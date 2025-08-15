@@ -16,7 +16,8 @@ interface Band {
 const BandCarousel: React.FC<{
   bands: Band[];
   onJoinClick?: (band: Band) => void;
-}> = ({ bands, onJoinClick }) => {
+  onImageClick?: (band: Band) => void;
+}> = ({ bands, onJoinClick, onImageClick }) => {
   // 빈 배열 처리
   if (!bands || bands.length === 0) {
     return (
@@ -98,8 +99,8 @@ const BandCarousel: React.FC<{
   }, [index]);
 
   const handleBandClick = (band: Band) => {
-    if (onJoinClick) {
-      onJoinClick(band);
+    if (onImageClick) {
+      onImageClick(band);
     }
   };
 
@@ -136,7 +137,10 @@ const BandCarousel: React.FC<{
                 {band.title}
               </h2>
               <p className="text-gray-400 text-sm mb-4">{band.subtitle}</p>
-              <ButtonSection setToast={setToast} />
+              <ButtonSection
+                setToast={setToast}
+                onJoinClick={onJoinClick ? () => onJoinClick(band) : undefined}
+              />
             </div>
           ))}
         </div>

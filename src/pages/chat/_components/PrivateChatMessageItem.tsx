@@ -14,7 +14,7 @@ interface ChatMessageItemProps {
   unreadCount?: number;
 }
 
-export default function ChatMessageItem({
+export default function PrivateChatMessageItem({
   type,
   name,
   avatar,
@@ -106,13 +106,13 @@ export default function ChatMessageItem({
                 className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
               >
                 {/* 읽지 않은 사람 수 */}
-                <span
+                {/* <span
                   className={`text-[10px] text-red-500 font-medium mb-0.5 ${
                     !isMe ? "ml-0.5" : ""
                   }`}
-                >
-                  {unreadCount || 1} {/*추후에 0명은 없음으로 수정할 것} */}
-                </span>
+                > */}
+                  {/* {unreadCount || 1} 추후에 0명은 없음으로 수정할 것} */}
+                {/* </span> */}
                 <span className="text-[10px] text-gray-400 whitespace-nowrap">
                   {time}
                 </span>

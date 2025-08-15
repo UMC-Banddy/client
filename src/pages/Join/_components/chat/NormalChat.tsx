@@ -3,15 +3,16 @@ import { showMembers } from "../../_utils/showMembers";
 import Modal from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
 import { API } from "@/api/API";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useNavigate } from "react-router-dom";
 
 interface NormalChatProps {
-  roomId: number;
+  roomId?: number;
   name: string;
   thumbnail: string | null;
   members: string[];
   unreadCount: number | null;
   pinnedAt: string | null;
+  roomType?: "PRIVATE" | "GROUP";
 }
 
 const NormalChat = ({
@@ -72,6 +73,12 @@ const NormalChat = ({
     }
   };
 
+  const handleClick = () => {
+    if (roomType === "PRIVATE") {
+      navigate(`/home/private-chat?roomId=${roomId}&roomType=PRIVATE`);
+    }
+  };
+
   return (
     <button
       className="flex justify-between items-center w-full bg-transparent border-none cursor-pointer"
@@ -84,6 +91,7 @@ const NormalChat = ({
       onMouseUp={cancelPressTimer}
       onMouseLeave={cancelPressTimer}
       onContextMenu={(e) => e.preventDefault()} // 기본 우클릭 메뉴 방지
+      onClick={handleClick}
     >
       <div className="flex items-center gap-[12px]">
         <div
@@ -98,7 +106,7 @@ const NormalChat = ({
         </div>
       </div>
       <div className="flex items-center gap-[8.92px]">
-        {unreadCount && (
+        {unreadCount && roomType !== "PRIVATE" && (
           <div className="flex justify-center items-center size-[22px] rounded-full bg-[#C7242D] text-[#fff] text-wanted-sb-10">
             {unreadCount}
           </div>

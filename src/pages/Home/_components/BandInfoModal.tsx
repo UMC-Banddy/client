@@ -19,6 +19,7 @@ import {
 } from "@/shared/components/images";
 
 interface BandInfoModalProps {
+  bandName?: string;
   title: string;
   subtitle: string;
   onClose: () => void;
@@ -32,6 +33,7 @@ interface BandInfoModalProps {
 }
 
 const BandInfoModal: React.FC<BandInfoModalProps> = ({
+  bandName,
   title,
   subtitle,
   onClose,
@@ -95,11 +97,8 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
       {/* 제목/부제목 */}
       <div className="text-center mb-2 mt-2 px-1">
         <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 break-words break-keep">
-          {title}
+          {bandName ?? title}
         </h2>
-        <p className="text-base sm:text-lg text-gray-700 mb-6 break-words break-keep">
-          {subtitle}
-        </p>
       </div>
       {/* 아이콘 리스트 (반응형, 1줄 고정) */}
       <div className="flex justify-center gap-2 sm:gap-3 md:gap-4 mb-6 flex-nowrap">
@@ -156,7 +155,7 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
                   state={{
                     initialBand: {
                       bandId,
-                      title,
+                      title: bandName ?? title,
                       imageUrl,
                     },
                   }}

@@ -33,10 +33,13 @@ class WebSocketService {
   }
 
   private initClient() {
-    // WS 기본 URL: 환경변수 우선, 없으면 운영 도메인으로 폴백
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || "https://banddy.site";
-    // SockJS는 HTTP URL을 사용해야 함 (ws://로 변환하지 않음)
-    const wsUrl = baseUrl + "/ws";
+    // WS URL 결정: VITE_WS_URL 우선 → VITE_API_BASE_URL + /ws → 상대경로 /ws
+    const explicitWsUrl = import.meta.env.VITE_WS_URL as string | undefined;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const wsUrl =
+      explicitWsUrl && explicitWsUrl.length > 0
+        ? explicitWsUrl
+        : `${baseUrl}/ws`;
 
     this.stompClient = new Client({
       webSocketFactory: () =>

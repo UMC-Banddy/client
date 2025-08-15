@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import Toast from "@/shared/ui/atoms/Toast";
 import { useParams } from "react-router-dom";
 import ProfileHeader from "./_components/ProfileHeader";
 import ProfileCard from "./_components/ProfileCard";
 import ProfileModalSection from "./_components/ProfileModalSection";
 import { useOtherProfile } from "@/features/profile/hooks/useOtherProfile";
-import { useSendFriendRequest } from "@/features/notification/hooks/useSendFriendRequest";
+
 import { 
   MicImg, 
   DrumImg, 
@@ -26,12 +27,12 @@ export default function ProfileDetailPage() {
   // 모달 상태 관리
   const [modalType, setModalType] = useState<null | "chat" | "friend">(null);
   const [modalMsg, setModalMsg] = useState("");
+  const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: "", visible: false });
   
   // 메뉴 상태 관리
   const [menuOpen, setMenuOpen] = useState(false);
   
-  // 커스텀 훅 사용
-  const { toast, handleSendFriendRequest } = useSendFriendRequest();
+
 
   // 세션 이름에 따라 적절한 컴포넌트를 반환하는 함수
   const getSessionComponent = (sessionName: string) => {
@@ -108,21 +109,12 @@ export default function ProfileDetailPage() {
     localStorage.setItem("profile_guide_shown", "true");
   };
 
-  // 모달 보내기
-  const handleSend = async () => {
-    if (modalType === "friend" && id) {
-      // 친구 신청 API 호출
-      const success = await handleSendFriendRequest(parseInt(id));
-      if (success) {
-        setModalType(null);
-        setModalMsg("");
-      }
-    } else if (modalType === "chat") {
-      // 채팅 요청 (기존 로직 유지)
-      console.log("채팅 요청 보내기");
-      setModalType(null);
-      setModalMsg("");
-    }
+  // 모달 보내기 (토스트 메시지와 함께)
+  const handleSend = (toastMessage: string) => {
+    setModalType(null);
+    setModalMsg("");
+    setToast({ message: toastMessage, visible: true });
+    setTimeout(() => setToast({ message: "", visible: false }), 2000);
   };
 
   // 모달 닫기
@@ -161,8 +153,8 @@ export default function ProfileDetailPage() {
       <ProfileHeader
         menuOpen={menuOpen}
         setMenuOpen={setMenuOpen}
-        onReport={() => alert("신고")}
-        onBan={() => alert("차단")}
+        onReport={() => console.log("신고")}
+        onBan={() => console.log("차단")}
       />
       
       <div className="w-full flex flex-col items-center">        
@@ -182,8 +174,11 @@ export default function ProfileDetailPage() {
         onSend={handleSend}
         onClose={handleClose}
         onMessageChange={setModalMsg}
-        toast={toast}
+        targetMemberId={id ? parseInt(id) : 0}
       />
+      
+      {/* 토스트 */}
+      <Toast message={toast.message} visible={toast.visible} />
     </div>
   );
 } 

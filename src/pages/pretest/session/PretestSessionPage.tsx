@@ -89,22 +89,36 @@ const PretestSessionPage = () => {
             const artistSpotifyIds = JSON.parse(savedArtistData);
             console.log("저장된 아티스트 데이터:", artistSpotifyIds);
 
-            // 각 아티스트를 개별적으로 저장
-            const artistSavePromises = artistSpotifyIds.map(
-              async (spotifyId: string) => {
-                try {
-                  const result = await artistSaveAPI.saveArtist(spotifyId);
-                  console.log(`아티스트 ${spotifyId} 저장 성공:`, result);
-                  return result;
-                } catch (error) {
-                  console.error(`아티스트 ${spotifyId} 저장 실패:`, error);
-                  throw error;
+            // memberId가 있으면 아이디 기반 저장, 없으면 토큰 기반 저장
+            const memberId = localStorage.getItem("memberId");
+            
+            if (memberId) {
+              // 아이디 기반 저장 (토큰 없이도 가능)
+              console.log("아이디 기반 저장 사용:", memberId);
+              
+              // 아티스트 데이터를 localStorage에 임시 저장 (백엔드에서 처리)
+              localStorage.setItem("pendingArtists", savedArtistData);
+            } else {
+              // 토큰 기반 저장 (기존 방식)
+              console.log("토큰 기반 저장 사용");
+              
+              // 각 아티스트를 개별적으로 저장
+              const artistSavePromises = artistSpotifyIds.map(
+                async (spotifyId: string) => {
+                  try {
+                    const result = await artistSaveAPI.saveArtist(spotifyId);
+                    console.log(`아티스트 ${spotifyId} 저장 성공:`, result);
+                    return result;
+                  } catch (error) {
+                    console.error(`아티스트 ${spotifyId} 저장 실패:`, error);
+                    throw error;
+                  }
                 }
-              }
-            );
+              );
 
-            await Promise.all(artistSavePromises);
-            console.log("모든 아티스트 저장 완료");
+              await Promise.all(artistSavePromises);
+              console.log("모든 아티스트 저장 완료");
+            }
 
             // 저장 완료 후 localStorage에서 제거
             localStorage.removeItem("selectedArtists");
@@ -173,33 +187,50 @@ const PretestSessionPage = () => {
           JSON.stringify(availableSessions, null, 2)
         );
 
-        // 기존 프로필 정보를 가져와서 availableSessions만 업데이트
-        try {
-          const currentProfile = await profileAPI.getProfile();
-          console.log("현재 프로필 정보:", currentProfile);
+        // memberId가 있으면 아이디 기반 저장, 없으면 토큰 기반 저장
+        const memberId = localStorage.getItem("memberId");
+        
+        if (memberId) {
+          // 아이디 기반 저장 (토큰 없이도 가능)
+          console.log("아이디 기반 저장 사용:", memberId);
+          
+          // 세션 데이터를 localStorage에 임시 저장 (백엔드에서 처리)
+          localStorage.setItem("pendingSessions", JSON.stringify(availableSessions));
+          
+          // 다음 페이지로 이동 (아이디 기반 저장은 백엔드에서 처리)
+          navigate("/pre-test/profile/complete");
+        } else {
+          // 토큰 기반 저장 (기존 방식)
+          console.log("토큰 기반 저장 사용");
+          
+          // 기존 프로필 정보를 가져와서 availableSessions만 업데이트
+          try {
+            const currentProfile = await profileAPI.getProfile();
+            console.log("현재 프로필 정보:", currentProfile);
 
-          // 기존 프로필 정보와 새로운 세션 정보를 병합
-          const updatedProfile = {
-            // ...currentProfile.result, // 기존 프로필 정보 유지
-            ...(currentProfile.result as ProfileData), // 기존 프로필 정보 유지
-            availableSessions: availableSessions, // 세션 정보만 업데이트
-          };
+            // 기존 프로필 정보와 새로운 세션 정보를 병합
+            const updatedProfile = {
+              // ...currentProfile.result, // 기존 프로필 정보 유지
+              ...(currentProfile.result as ProfileData), // 기존 프로필 정보 유지
+              availableSessions: availableSessions, // 세션 정보만 업데이트
+            };
 
-          console.log("업데이트할 프로필 정보:", updatedProfile);
+            console.log("업데이트할 프로필 정보:", updatedProfile);
 
-          // 프로필 API로 세션 데이터 저장
-          await profileAPI.updateProfile(updatedProfile);
-        } catch (profileError) {
-          console.error("프로필 조회 실패, 기본값으로 저장:", profileError);
+            // 프로필 API로 세션 데이터 저장
+            await profileAPI.updateProfile(updatedProfile);
+          } catch (profileError) {
+            console.error("프로필 조회 실패, 기본값으로 저장:", profileError);
 
-          // 프로필 조회 실패 시 최소 필드만 전송 (서버 유효성 검사를 피하기 위함)
-          await profileAPI.updateProfile({
-            availableSessions: availableSessions,
-          });
+            // 프로필 조회 실패 시 최소 필드만 전송 (서버 유효성 검사를 피하기 위함)
+            await profileAPI.updateProfile({
+              availableSessions: availableSessions,
+            });
+          }
+
+          // 성공 시 다음 페이지로 이동
+          navigate("/pre-test/profile/complete");
         }
-
-        // 성공 시 다음 페이지로 이동
-        navigate("/pre-test/profile/complete");
       } catch (error) {
         console.error("세션 데이터 제출 실패:", error);
         // 에러가 발생해도 다음 페이지로 이동 (선택사항)

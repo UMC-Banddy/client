@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { sendFriendRequest } from "@/store/friendApi";
+import { sendChatRequest } from "@/store/friendApi";
 
-export const useSendFriendRequest = () => {
+export const useSendChatRequest = () => {
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: "", visible: false });
 
-  // 친구 신청 보내기 핸들러
-  const handleSendFriendRequest = async (targetMemberId: number, message?: string) => {
+  // 채팅 요청 보내기 핸들러
+  const handleSendChatRequest = async (targetMemberId: number, message?: string) => {
     try {
-      await sendFriendRequest(targetMemberId, message);
-      setToast({ message: "친구 신청을 보냈습니다.", visible: true });
+      await sendChatRequest(targetMemberId, message);
+      setToast({ message: "채팅 요청을 보냈습니다.", visible: true });
       setTimeout(() => setToast(t => ({ ...t, visible: false })), 2000);
       return true; // 성공
     } catch (error) {
-      console.error("친구 신청 실패:", error);
+      console.error("채팅 요청 실패:", error);
       
       // 더 구체적인 에러 메시지
       let errorMessage = "요청 전송에 실패했습니다.";
@@ -21,7 +21,7 @@ export const useSendFriendRequest = () => {
         if (axiosError.response?.status === 500) {
           errorMessage = "이미 요청을 보냈습니다.";
         } else if (axiosError.response?.status === 409) {
-          errorMessage = "이미 친구 신청이 존재합니다.";
+          errorMessage = "이미 채팅 요청이 존재합니다.";
         } else if (axiosError.response?.status === 404) {
           errorMessage = "존재하지 않는 사용자입니다.";
         } else if (axiosError.response?.status === 401) {
@@ -37,6 +37,6 @@ export const useSendFriendRequest = () => {
 
   return {
     toast,
-    handleSendFriendRequest,
+    handleSendChatRequest,
   };
 };
