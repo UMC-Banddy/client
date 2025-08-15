@@ -220,10 +220,6 @@ export const getBandDetail = async (
 // 추천 밴드 목록 조회 API (홈페이지용)
 export const getRecommendedBands = async () => {
   try {
-    if (import.meta.env.DEV) {
-      console.log("추천 밴드 목록 조회 요청");
-    }
-
     // 먼저 similar API를 통해 실제 존재하는 밴드들을 가져옴
     try {
       const [tracksRes, artistsRes] = await Promise.all([
@@ -231,19 +227,8 @@ export const getRecommendedBands = async () => {
         API.get(API_ENDPOINTS.ARTISTS.SIMILAR),
       ]);
 
-      if (import.meta.env.DEV) {
-        console.log("Similar API 응답:", {
-          tracks: tracksRes.data,
-          artists: artistsRes.data,
-        });
-      }
-
       // similar API에서 밴드 프로필 정보를 직접 제공하는 경우
-      if (
-        tracksRes.data &&
-        Array.isArray(tracksRes.data) &&
-        tracksRes.data.length > 0
-      ) {
+      if (tracksRes.data && Array.isArray(tracksRes.data) && tracksRes.data.length > 0) {
         const similarProfiles = tracksRes.data
           .filter((track: any) => track.bandId || track.bandProfile)
           .map((track: any) => {
@@ -264,66 +249,39 @@ export const getRecommendedBands = async () => {
           .filter(Boolean);
 
         if (similarProfiles.length > 0) {
-          if (import.meta.env.DEV) {
-            console.log(
-              "Similar API에서 밴드 프로필 직접 조회 성공:",
-              similarProfiles
-            );
-          }
           return similarProfiles;
         }
       }
 
       // similar API에서 프로필을 직접 제공하지 않는 경우, 상세 정보 조회
-      const similarBandIds =
-        tracksRes.data
-          ?.filter((track: any) => track.bandId)
-          ?.map((track: any) => track.bandId)
-          ?.slice(0, 10) || [];
+      const similarBandIds = tracksRes.data
+        ?.filter((track: any) => track.bandId)
+        ?.map((track: any) => track.bandId)
+        ?.slice(0, 10) || [];
 
       if (similarBandIds.length > 0) {
-        if (import.meta.env.DEV) {
-          console.log("Similar API에서 밴드 ID 추출:", similarBandIds);
-        }
-
         const validProfiles = [];
         for (const id of similarBandIds) {
           try {
             const profile = await getBandProfile(String(id));
             if (profile) {
               validProfiles.push(profile);
-              if (import.meta.env.DEV) {
-                console.log(`Similar 밴드 ${id} 프로필 조회 성공`);
-              }
             }
           } catch (error: unknown) {
-            if (import.meta.env.DEV) {
-              console.log(
-                `Similar 밴드 ${id} 프로필 조회 실패 (무시됨):`,
-                (error as Error).message
-              );
-            }
+            // 에러 로그만 남김
+            console.warn(`Similar 밴드 ${id} 프로필 조회 실패:`, error);
             continue;
           }
         }
 
         if (validProfiles.length > 0) {
-          if (import.meta.env.DEV) {
-            console.log("Similar 기반 밴드 프로필 조회 성공:", validProfiles);
-          }
           return validProfiles;
         }
       }
 
       throw new Error("Similar API에서 유효한 밴드 정보를 찾을 수 없음");
-    } catch (similarError: unknown) {
-      if (import.meta.env.DEV) {
-        console.log(
-          "Similar API 실패, fallback 방식 사용:",
-          (similarError as Error).message
-        );
-      }
 
+    } catch (similarError: unknown) {
       // Similar API가 실패하면 fallback으로 기본 ID 시도 (최소한으로만)
       const fallbackBandIds = ["1", "2", "3", "4", "5"];
       const validProfiles = [];
@@ -333,32 +291,17 @@ export const getRecommendedBands = async () => {
           const profile = await getBandProfile(id);
           if (profile) {
             validProfiles.push(profile);
-            if (import.meta.env.DEV) {
-              console.log(`Fallback 밴드 ${id} 조회 성공`);
-            }
           }
         } catch (error: unknown) {
-          if (import.meta.env.DEV) {
-            console.log(
-              `Fallback 밴드 ${id} 조회 실패 (무시됨):`,
-              (error as Error).message
-            );
-          }
+          // 에러 로그만 남김
+          console.warn(`Fallback 밴드 ${id} 조회 실패:`, error);
           continue;
         }
-      }
-
-      if (import.meta.env.DEV) {
-        console.log("Fallback 방식으로 조회 성공:", validProfiles);
       }
 
       return validProfiles;
     }
   } catch (error) {
-    // 에러 로깅 최소화
-    if (import.meta.env.DEV) {
-      console.warn("추천 밴드 목록 조회 실패 (fallback으로 빈 배열 반환)");
-    }
     // 최종 에러 시에도 빈 배열 반환하여 앱이 중단되지 않도록 함
     return [];
   }
@@ -519,7 +462,7 @@ export const probeSomeBandDetails = async (options?: {
       API.get(API_ENDPOINTS.ARTISTS.SIMILAR),
     ]);
 
-    // similar API 결과에서 밴드 ID 추출 (실제로는 API 응답 구조에 따라 조정 필요)
+    // similar API 결과에서 밴드 ID 추출
     let similarBandIds: number[] = [];
 
     // tracksRes.data에서 bandId 필드가 있다면 추출
@@ -549,15 +492,8 @@ export const probeSomeBandDetails = async (options?: {
     }
 
     // ID 개수 제한 (너무 많은 API 호출 방지)
-    const maxIdsToCheck = Math.min(limit * 2, 20); // 최대 20개까지만 체크
+    const maxIdsToCheck = Math.min(limit * 2, 20);
     similarBandIds = similarBandIds.slice(0, maxIdsToCheck);
-
-    if (import.meta.env.DEV) {
-      console.log(
-        `Similar로 걸러진 밴드 ID들 (${similarBandIds.length}개):`,
-        similarBandIds
-      );
-    }
 
     // similar로 걸러진 밴드들만 상세 정보 조회 (병렬 처리로 성능 향상)
     const detailPromises = similarBandIds.map(async (id) => {
@@ -565,9 +501,8 @@ export const probeSomeBandDetails = async (options?: {
         const detail = await getBandDetail(String(id));
         return detail && detail.bandName ? detail : null;
       } catch (error) {
-        if (import.meta.env.DEV) {
-          console.warn(`밴드 ${id} 조회 중 에러 (무시됨):`, error);
-        }
+        // 에러 로그만 남김
+        console.warn(`밴드 ${id} 조회 실패:`, error);
         return null;
       }
     });
@@ -579,17 +514,8 @@ export const probeSomeBandDetails = async (options?: {
     // 결과 개수 제한
     results.push(...validDetails.slice(0, limit));
 
-    if (import.meta.env.DEV) {
-      console.log(
-        `Similar 기반으로 ${results.length}개 밴드 상세정보 조회 완료`
-      );
-    }
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn("Similar API 조회 실패, fallback으로 기본 ID 사용:", error);
-    }
-
-    // similar API 실패 시 fallback으로 기존 방식 사용 (최소한으로만)
+    // Similar API 실패 시 fallback으로 기본 ID 사용
     const fallbackIds = options?.candidateIds ?? [1, 2, 3, 4, 5];
 
     for (const id of fallbackIds) {
@@ -601,9 +527,8 @@ export const probeSomeBandDetails = async (options?: {
           results.push(detail);
         }
       } catch (error) {
-        if (import.meta.env.DEV) {
-          console.warn(`Fallback 밴드 ${id} 조회 실패:`, error);
-        }
+        // 에러 로그만 남김
+        console.warn(`Fallback 밴드 ${id} 조회 실패:`, error);
         continue;
       }
     }
