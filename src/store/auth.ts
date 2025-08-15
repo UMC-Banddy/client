@@ -1,6 +1,7 @@
 import { API } from "@/api/API";
 import { authStore } from "@/store/authStore";
 import { API_ENDPOINTS } from "@/constants";
+import { AxiosError } from "axios";
 
 export const login = async (data: { email: string; password: string }) => {
   try {
@@ -20,8 +21,9 @@ export const login = async (data: { email: string; password: string }) => {
     authStore.errorMessage = "";
 
     return res.data;
-  } catch (error: unknown) {
-    if (error instanceof Error) {
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    if (axiosError instanceof Error) {
       authStore.errorMessage = "아이디 또는 비밀번호가 맞지 않습니다.";
     }
     throw error;
@@ -60,14 +62,16 @@ export const signupMember = async (data: {
 
 export const sendEmailCode = async (email: string) => {
   try {
-    const res = await API.post(API_ENDPOINTS.AUTH.SEND_CODE, { email });
-    return res.data as string;
-  } catch (error: any) {
-    // 이미 가입된 이메일이면 400
-    if (error?.response?.status === 400) {
+    await API.post(API_ENDPOINTS.AUTH.SEND_CODE, { email });
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    if (axiosError.response && axiosError.response.status === 400) {
       throw new Error("이미 사용 중인 이메일입니다.");
     }
-    throw error;
+    if (axiosError.response && axiosError.response.data && axiosError.response.data.message) {
+      throw new Error(axiosError.response.data.message);
+    }
+    throw new Error("이메일 인증코드 발송에 실패했습니다.");
   }
 };
 
@@ -75,9 +79,10 @@ export const verifyEmailCode = async (email: string, code: string) => {
   try {
     const res = await API.post(API_ENDPOINTS.AUTH.VERIFY_CODE, { email, code });
     return res.data as { verified: boolean; message: string };
-  } catch (error: any) {
-    if (error.response && error.response.data && error.response.data.message) {
-      throw new Error(error.response.data.message);
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    if (axiosError.response && axiosError.response.data && axiosError.response.data.message) {
+      throw new Error(axiosError.response.data.message);
     }
     throw new Error("서버 오류로 인증에 실패했습니다.");
   }

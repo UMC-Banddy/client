@@ -29,9 +29,14 @@ const SignupPage: React.FC = () => {
         setShowPopup(false);
         navigate("/signup/verify");
       }, 1500);
-    } catch (err: any) {
-      console.error("이메일 인증 요청 실패", err);
-      setErrorMessage(err.message || "알 수 없는 오류가 발생했습니다.");
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error("이메일 인증 요청 실패", err);
+        setErrorMessage(err.message);
+      } else {
+        console.error("이메일 인증 요청 실패", err);
+        setErrorMessage("알 수 없는 오류가 발생했습니다.");
+      }
     }
   };
 

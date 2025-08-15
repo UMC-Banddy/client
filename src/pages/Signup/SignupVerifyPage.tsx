@@ -59,8 +59,12 @@ const SignupVerifyPage: React.FC = () => {
         setIsSuccess(true);
         setShowPopup(true);
       }
-    } catch (err: any) {
-      setPopupMessage(err.message || "서버 오류로 인증에 실패했습니다.");
+    } catch (err) {
+      if (err instanceof Error) {
+        setPopupMessage(err.message);
+      } else {
+        setPopupMessage("알 수 없는 오류가 발생했습니다.");
+      }
       setIsSuccess(false);
       setShowPopup(true);
       console.error(err);
