@@ -47,20 +47,24 @@ const SignupVerifyPage: React.FC = () => {
   const handleConfirm = async () => {
     const finalCode = code.join("");
     if (finalCode.length !== 5) return;
+    if (!authStore.email) {
+      setError("이메일 정보가 없습니다. 다시 시도해 주세요.");
+      return;
+    }
 
     try {
-      const res = await verifyEmailCode(finalCode);
+      const res = await verifyEmailCode(authStore.email, finalCode);
       if (res.verified) {
         setPopupMessage("인증이 완료되었습니다.");
         setIsSuccess(true);
         setShowPopup(true);
-      } else {
-        setPopupMessage("인증번호가 맞지 않습니다.");
-        setIsSuccess(false);
-        setShowPopup(true);
       }
     } catch (err) {
-      setPopupMessage("서버 오류로 인증에 실패했습니다.");
+      if (err instanceof Error) {
+        setPopupMessage(err.message);
+      } else {
+        setPopupMessage("알 수 없는 오류가 발생했습니다.");
+      }
       setIsSuccess(false);
       setShowPopup(true);
       console.error(err);
@@ -68,17 +72,15 @@ const SignupVerifyPage: React.FC = () => {
   };
 
   const handleResend = async () => {
-    // 이메일이 없다면 첫 단계로 유도
     if (!authStore.email) {
       setError("이메일 정보가 없습니다. 처음 단계에서 다시 시도해 주세요.");
       return;
     }
     try {
       setResendLoading(true);
-      await sendEmailCode(authStore.email); // 재전송 API 호출
-      // 팝업 알림 + 타이머/입력 초기화
+      await sendEmailCode(authStore.email);
       setPopupMessage("인증번호가 발송되었습니다.");
-      setIsSuccess(false); // 팝업 확인 시 이동 없이 닫히도록 함
+      setIsSuccess(false);
       setShowPopup(true);
 
       setTimeLeft(299);
@@ -132,7 +134,6 @@ const SignupVerifyPage: React.FC = () => {
           {formatTime(timeLeft)}
         </div>
 
-        {/* 에러 메시지 */}
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
       </div>
 
