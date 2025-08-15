@@ -4,8 +4,8 @@ import { API_ENDPOINTS } from "@/constants";
 import { authStore } from "@/store/authStore";
 import { type NotificationResponse } from "@/types/notification";
 
-export const useNotifications = () => {
-  const { data: response, isLoading, error, refetch } = useQuery<NotificationResponse>({
+export const useNotificationMessage = (notificationId: number | null) => {
+  const { data: response, isLoading, error } = useQuery<NotificationResponse>({
     queryKey: ["notifications"],
     queryFn: async () => {
       const response = await API.get(API_ENDPOINTS.PROFILE.NOTIFICATIONS);
@@ -16,10 +16,12 @@ export const useNotifications = () => {
 
   const notifications = response?.result || [];
 
+  // 전체 알림 목록에서 특정 notificationId의 메시지 찾기
+  const targetNotification = notifications.find(n => n.notificationId === notificationId);
+
   return {
-    notifications,
+    message: targetNotification?.message,
     isLoading,
     error: error?.message || null,
-    refetch,
   };
-}; 
+};

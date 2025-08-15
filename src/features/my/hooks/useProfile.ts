@@ -30,7 +30,8 @@ export const useProfile = () => {
     enabled: !!authStore.accessToken,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    staleTime: 5 * 60 * 1000, // 5분간 캐시
-    gcTime: 10 * 60 * 1000, // 10분간 캐시 (React Query v5)
+    staleTime: 1 * 60 * 1000, // 1분간 캐시 (더 자주 업데이트)
+    gcTime: 5 * 60 * 1000, // 5분간 캐시 (React Query v5)
+    refetchOnWindowFocus: true, // 윈도우 포커스 시 자동 refetch
   });
 };
