@@ -67,10 +67,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Install AWS CLI (fallback)
-        if: ${{ always() }}
+      - name: Verify AWS CLI
         run: |
-          which aws || sudo apt-get update && sudo apt-get install -y awscli
+          aws --version
+          which aws
 
       - name: Upload static assets (long-cache) except HTML
         run: |
@@ -98,6 +98,3 @@ jobs:
       - name: Output deployment info
         run: |
           echo "Deployed to s3://$S3_BUCKET (region: $AWS_REGION)"
-          if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
-            echo "CloudFront invalidation requested for distribution: $CLOUDFRONT_DISTRIBUTION_ID"
-          fi
