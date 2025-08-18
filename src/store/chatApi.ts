@@ -184,6 +184,14 @@ export const leaveChatRoom = async (roomId: string): Promise<LeaveResponse> => {
   return response.data;
 };
 
+// 밴드 채팅방 조인 (bandId 기반 → roomId 반환 기대)
+export const joinBandChat = async (
+  bandId: string
+): Promise<{ roomId: number } | JoinResponse> => {
+  const response = await API.post(API_ENDPOINTS.CHAT.BAND_JOIN(bandId));
+  return response.data;
+};
+
 // 친구 채팅방 목록 조회 (새로운 API 스펙)
 export const getChatFriends = async (): Promise<FriendRoomsResponse> => {
   const response = await API.get(API_ENDPOINTS.CHAT.FRIENDS);
