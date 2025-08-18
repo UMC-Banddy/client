@@ -66,9 +66,14 @@ export const useWebSocket = () => {
   useEffect(() => {
     if (!isConnected) return;
     try {
-      webSocketService.subscribeToUnread((payload) => {
-        console.log("UNREAD_MESSAGE 수신:", payload);
-        // TODO: chatStore에 unread 카운트 반영
+      webSocketService.subscribeToUnread((payload: any) => {
+        // payload 예시: { type: 'UNREAD_MESSAGE', data: { roomId, senderId, content, timestamp } }
+        try {
+          const roomId = Number(payload?.data?.roomId);
+          if (Number.isFinite(roomId)) {
+            chatActions.incrementUnreadCount(roomId);
+          }
+        } catch {}
       });
     } catch (e) {
       console.warn("UNREAD 구독 실패, 연결 상태 재확인 필요", e);

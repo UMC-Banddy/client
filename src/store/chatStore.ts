@@ -174,4 +174,17 @@ export const chatActions = {
     chatStore.messages = uniqueMessages;
     chatStore.realtimeMessages = [];
   },
+
+  // 안읽음 카운트 증가 (목록 실시간 반영용)
+  incrementUnreadCount: (roomId: number) => {
+    const idx = chatStore.rooms.findIndex((r) => r.roomId === roomId);
+    if (idx !== -1) {
+      const current = chatStore.rooms[idx].unreadCount;
+      const next = (current ?? 0) + 1;
+      chatStore.rooms[idx] = {
+        ...chatStore.rooms[idx],
+        unreadCount: next,
+      } as unknown as ChatRoom;
+    }
+  },
 };
