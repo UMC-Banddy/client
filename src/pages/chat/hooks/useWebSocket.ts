@@ -62,12 +62,11 @@ export const useWebSocket = () => {
     }
   }, [isConnected, isConnecting, authSnap.accessToken]);
 
-  // 연결 완료 후에만 unread 구독 시도 (StrictMode 이펙트 이중 호출 대응)
-  useEffect(() => {
+  // 목록 화면에서만 사용할 수 있도록 공개용 함수 제공
+  const subscribeUnread = useCallback(() => {
     if (!isConnected) return;
     try {
       webSocketService.subscribeToUnread((payload: any) => {
-        // payload 예시: { type: 'UNREAD_MESSAGE', data: { roomId, senderId, content, timestamp } }
         try {
           const roomId = Number(payload?.data?.roomId);
           if (Number.isFinite(roomId)) {
@@ -76,9 +75,15 @@ export const useWebSocket = () => {
         } catch {}
       });
     } catch (e) {
-      console.warn("UNREAD 구독 실패, 연결 상태 재확인 필요", e);
+      console.warn("UNREAD 구독 실패", e);
     }
   }, [isConnected]);
+
+  const unsubscribeUnread = useCallback(() => {
+    try {
+      webSocketService.unsubscribeUnread();
+    } catch {}
+  }, []);
 
   // 연결 해제 함수
   const disconnect = useCallback(() => {
@@ -214,5 +219,10 @@ export const useWebSocket = () => {
 
     // 구독 관리
     getSubscriptions,
+    subscribeUnread,
+    unsubscribeUnread,
+
+    // 읽음 상태 전송
+    sendLastRead: webSocketService.sendLastRead.bind(webSocketService),
   };
 };
