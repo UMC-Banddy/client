@@ -11,7 +11,7 @@ import {
 } from "@/store/userStore";
 import { useRecommendedBands } from "@/features/band/hooks/useBandData";
 import type { BandDetail } from "@/types/band";
-import { joinBandChat, createGroupChat } from "@/store/chatApi";
+import { createGroupChat } from "@/store/chatApi";
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
 
@@ -211,6 +211,8 @@ const HomePage = () => {
   const { data: recommended = [], isFetching } = useRecommendedBands();
   // 홈 진입 시 채팅방 목록 선조회(캐시 용도)
   const [chatRoomInfosCache, setChatRoomInfosCache] = useState<any[]>([]);
+  // 밴드별 매칭된 roomId 매핑
+  const [bandRoomMap, setBandRoomMap] = useState<Record<number, number>>({});
 
   // 추천 밴드 프로필 조회 API
   const fetchRecommendedBands = async () => {
@@ -397,6 +399,36 @@ const HomePage = () => {
     fetchRooms();
   }, []);
 
+  // 캐러셀 밴드와 채팅방 목록을 비교하여 매핑 구성
+  useEffect(() => {
+    if (!myBands?.length || !chatRoomInfosCache?.length) return;
+
+    const normalize = (s: unknown) =>
+      String(s || "")
+        .trim()
+        .toLowerCase();
+
+    const roomMap: Record<number, number> = {};
+    for (const band of myBands) {
+      const bandName = normalize(band.title);
+      const candidate = chatRoomInfosCache.find((r: any) => {
+        const roomType = r?.roomType;
+        const name = normalize(r?.chatName || r?.bandName || r?.roomName);
+        const byId = Number(r?.bandId);
+        return (
+          (roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER" || roomType === "GROUP") &&
+          ((byId && byId === band.id) || (!!name && name === bandName))
+        );
+      });
+      if (candidate?.roomId) {
+        roomMap[band.id] = Number(candidate.roomId);
+      }
+    }
+    if (Object.keys(roomMap).length) {
+      setBandRoomMap((prev) => ({ ...prev, ...roomMap }));
+    }
+  }, [myBands, chatRoomInfosCache]);
+
   const handleJoinClick = async (band: Band) => {
     try {
       // 1) 사전 지정된 룸 바로 입장(데모 계정용 예외 유지)
@@ -405,13 +437,10 @@ const HomePage = () => {
         return;
       }
 
-      // 2) 밴드 조인 API 호출 → roomId 획득 후 이동
-      const bandId = String(band.id);
-      const res = await joinBandChat(bandId);
-      const roomId = (res as any)?.roomId ?? (res as any)?.result?.roomId;
-
-      if (roomId) {
-        navigate(`/home/chat?roomId=${roomId}&roomType=GROUP`);
+      // 2) 밴드에 대응되는 기존 채팅방 매핑이 있으면 바로 이동
+      const mappedRoomId = bandRoomMap[band.id];
+      if (mappedRoomId) {
+        navigate(`/home/chat?roomId=${mappedRoomId}&roomType=GROUP`);
         return;
       }
 
@@ -435,7 +464,7 @@ const HomePage = () => {
         }
       } catch {}
 
-      // 2-2) 목록에도 없으면 방 생성 시도(임시 그룹 채팅)
+      // 2-2) 목록에도 없으면 방 생성 시도(그룹 채팅)
       try {
         const createRes = await createGroupChat({
           memberIds: [],
