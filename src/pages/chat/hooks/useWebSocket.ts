@@ -6,6 +6,12 @@ import type { WebSocketMessage } from "@/types/chat";
 import { authStore } from "@/store/authStore";
 import { useSnapshot as useVSnapshot } from "valtio";
 
+interface UnreadPayload {
+  data: {
+    roomId: number;
+  };
+}
+
 export const useWebSocket = () => {
   const snap = useSnapshot(chatStore);
   const authSnap = useVSnapshot(authStore);
@@ -66,23 +72,27 @@ export const useWebSocket = () => {
   const subscribeUnread = useCallback(() => {
     if (!isConnected) return;
     try {
-      webSocketService.subscribeToUnread((payload: any) => {
+      webSocketService.subscribeToUnread((payload: UnreadPayload) => {
         try {
           const roomId = Number(payload?.data?.roomId);
           if (Number.isFinite(roomId)) {
             chatActions.incrementUnreadCount(roomId);
           }
-        } catch {}
+        } catch {
+          // 오류 처리
+        }
       });
-    } catch (e) {
-      console.warn("UNREAD 구독 실패", e);
+    } catch {
+      console.warn("UNREAD 구독 실패");
     }
   }, [isConnected]);
 
   const unsubscribeUnread = useCallback(() => {
     try {
       webSocketService.unsubscribeUnread();
-    } catch {}
+    } catch {
+      // 구독 해제 실패 시 무시
+    }
   }, []);
 
   // 연결 해제 함수

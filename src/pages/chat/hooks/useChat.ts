@@ -211,7 +211,7 @@ export const useChat = () => {
         currentRoomTypeRef.current || "GROUP"
       );
       lastReadSentIdRef.current = lastId;
-    } catch (e) {
+    } catch {
       // no-op
     }
   }, [snap.messages, currentRoomId, sendLastRead]);

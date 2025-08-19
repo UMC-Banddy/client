@@ -65,6 +65,15 @@ interface Band {
   profileData?: BandProfileData; // 원본 프로필 데이터 저장
 }
 
+interface ChatRoomInfo {
+  roomId: number;
+  roomType: string;
+  chatName?: string;
+  bandName?: string;
+  roomName?: string;
+  bandId?: number;
+}
+
 // 세션 이름 정리 및 아이콘 매핑 함수
 const cleanSessionName = (sessionName: string): string => {
   // 이모지 제거
@@ -210,7 +219,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const { data: recommended = [], isFetching } = useRecommendedBands();
   // 홈 진입 시 채팅방 목록 선조회(캐시 용도)
-  const [chatRoomInfosCache, setChatRoomInfosCache] = useState<any[]>([]);
+  const [chatRoomInfosCache, setChatRoomInfosCache] = useState<ChatRoomInfo[]>([]);
   // 밴드별 매칭된 roomId 매핑
   const [bandRoomMap, setBandRoomMap] = useState<Record<number, number>>({});
 
@@ -266,10 +275,10 @@ const HomePage = () => {
               ? candidateIds
               : fallbackIds,
         });
-      } catch (error) {
+      } catch {
         // probeSomeBandDetails 실패 시 빈 배열 사용
         if (import.meta.env.DEV) {
-          console.warn("밴드 상세정보 조회 실패, 빈 배열 사용:", error);
+          console.warn("밴드 상세정보 조회 실패, 빈 배열 사용");
         }
         details = [];
       }
@@ -392,8 +401,8 @@ const HomePage = () => {
         const roomsRes = await API.get(API_ENDPOINTS.CHAT.ROOMS);
         const chatInfos = roomsRes?.data?.result?.chatRoomInfos ?? [];
         setChatRoomInfosCache(chatInfos);
-      } catch (error) {
-        // 조회 실패는 무시 (UI 영향 없음)
+      } catch {
+        // 조회 실패 시 무시
       }
     };
     fetchRooms();
@@ -411,7 +420,7 @@ const HomePage = () => {
     const roomMap: Record<number, number> = {};
     for (const band of myBands) {
       const bandName = normalize(band.title);
-      const candidate = chatRoomInfosCache.find((r: any) => {
+      const candidate = chatRoomInfosCache.find((r: ChatRoomInfo) => {
         const roomType = r?.roomType;
         const name = normalize(r?.chatName || r?.bandName || r?.roomName);
         const byId = Number(r?.bandId);
@@ -454,7 +463,7 @@ const HomePage = () => {
           : (await API.get(API_ENDPOINTS.CHAT.ROOMS))?.data?.result
               ?.chatRoomInfos ?? [];
         const bandRoom = chatInfosLocal.find(
-          (r: any) =>
+          (r: ChatRoomInfo) =>
             (r?.roomType === "BAND-APPLICANT" ||
               r?.roomType === "BAND-MANAGER") &&
             (r?.bandId === band.id || r?.bandName === band.title)
@@ -464,7 +473,9 @@ const HomePage = () => {
           navigate(`/home/chat?roomId=${fallbackRoomId}&roomType=GROUP`);
           return;
         }
-      } catch {}
+      } catch {
+        // 조회 실패 시 무시
+      }
 
       // 2-2) 목록에도 없으면 방 생성 시도(그룹 채팅)
       try {
@@ -472,17 +483,19 @@ const HomePage = () => {
           memberIds: [],
           roomName: band.title || `밴드 모집_${band.id}`,
         });
-        const newRoomId = (createRes as any)?.roomId;
+        const newRoomId = (createRes as { roomId?: number })?.roomId;
         if (newRoomId) {
           navigate(`/home/chat?roomId=${newRoomId}&roomType=GROUP`);
           return;
         }
-      } catch {}
+      } catch {
+        // 방 생성 실패 시 무시
+      }
 
       // 3) roomId를 얻지 못한 경우, 기존 모달로 fallback
       setSelectedBand(band);
       setOpen(true);
-    } catch (e) {
+    } catch {
       // 오류 시에도 기존 모달로 fallback
       setSelectedBand(band);
       setOpen(true);
