@@ -275,10 +275,11 @@ const HomePage = () => {
               ? candidateIds
               : fallbackIds,
         });
-      } catch {
+      } catch (error) {
         // probeSomeBandDetails 실패 시 빈 배열 사용
         if (import.meta.env.DEV) {
           console.warn("밴드 상세정보 조회 실패, 빈 배열 사용");
+          console.error("상세 에러 정보:", error);
         }
         details = [];
       }
@@ -517,6 +518,21 @@ const HomePage = () => {
   }, [recommended]);
 
   // 홈에서는 WS 자동 연결을 수행하지 않음 (전역 AuthProvider에서 1회만 연결)
+
+  // 개발 모드에서 밴드 상세정보 조회 테스트
+  useEffect(() => {
+    if (import.meta.env.DEV && myBands.length > 0) {
+      console.log("=== 밴드 상세정보 조회 테스트 시작 ===");
+      console.log("현재 설정된 밴드들:", myBands.map(b => ({ id: b.id, title: b.title })));
+      
+      // 첫 번째 밴드의 상세정보 조회 테스트
+      const testBandId = myBands[0]?.id;
+      if (testBandId) {
+        console.log(`테스트: 밴드 ${testBandId} 상세정보 조회 시도`);
+        // API 호출은 이미 probeSomeBandDetails에서 수행됨
+      }
+    }
+  }, [myBands]);
 
   if (loading || isFetching) {
     return <HomeSkeleton />;

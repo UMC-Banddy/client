@@ -172,12 +172,32 @@ export const getBandDetail = async (
   bandId: string
 ): Promise<BandDetail | null> => {
   try {
+    if (import.meta.env.DEV) {
+      console.log(`밴드 ${bandId} 상세정보 조회 시작`);
+    }
+    
     const response = await API.get(API_ENDPOINTS.BANDS.DETAIL(bandId));
     const data = response.data.result || response.data;
+    
+    if (import.meta.env.DEV) {
+      console.log(`밴드 ${bandId} 상세정보 조회 성공:`, data);
+    }
+    
     return data as BandDetail;
   } catch (error) {
     // HTTP 500 에러 등 서버 오류 시 null 반환하여 에러 전파 방지
-    console.warn(`밴드 ${bandId} 상세정보 조회 실패:`, error);
+    if (import.meta.env.DEV) {
+      console.error(`밴드 ${bandId} 상세정보 조회 실패:`, {
+        bandId,
+        error,
+        status: (error as any)?.response?.status,
+        statusText: (error as any)?.response?.statusText,
+        data: (error as any)?.response?.data,
+        message: (error as any)?.message
+      });
+    } else {
+      console.warn(`밴드 ${bandId} 상세정보 조회 실패:`, error);
+    }
     return null; // 에러 대신 null 반환
   }
 };
@@ -472,11 +492,28 @@ export const probeSomeBandDetails = async (options?: {
     // similar로 걸러진 밴드들만 상세 정보 조회 (병렬 처리로 성능 향상)
     const detailPromises = similarBandIds.map(async (id) => {
       try {
+        if (import.meta.env.DEV) {
+          console.log(`밴드 ${id} 상세정보 조회 시도 중...`);
+        }
         const detail = await getBandDetail(String(id));
-        return detail && detail.bandName ? detail : null;
+        if (detail && detail.bandName) {
+          if (import.meta.env.DEV) {
+            console.log(`밴드 ${id} 상세정보 조회 성공:`, detail.bandName);
+          }
+          return detail;
+        } else {
+          if (import.meta.env.DEV) {
+            console.warn(`밴드 ${id} 상세정보는 조회되었지만 bandName이 비어있음:`, detail);
+          }
+          return null;
+        }
       } catch (error) {
         // 에러 로그만 남김
-        console.warn(`밴드 ${id} 조회 실패:`, error);
+        if (import.meta.env.DEV) {
+          console.error(`밴드 ${id} 조회 중 예외 발생:`, error);
+        } else {
+          console.warn(`밴드 ${id} 조회 실패:`, error);
+        }
         return null;
       }
     });
@@ -495,13 +532,27 @@ export const probeSomeBandDetails = async (options?: {
       if (results.length >= limit) break;
 
       try {
+        if (import.meta.env.DEV) {
+          console.log(`Fallback 밴드 ${id} 상세정보 조회 시도 중...`);
+        }
         const detail = await getBandDetail(String(id));
         if (detail && detail.bandName) {
+          if (import.meta.env.DEV) {
+            console.log(`Fallback 밴드 ${id} 상세정보 조회 성공:`, detail.bandName);
+          }
           results.push(detail);
+        } else {
+          if (import.meta.env.DEV) {
+            console.warn(`Fallback 밴드 ${id} 상세정보는 조회되었지만 bandName이 비어있음:`, detail);
+          }
         }
       } catch (error) {
         // 에러 로그만 남김
-        console.warn(`Fallback 밴드 ${id} 조회 실패:`, error);
+        if (import.meta.env.DEV) {
+          console.error(`Fallback 밴드 ${id} 조회 중 예외 발생:`, error);
+        } else {
+          console.warn(`Fallback 밴드 ${id} 조회 실패:`, error);
+        }
         continue;
       }
     }
