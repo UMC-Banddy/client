@@ -416,7 +416,9 @@ const HomePage = () => {
         const name = normalize(r?.chatName || r?.bandName || r?.roomName);
         const byId = Number(r?.bandId);
         return (
-          (roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER" || roomType === "GROUP") &&
+          (roomType === "BAND-APPLICANT" ||
+            roomType === "BAND-MANAGER" ||
+            roomType === "GROUP") &&
           ((byId && byId === band.id) || (!!name && name === bandName))
         );
       });
