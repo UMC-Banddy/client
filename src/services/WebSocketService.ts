@@ -328,6 +328,15 @@ class WebSocketService {
     console.log(`안읽음 구독 시작 (${destination})`);
   }
 
+  // 안읽음 구독 해제
+  unsubscribeUnread(): void {
+    if (this.unreadSubscription) {
+      this.unreadSubscription.unsubscribe();
+      this.unreadSubscription = null;
+      console.log("안읽음 구독 해제 완료");
+    }
+  }
+
   unsubscribeFromRoom(roomId: string): void {
     const subscription = this.subscriptions.get(roomId);
     if (subscription) {
@@ -363,29 +372,36 @@ class WebSocketService {
       destination,
       body: JSON.stringify(message),
       headers: {
-        "content-type": "application/json;charset=UTF-8"
-      }
+        "content-type": "application/json;charset=UTF-8",
+      },
     });
     console.log("메시지 전송:", message);
   }
 
-  // 읽음 상태 전송 함수
-  sendReadStatus(roomId: string, messageId: number): void {
+  // 읽음 상태 전송 함수 (roomType에 따라 목적지 분기)
+  sendLastRead(
+    roomId: string,
+    messageId: number,
+    roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP"
+  ): void {
     if (!this.stompClient || !this.stompClient.connected) {
       console.error("WebSocket이 연결되지 않았습니다.");
       return;
     }
 
-    const destination = `/app/chat/private.lastRead/${roomId}`;
-    
+    const destination =
+      roomType === "PRIVATE"
+        ? `/app/chat/private.lastRead/${roomId}`
+        : `/app/chat/group.lastRead/${roomId}`;
+
     this.stompClient.publish({
       destination,
       body: messageId.toString(),
       headers: {
-        "content-type": "text/plain;charset=UTF-8"
-      }
+        "content-type": "text/plain;charset=UTF-8",
+      },
     });
-    console.log("읽음 상태 전송:", { roomId, messageId });
+    console.log("마지막 읽음 전송:", { roomId, messageId, roomType });
   }
 
   isConnected(): boolean {

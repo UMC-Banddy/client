@@ -20,7 +20,11 @@ export const useChat = () => {
     leaveRoom,
     sendMessage: sendWebSocketMessage,
     error: webSocketError,
+    sendLastRead,
   } = useWebSocket();
+  // 현재 방 타입과 마지막으로 전송한 읽음 메시지 ID를 저장
+  const currentRoomTypeRef = useRef<"PRIVATE" | "GROUP" | "BAND">("GROUP");
+  const lastReadSentIdRef = useRef<number | null>(null);
 
   // Auto scroll to bottom when new messages arrive
   useEffect(() => {
@@ -61,19 +65,21 @@ export const useChat = () => {
         const response = await getChatMessages(roomId, cursor);
 
         // API 응답을 ChatMessage 형식으로 변환
-        const chatMessages: ChatMessage[] = response.result.messages.map((msg) => ({
-          id: msg.messageId.toString(),
-          type: "other", // 기본값, 실제로는 현재 사용자 ID와 비교해야 함
-          name: msg.senderName,
-          avatar: "/src/assets/images/profile1.png", // 기본 아바타
-          text: msg.content,
-          time: new Date(msg.timestamp).toLocaleTimeString("ko-KR", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          unreadCount: 0,
-        }));
+        const chatMessages: ChatMessage[] = response.result.messages.map(
+          (msg) => ({
+            id: msg.messageId.toString(),
+            type: "other", // 기본값, 실제로는 현재 사용자 ID와 비교해야 함
+            name: msg.senderName,
+            avatar: "/src/assets/images/profile1.png", // 기본 아바타
+            text: msg.content,
+            time: new Date(msg.timestamp).toLocaleTimeString("ko-KR", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            unreadCount: 0,
+          })
+        );
 
         if (cursor) {
           // 무한 스크롤: 기존 메시지 앞에 추가
@@ -105,6 +111,8 @@ export const useChat = () => {
     ) => {
       // 현재 방 아이디를 먼저 설정하여 sendMessage 가드 통과
       chatActions.setCurrentRoomId(roomId);
+      currentRoomTypeRef.current = roomType;
+      lastReadSentIdRef.current = null;
       try {
         // REST join 시도(이미 참가자 등록 시 실패 가능) → 실패해도 WS 진행
         await joinChatRoom(roomId);
@@ -188,6 +196,25 @@ export const useChat = () => {
     },
     [currentRoomId, isConnected, sendWebSocketMessage]
   );
+
+  // 메시지 목록이 갱신될 때마다 마지막 메시지를 기준으로 읽음 상태 전송
+  useEffect(() => {
+    if (!currentRoomId || snap.messages.length === 0) return;
+    const last = snap.messages[snap.messages.length - 1];
+    const lastId = Number(last.id);
+    if (!Number.isFinite(lastId)) return;
+    if (lastReadSentIdRef.current === lastId) return;
+    try {
+      sendLastRead(
+        currentRoomId,
+        lastId,
+        currentRoomTypeRef.current || "GROUP"
+      );
+      lastReadSentIdRef.current = lastId;
+    } catch (e) {
+      // no-op
+    }
+  }, [snap.messages, currentRoomId, sendLastRead]);
 
   // 무한 스크롤로 더 많은 메시지 로드
   const loadMoreMessages = useCallback(() => {

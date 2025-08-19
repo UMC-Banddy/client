@@ -10,6 +10,7 @@ import handRock from "@/assets/icons/join/ic_hand_rock.svg";
 import plus from "@/assets/icons/join/ic_plus.svg";
 import { API } from "@/api/API";
 import { useNavigate } from "react-router-dom";
+import { useWebSocket } from "@/pages/chat/hooks/useWebSocket";
 
 interface MemberInfo {
   memberId: number;
@@ -57,13 +58,23 @@ const Join = () => {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 
   const navigate = useNavigate();
+  const { subscribeUnread, unsubscribeUnread, connect } = useWebSocket();
 
   useEffect(() => {
+    // 목록 화면 진입 시 WebSocket 연결 및 UNREAD 구독
+    connect();
+    subscribeUnread();
+
     const fetchData = async () => {
       const { data } = await API.get("/api/chat/rooms");
       setChatRooms(data.result.chatRoomInfos);
     };
     fetchData();
+
+    return () => {
+      // 목록 화면 이탈 시 UNREAD 구독 해제
+      unsubscribeUnread();
+    };
   }, []);
 
   const renderChatRooms = () => {
