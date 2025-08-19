@@ -855,7 +855,7 @@ const CreateBand = () => {
                       averageAge: e.target.value as age,
                     })
                   }
-                  options={ages}
+                  options={ages.filter((age) => age !== "무관")}
                 />
               </div>
             </div>
