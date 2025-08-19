@@ -404,6 +404,25 @@ class WebSocketService {
     console.log("마지막 읽음 전송:", { roomId, messageId, roomType });
   }
 
+  // 읽음 상태 전송 함수 (usePrivateChat에서 사용)
+  sendReadStatus(roomId: string, messageId: number): void {
+    if (!this.stompClient || !this.stompClient.connected) {
+      console.error("WebSocket이 연결되지 않았습니다.");
+      return;
+    }
+
+    const destination = `/app/chat/private.readStatus/${roomId}`;
+
+    this.stompClient.publish({
+      destination,
+      body: messageId.toString(),
+      headers: {
+        "content-type": "text/plain;charset=UTF-8",
+      },
+    });
+    console.log("읽음 상태 전송:", { roomId, messageId });
+  }
+
   isConnected(): boolean {
     return this.stompClient?.connected || false;
   }
