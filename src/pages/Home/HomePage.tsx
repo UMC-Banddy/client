@@ -11,6 +11,9 @@ import {
 } from "@/store/userStore";
 import { useRecommendedBands } from "@/features/band/hooks/useBandData";
 import type { BandDetail } from "@/types/band";
+import { createGroupChat } from "@/store/chatApi";
+import { API } from "@/api/API";
+import { API_ENDPOINTS } from "@/constants";
 
 // 이미지 import
 import homeAlbum3Img from "@/assets/images/home-album3.png";
@@ -206,6 +209,10 @@ const HomePage = () => {
   const [selectedBand, setSelectedBand] = useState<Band | null>(null);
   const [loading, setLoading] = useState(true);
   const { data: recommended = [], isFetching } = useRecommendedBands();
+  // 홈 진입 시 채팅방 목록 선조회(캐시 용도)
+  const [chatRoomInfosCache, setChatRoomInfosCache] = useState<any[]>([]);
+  // 밴드별 매칭된 roomId 매핑
+  const [bandRoomMap, setBandRoomMap] = useState<Record<number, number>>({});
 
   // 추천 밴드 프로필 조회 API
   const fetchRecommendedBands = async () => {
@@ -378,15 +385,108 @@ const HomePage = () => {
     }
   };
 
-  const handleJoinClick = async (band: Band) => {
-    // bandId 49는 그룹 채팅방(roomId 52)로 바로 이동
-    if (band.id === 49) {
-      navigate("/home/chat?roomId=52&roomType=GROUP");
-      return;
+  // 홈 진입 시 자동으로 채팅방 목록 조회
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const roomsRes = await API.get(API_ENDPOINTS.CHAT.ROOMS);
+        const chatInfos = roomsRes?.data?.result?.chatRoomInfos ?? [];
+        setChatRoomInfosCache(chatInfos);
+      } catch (error) {
+        // 조회 실패는 무시 (UI 영향 없음)
+      }
+    };
+    fetchRooms();
+  }, []);
+
+  // 캐러셀 밴드와 채팅방 목록을 비교하여 매핑 구성
+  useEffect(() => {
+    if (!myBands?.length || !chatRoomInfosCache?.length) return;
+
+    const normalize = (s: unknown) =>
+      String(s || "")
+        .trim()
+        .toLowerCase();
+
+    const roomMap: Record<number, number> = {};
+    for (const band of myBands) {
+      const bandName = normalize(band.title);
+      const candidate = chatRoomInfosCache.find((r: any) => {
+        const roomType = r?.roomType;
+        const name = normalize(r?.chatName || r?.bandName || r?.roomName);
+        const byId = Number(r?.bandId);
+        return (
+          (roomType === "BAND-APPLICANT" ||
+            roomType === "BAND-MANAGER" ||
+            roomType === "GROUP") &&
+          ((byId && byId === band.id) || (!!name && name === bandName))
+        );
+      });
+      if (candidate?.roomId) {
+        roomMap[band.id] = Number(candidate.roomId);
+      }
     }
-    // 기타는 기존 모달 열기
-    setSelectedBand(band);
-    setOpen(true);
+    if (Object.keys(roomMap).length) {
+      setBandRoomMap((prev) => ({ ...prev, ...roomMap }));
+    }
+  }, [myBands, chatRoomInfosCache]);
+
+  const handleJoinClick = async (band: Band) => {
+    try {
+      // 1) 사전 지정된 룸 바로 입장(데모 계정용 예외 유지)
+      if (band.id === 49) {
+        navigate("/home/chat?roomId=52&roomType=GROUP");
+        return;
+      }
+
+      // 2) 밴드에 대응되는 기존 채팅방 매핑이 있으면 바로 이동
+      const mappedRoomId = bandRoomMap[band.id];
+      if (mappedRoomId) {
+        navigate(`/home/chat?roomId=${mappedRoomId}&roomType=GROUP`);
+        return;
+      }
+
+      // 2-1) 서버에 BAND_JOIN 미구현(404 등) 시 백업 경로:
+      // 우선 캐시에서 탐색, 없으면 즉시 조회 후 탐색
+      try {
+        const chatInfosLocal = chatRoomInfosCache.length
+          ? chatRoomInfosCache
+          : (await API.get(API_ENDPOINTS.CHAT.ROOMS))?.data?.result
+              ?.chatRoomInfos ?? [];
+        const bandRoom = chatInfosLocal.find(
+          (r: any) =>
+            (r?.roomType === "BAND-APPLICANT" ||
+              r?.roomType === "BAND-MANAGER") &&
+            (r?.bandId === band.id || r?.bandName === band.title)
+        );
+        const fallbackRoomId = bandRoom?.roomId;
+        if (fallbackRoomId) {
+          navigate(`/home/chat?roomId=${fallbackRoomId}&roomType=GROUP`);
+          return;
+        }
+      } catch {}
+
+      // 2-2) 목록에도 없으면 방 생성 시도(그룹 채팅)
+      try {
+        const createRes = await createGroupChat({
+          memberIds: [],
+          roomName: band.title || `밴드 모집_${band.id}`,
+        });
+        const newRoomId = (createRes as any)?.roomId;
+        if (newRoomId) {
+          navigate(`/home/chat?roomId=${newRoomId}&roomType=GROUP`);
+          return;
+        }
+      } catch {}
+
+      // 3) roomId를 얻지 못한 경우, 기존 모달로 fallback
+      setSelectedBand(band);
+      setOpen(true);
+    } catch (e) {
+      // 오류 시에도 기존 모달로 fallback
+      setSelectedBand(band);
+      setOpen(true);
+    }
   };
 
   // 이미지 클릭 시 밴드 상세 섹션 이동 등 확장용 (현재는 모달 오픈 동일 동작)
