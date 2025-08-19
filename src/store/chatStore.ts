@@ -145,7 +145,7 @@ export const chatActions = {
     };
 
     chatStore.realtimeMessages.push(chatMessage);
-    
+
     // 현재 채팅방의 메시지에도 추가
     if (chatStore.currentRoomId === wsMessage.roomId.toString()) {
       chatStore.messages.push(chatMessage);
@@ -160,10 +160,11 @@ export const chatActions = {
   mergeRealtimeMessages: () => {
     // 실시간 메시지를 기존 메시지와 통합하고 중복 제거
     const allMessages = [...chatStore.messages, ...chatStore.realtimeMessages];
-    const uniqueMessages = allMessages.filter((message, index, self) => 
-      index === self.findIndex(m => m.id === message.id)
+    const uniqueMessages = allMessages.filter(
+      (message, index, self) =>
+        index === self.findIndex((m) => m.id === message.id)
     );
-    
+
     // 시간순으로 정렬
     uniqueMessages.sort((a, b) => {
       const timeA = new Date(a.time).getTime();
