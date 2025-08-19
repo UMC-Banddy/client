@@ -26,7 +26,6 @@ export const useChat = () => {
   const currentRoomTypeRef = useRef<"PRIVATE" | "GROUP" | "BAND">("GROUP");
   const lastReadSentIdRef = useRef<number | null>(null);
 
-
   // Auto scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,19 +65,21 @@ export const useChat = () => {
         const response = await getChatMessages(roomId, cursor);
 
         // API 응답을 ChatMessage 형식으로 변환
-        const chatMessages: ChatMessage[] = response.result.messages.map((msg) => ({
-          id: msg.messageId.toString(),
-          type: "other", // 기본값, 실제로는 현재 사용자 ID와 비교해야 함
-          name: msg.senderName,
-          avatar: "/src/assets/images/profile1.png", // 기본 아바타
-          text: msg.content,
-          time: new Date(msg.timestamp).toLocaleTimeString("ko-KR", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          unreadCount: 0,
-        }));
+        const chatMessages: ChatMessage[] = response.result.messages.map(
+          (msg) => ({
+            id: msg.messageId.toString(),
+            type: "other", // 기본값, 실제로는 현재 사용자 ID와 비교해야 함
+            name: msg.senderName,
+            avatar: "/src/assets/images/profile1.png", // 기본 아바타
+            text: msg.content,
+            time: new Date(msg.timestamp).toLocaleTimeString("ko-KR", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            unreadCount: 0,
+          })
+        );
 
         if (cursor) {
           // 무한 스크롤: 기존 메시지 앞에 추가
@@ -204,7 +205,11 @@ export const useChat = () => {
     if (!Number.isFinite(lastId)) return;
     if (lastReadSentIdRef.current === lastId) return;
     try {
-      sendLastRead(currentRoomId, lastId, currentRoomTypeRef.current || "GROUP");
+      sendLastRead(
+        currentRoomId,
+        lastId,
+        currentRoomTypeRef.current || "GROUP"
+      );
       lastReadSentIdRef.current = lastId;
     } catch (e) {
       // no-op
