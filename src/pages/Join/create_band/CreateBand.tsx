@@ -318,6 +318,12 @@ const CreateBand = () => {
         }))
       );
     };
+
+    // 페이지 진입 시 valtio 초기화
+    createBandActions.setGenres([]);
+    createBandActions.setArtists([]);
+    createBandActions.setSongs([]);
+
     if (isEditing) {
       fetchExistedData();
     }
