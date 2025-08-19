@@ -372,8 +372,8 @@ class WebSocketService {
       destination,
       body: JSON.stringify(message),
       headers: {
-        "content-type": "application/json;charset=UTF-8"
-      }
+        "content-type": "application/json;charset=UTF-8",
+      },
     });
     console.log("메시지 전송:", message);
   }
