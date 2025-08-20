@@ -406,6 +406,8 @@ banddy/
 
 ## 8. Coding Convention
 
+[기본 컨벤션(Notion)](https://opaque-emery-5ea.notion.site/de3820bbfaf948b38ede4334871429ac?source=copy_link)
+
 ### 문장 종료
 
 ```
