@@ -11,6 +11,7 @@ import {
 } from "@/store/userStore";
 import { useRecommendedBands } from "@/features/band/hooks/useBandData";
 import type { BandDetail } from "@/types/band";
+import { getBandRecruitDetail } from "@/store/userStore";
 import { createGroupChat } from "@/store/chatApi";
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
@@ -271,13 +272,25 @@ const HomePage = () => {
 
       let details: BandDetail[] = [];
       try {
-        details = await probeSomeBandDetails({
+        const baseDetails = await probeSomeBandDetails({
           limit: Math.min(100, candidateIds?.length ?? 40),
           candidateIds:
             candidateIds && candidateIds.length > 0
               ? candidateIds
               : fallbackIds,
         });
+        // 모집 공고 상태 확인: RECRUITING만 유지
+        const filtered = await Promise.all(
+          baseDetails.map(async (d) => {
+            try {
+              const recruit = await getBandRecruitDetail(String(d.bandId));
+              return recruit?.status === "RECRUITING" ? d : null;
+            } catch {
+              return null;
+            }
+          })
+        );
+        details = filtered.filter(Boolean) as BandDetail[];
       } catch (error) {
         // probeSomeBandDetails 실패 시 빈 배열 사용
         if (import.meta.env.DEV) {
@@ -308,19 +321,14 @@ const HomePage = () => {
         return;
       }
 
-      // 상세 조회가 성공한 항목만 남기기 위해 프로필/상세를 짝지은 뒤 필터링
+      // 전체 추천 목록을 유지하고, 상세가 있으면 보강만 적용
       const paired = validProfiles.map((profile, index) => ({
         profile,
         detail: details[index],
         index,
       }));
-      const filteredPairs = paired.filter(({ detail }) =>
-        Boolean(detail && (detail as Partial<BandDetail>).bandName)
-      );
 
-      // 상세 조회 성공한 밴드만 캐러셀로 변환
-      const bands: Band[] = (filteredPairs.length > 0 ? filteredPairs : paired) // 상세가 전무하면 기존 로직 유지 (fallback 대비)
-        .map(({ profile, detail, index }) => {
+      const bands: Band[] = paired.map(({ profile, detail, index }) => {
           // API 응답 구조에 따라 안전하게 접근
           const goalTracks = profile.goalTracks || [];
           const preferredArtists = profile.preferredArtists || [];
@@ -378,7 +386,7 @@ const HomePage = () => {
             representativeSongFileUrl:
               (detail as any)?.representativeSongFile?.fileUrl ?? null,
           };
-        });
+      });
 
       // memberId 36/37 계정에서 bandId 49를 캐러셀에 보장 노출
       try {

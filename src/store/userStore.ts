@@ -217,7 +217,7 @@ export const getBandRecruitDetail = async (
   bandId: string
 ): Promise<BandRecruitDetail | null> => {
   try {
-    const res = await API.get(API_ENDPOINTS.BANDS.DETAIL(bandId));
+    const res = await API.get(API_ENDPOINTS.RECRUITMENT.DETAIL(bandId));
     const data = (res.data?.result || res.data) as Partial<BandRecruitDetail>;
     return (data || null) as BandRecruitDetail;
   } catch (error) {
