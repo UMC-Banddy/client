@@ -18,10 +18,11 @@ interface Props {
   onConfirm: (session: SessionEmoji) => void;
 }
 
-const iconMap: Record<
-  SessionEmoji,
-  (props: { size?: number; color?: string }) => JSX.Element
-> = {
+type IconRender = (props: {
+  size?: number;
+  color?: string;
+}) => React.ReactElement;
+const iconMap: Record<SessionEmoji, IconRender> = {
   "🎤 보컬 🎤": (p) => <MicImg size={p.size ?? 28} color="gray-700" />,
   "🎸 일렉 기타 🎸": (p) => <GuitarImg size={p.size ?? 28} color="gray-700" />,
   "🪕 어쿠스틱 기타 🪕": (p) => (

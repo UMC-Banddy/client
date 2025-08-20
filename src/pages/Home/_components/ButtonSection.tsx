@@ -128,9 +128,8 @@ const ButtonSection = ({
           try {
             setOpenSession(false);
             const res = await postBandJoin(bandId, session);
-            const roomId = (res?.result?.roomId ?? (res as any)?.roomId) as
-              | number
-              | undefined;
+            const roomId =
+              res?.result?.roomId ?? (res as { roomId?: number })?.roomId;
             if (roomId) {
               navigate(`/home/chat?roomId=${roomId}&roomType=GROUP`);
             } else if (onJoinClick) {
@@ -138,7 +137,7 @@ const ButtonSection = ({
             } else {
               navigate("/home/chat-demo");
             }
-          } catch (e) {
+          } catch {
             // 실패 시 기존 플로우로 대체
             if (onJoinClick) onJoinClick();
           }
