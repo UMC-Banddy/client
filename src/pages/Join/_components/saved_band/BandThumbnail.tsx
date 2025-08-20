@@ -1,6 +1,7 @@
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import volumeOff from "@/assets/icons/join/ic_volume_off.svg";
+import volumeOn from "@/assets/icons/join/ic_volume_on.svg";
 import { useNavigate } from "react-router-dom";
 
 interface BandThumbnailProps {
@@ -10,6 +11,7 @@ interface BandThumbnailProps {
   thumbnail: string | null;
   memberSummary: string;
   memberCount: number;
+  soundUrl: string;
 }
 
 const BandThumbnail = ({
@@ -19,16 +21,37 @@ const BandThumbnail = ({
   thumbnail,
   memberSummary,
   memberCount,
+  soundUrl,
 }: BandThumbnailProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio(soundUrl);
+      audioRef.current.loop = true;
+    }
+
+    if (isPlaying) {
+      audioRef.current.play();
+    } else {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    return () => {
+      audioRef.current?.pause();
+    };
+  }, [isPlaying, soundUrl]);
+
   return (
     <div
       className="flex flex-col gap-[12px]"
       onClick={() =>
         navigate(`/join/saved-band/${bandId}`, {
-          state: { memberSummary, memberCount },
+          state: { isRecruiting, memberSummary, memberCount, soundUrl },
         })
       }
     >
@@ -55,10 +78,13 @@ const BandThumbnail = ({
           {isRecruiting ? "모집중" : "모집완료"}
         </div>
         <img
-          src={isPlaying ? volumeOff : volumeOff}
+          src={isPlaying ? volumeOn : volumeOff}
           alt=""
-          className="absolute bottom-[4px] right-[4px] size-[40px] cursor-pointer z-20"
-          onClick={() => setIsPlaying((prev) => !prev)}
+          className="absolute bottom-[4px] right-[4px] size-[40px] cursor-pointer z-30"
+          onClick={(event) => {
+            event.stopPropagation();
+            setIsPlaying((prev) => !prev);
+          }}
         />
       </div>
       <p className="text-hakgyo-r-14 text-[#fff]">{name}</p>

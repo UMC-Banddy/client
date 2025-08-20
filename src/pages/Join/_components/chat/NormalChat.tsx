@@ -27,12 +27,15 @@ const NormalChat = ({
   const [showMenu, setShowMenu] = useState(false);
   const [showExitChat, setShowExitChat] = useState(false);
   const timerRef = useRef<number | null>(null);
+  const isLongPressRef = useRef(false);
 
   const navigate = useNavigate();
 
   const startPressTimer = () => {
     // 500ms 이상 누르면 롱프레스 인식
+    isLongPressRef.current = false;
     timerRef.current = window.setTimeout(() => {
+      isLongPressRef.current = true;
       setShowMenu(true);
     }, 500);
   };
@@ -83,8 +86,16 @@ const NormalChat = ({
   };
 
   const handleClick = () => {
+    // 롱프레스 직후에는 클릭 내비게이션을 막음
+    if (isLongPressRef.current) {
+      isLongPressRef.current = false;
+      return;
+    }
     if (roomType === "PRIVATE") {
       navigate(`/home/private-chat?roomId=${roomId}&roomType=PRIVATE`);
+    }
+    if (roomType === "GROUP") {
+      navigate(`/home/private-chat?roomId=${roomId}&roomType=GROUP`);
     }
   };
 

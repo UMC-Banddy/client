@@ -14,6 +14,7 @@ interface Band {
   status: "RECRUITING" | "CLOSED";
   memberSummary: string;
   memberCount: number;
+  soundUrl: string;
 }
 
 const SavedBand = () => {
@@ -66,6 +67,7 @@ const SavedBand = () => {
               thumbnail={band.imageUrl}
               memberSummary={band.memberSummary}
               memberCount={band.memberCount}
+              soundUrl={band.soundUrl}
             />
           ))}
       </section>
