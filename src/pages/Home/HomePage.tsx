@@ -633,7 +633,7 @@ const HomePage = () => {
           instagramUrl={
             selectedBand?.profileData?.sns?.find(
               (s) => s.platform === "instagram"
-            )?.url || "https://instagram.com"
+            )?.url || "/www.instagram.com/banddy79?igsh=NmhvNWlyc3gxNnlk"
           }
           bandId={selectedBand?.id?.toString()} // 추가
         />
