@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 interface ChatMessageItemProps {
-  type: "me" | "other";
+  type: "me" | "other" | "system";
   name: string;
   avatar: string;
   text?: string;
@@ -24,6 +24,7 @@ export default function ChatMessageItem({
   unreadCount,
 }: ChatMessageItemProps) {
   const isMe = type === "me";
+  const isSystem = type === "system";
   const [currentTime, setCurrentTime] = useState(0);
 
   // 오디오 재생 시간 추적
@@ -54,6 +55,14 @@ export default function ChatMessageItem({
     audio?.onPlay();
     setCurrentTime(0);
   };
+
+  if (isSystem && text) {
+    return (
+      <div className="flex justify-center my-2 px-4">
+        <span className="text-[11px] text-gray-400">{text}</span>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"} mb-4 px-4`}>
@@ -102,21 +111,21 @@ export default function ChatMessageItem({
                 <div className="absolute -left-2 top-0 w-0 h-0 border-r-[8px] border-r-white border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent"></div>
               )}
             </div>
-                          <div
-                className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
+            <div
+              className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
+            >
+              {/* 읽지 않은 사람 수 */}
+              <span
+                className={`text-[10px] text-red-500 font-medium mb-0.5 ${
+                  !isMe ? "ml-0.5" : ""
+                }`}
               >
-                {/* 읽지 않은 사람 수 */}
-                <span
-                  className={`text-[10px] text-red-500 font-medium mb-0.5 ${
-                    !isMe ? "ml-0.5" : ""
-                  }`}
-                >
-                  {unreadCount || 1} {/*추후에 0명은 없음으로 수정할 것} */}
-                </span>
-                <span className="text-[10px] text-gray-400 whitespace-nowrap">
-                  {time}
-                </span>
-              </div>
+                {unreadCount || 1} {/*추후에 0명은 없음으로 수정할 것} */}
+              </span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                {time}
+              </span>
+            </div>
           </div>
         )}
 

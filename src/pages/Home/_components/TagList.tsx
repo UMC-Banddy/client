@@ -46,11 +46,13 @@ const TagList: React.FC<{
 
         if (variant === "home") {
           if (idx === 0) {
-            colorClass = "!bg-[#DF0001] !text-white !border-none";
-          } else if (idx === 1) {
-            colorClass = "!bg-white !text-black !border-none";
+            // 세션 태그: 붉은 배경 + 흰 글자, 좌측 점 뱃지
+            colorClass =
+              "!bg-[#B42127] !text-white !border-none before:content-[''] before:inline-block before:mr-2 before:w-2 before:h-2 before:rounded-full before:bg-[#D9D9D9]";
           } else {
-            colorClass = "!bg-black !text-white !border !border-white";
+            // 나머지 태그: 얇은 흰색 테두리 + 반투명 블랙 배경
+            colorClass =
+              "!bg-[rgba(0,0,0,0.5)] !text-white !border !border-white/60";
           }
         } else if (variant === "card") {
           // 👉 캐러셀 카드 전용 스타일

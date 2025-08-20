@@ -69,8 +69,16 @@ const NormalChat = ({
       setShowExitChat(false);
       setShowMenu(false);
       window.location.reload();
-    } catch {
-      console.log("채팅방 나가기 실패");
+    } catch (e: unknown) {
+      const err = e as { response?: { status?: number } };
+      if (err?.response?.status === 400) {
+        console.warn("채팅방 나가기 400 무시 (이미 나간 상태 가능)");
+        setShowExitChat(false);
+        setShowMenu(false);
+        window.location.reload();
+      } else {
+        console.log("채팅방 나가기 실패");
+      }
     }
   };
 

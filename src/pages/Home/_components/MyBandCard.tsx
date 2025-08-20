@@ -21,7 +21,11 @@ const MyBandCard: React.FC<{
       <h2 className="text-white font-bold text-xl mb-2">{band.title}</h2>
       <p className="text-gray-400 text-sm mb-6">{band.description}</p>
       <div className="mt-2">
-        <ButtonSection onJoinClick={onJoinClick} setToast={setToast} />
+        <ButtonSection
+          onJoinClick={onJoinClick}
+          setToast={setToast}
+          bandId={0}
+        />
       </div>
     </div>
   );
