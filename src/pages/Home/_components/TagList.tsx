@@ -1,40 +1,38 @@
 import React from "react";
 import CustomButton from "@/shared/ui/atoms/CustomButton";
 import {
-  MicImg,
-  GuitarImg,
-  AcousticGuitarImg,
-  BassImg,
-  DrumImg,
-  PianoImg,
-  ViolinImg,
-  TrumpetImg,
-} from "@/shared/components/images";
+  mic,
+  electricGuitar,
+  acousticGuitar,
+  bass,
+  drum,
+  piano,
+  violin,
+  trumpet,
+} from "@/assets/icons/home/tag";
 
 // 세션별 아이콘 매핑 함수
 const getSessionIcon = (tagName: string) => {
   const cleanName = tagName.toLowerCase();
 
-  if (cleanName.includes("보컬") || cleanName.includes("vocal")) return MicImg;
+  if (cleanName.includes("보컬") || cleanName.includes("vocal")) return mic;
   if (
     cleanName.includes("어쿠스틱 기타") ||
     cleanName.includes("acoustic guitar")
   )
-    return AcousticGuitarImg;
+    return acousticGuitar;
   if (cleanName.includes("기타") || cleanName.includes("guitar"))
-    return GuitarImg;
-  if (cleanName.includes("베이스") || cleanName.includes("bass"))
-    return BassImg;
-  if (cleanName.includes("드럼") || cleanName.includes("drum")) return DrumImg;
-  if (cleanName.includes("피아노") || cleanName.includes("piano"))
-    return PianoImg;
+    return electricGuitar;
+  if (cleanName.includes("베이스") || cleanName.includes("bass")) return bass;
+  if (cleanName.includes("드럼") || cleanName.includes("drum")) return drum;
+  if (cleanName.includes("피아노") || cleanName.includes("piano")) return piano;
   if (cleanName.includes("바이올린") || cleanName.includes("violin"))
-    return ViolinImg;
+    return violin;
   if (cleanName.includes("트럼펫") || cleanName.includes("trumpet"))
-    return TrumpetImg;
+    return trumpet;
 
   // 기본값
-  return MicImg;
+  return mic;
 };
 
 const TagList: React.FC<{
@@ -84,7 +82,7 @@ const TagList: React.FC<{
         return (
           <CustomButton
             key={idx}
-            className={`inline-flex shrink-0 !rounded-full !px-4 !py-1 !text-sm !font-medium !shadow-none !w-auto !max-w-none !min-w-0 !h-auto ${colorClass}`}
+            className={`inline-flex !items-center shrink-0 !rounded-full !px-4 !py-1 !text-sm !font-medium !shadow-none !w-auto !max-w-none !min-w-0 !h-auto ${colorClass}`}
             style={{
               whiteSpace: "nowrap",
               overflow: "visible",
@@ -92,8 +90,8 @@ const TagList: React.FC<{
             }}
           >
             {variant === "home" && isSessionTag && SessionIcon && (
-              <div className="w-3 h-3 mr-1 inline-block align-middle">
-                <SessionIcon size={12} color="gray-200" />
+              <div className="size-[12px] mr-1 inline-block align-middle">
+                <img src={SessionIcon} alt="" />
               </div>
             )}
             {tag}
