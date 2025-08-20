@@ -2,61 +2,328 @@
 
 # 🎸Banddy
 
-## 0. Getting Started (시작하기)
+## Project Overview (프로젝트 개요)
 
-```
-npm install
-npm run dev
-```
+ •	프로젝트 이름: Banddy
+ •	프로젝트 설명: 음악을 좋아하는 사람들을 위한 음악 중심 소셜 웹앱 (PWA)
 
-[기획 링크](https://makeus-challenge.notion.site/1e6b57f4596b8023a319e9d63bde14db)
 
-<br/>
-<br/>
+- 배포주소 : https://www.banddy.click/
+- TestID :
+- TestPW :
 
-## 1. Project Overview (프로젝트 개요)
-
-    •	프로젝트 이름: Banddy
-    •	프로젝트 설명: 음악을 좋아하는 사람들을 위한 음악 중심 소셜 웹앱 (PWA)
+- [기획 링크](https://makeus-challenge.notion.site/1e6b57f4596b8023a319e9d63bde14db)
 
 <br/>
 <br/>
 
-## 2. Team Members (팀원 및 팀 소개)
+
+<br/>
+<br/>
+
+## 1. Team Members (팀원 및 팀 소개)
 
 |                                                           제로/정규은                                                           |                                                           준혁/최준혁                                                           |                                                           인고사/박세웅                                                           |                                                           주이/최현준                                                           |
 | :-----------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------: |
-| <img src="https://github.com/user-attachments/assets/98a0bbc9-6289-4960-a213-5a1e4a2c1b4c" alt="제로" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/8196cb7b-5347-49ca-a09e-9f868803c1c0" alt="준혁" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/a7cbfdb9-46f8-4f15-956a-7f69402cd53c" alt="인고사" height="150" width="150"> | <img src="https://github.com/user-attachments/assets/175c0464-90e5-4b5a-8b12-1684e337c979" alt="주이" height="150" width="150"> |
-|                                                               PL                                                                |                                                               FE                                                                |                                                                FE                                                                 |                                                               FE                                                                |
-|                         [GitHub](https://makeus-challenge.notion.site/1e6b57f4596b8023a319e9d63bde14db)                         |                         [GitHub](https://makeus-challenge.notion.site/1e6b57f4596b8023a319e9d63bde14db)                         |                          [GitHub](https://makeus-challenge.notion.site/1e6b57f4596b8023a319e9d63bde14db)                          |                                               [GitHub](https://github.com/hywznn)                                               |
+| <img src="https://github.com/user-attachments/assets/98a0bbc9-6289-4960-a213-5a1e4a2c1b4c" alt="제로" width="150" height="150"> | <img src="https://github.com/user-attachments/assets/8196cb7b-5347-49ca-a09e-9f868803c1c0" alt="준혁" width="150" height="150"> | <img src="https://github.com/user-attachments/assets/a7cbfdb9-46f8-4f15-956a-7f69402cd53c" alt="인고사" width="150" height="150"> | <img src="https://github.com/user-attachments/assets/175c0464-90e5-4b5a-8b12-1684e337c979" alt="주이" width="150" height="150"> |
+|                                                               **PL**                                                                |                                                               **FE**                                                                |                                                                **FE**                                                                 |                                                               **FE**                                                                |
+|                         [GitHub](https://github.com/)                         |                         [GitHub](https://github.com/)                         |                          [GitHub](https://github.com/)                          |                                               [GitHub](https://github.com/hywznn)                                               |
+
+
 
 <br/>
 <br/>
+
+## 2. 개발 환경/기술
+
+- 런타임/도구
+	- React 19, TypeScript 5, Vite 7, React Router 7
+	- 모듈 번들링/개발 서버: Vite
+	- 패키지 매니저: npm
+- UI/스타일
+	- MUI 7 + Emotion, Tailwind CSS 4
+	- SVG 핸들링: vite-plugin-svgr
+- 상태/데이터
+	- 서버 상태: @tanstack/react-query v5
+	- 클라이언트 상태: Zustand, Valtio
+- 네트워킹/실시간
+	- HTTP: Axios
+	- 실시간: SockJS + @stomp/stompjs
+- 품질 관리
+	- 정적 분석: ESLint 9
+	- 타입 체크: tsc --noEmit
+- 협업/배포/디자인
+	- 협업: GitHub, Notion
+	- 배포: Vercel, AWS(배포 스크립트 제공, scripts/deploy-aws.sh)
+	- 디자인: Figma
+- PWA
+	- 플러그인: vite-plugin-pwa (현재 Service Worker 이슈로 비활성화 상태)
+
 
 ## 3. Key Features (주요 기능)
 
-    •	회원가입 및 로그인
-    •	소셜 로그인 및 이메일 회원가입 지원
-    •	개인화된 음악 추천
-    •	사용자의 선호도 기반 AI 추천 시스템
-    •	음악 공유 및 소셜 기능
-    •	사용자들이 자신의 플레이리스트를 공유 및 팔로우 가능
-    •	이벤트 및 콘서트 정보 제공
-    •	사용자 위치 기반 음악 이벤트 알림
-    •	뮤지션 프로필 페이지
-    •	아티스트별 프로필 및 앨범 관리
+- 회원가입/로그인: 이메일 기반 가입/로그인, 세션 유지
+- 취향 기반 추천: 사전테스트 결과로 홈 추천/맞춤 콘텐츠 제공
+- 밴드 탐색/상세: 밴드 정보, 구성원, 플레이리스트, 선호 탭 제공
+- 아카이브 관리: 아티스트/앨범/트랙 저장·폴더링, 앨범 상세 조회
+- 검색/자동완성: 아티스트/앨범/트랙 검색 및 자동완성 지원
+- 프로필 관리: 자기소개, 세션/레벨, 선호 장르/아티스트 편집
+- 소셜 인터랙션: 팔로우, 좋아요, 댓글
+- 알림 시스템: 친구요청/채팅/시스템 알림, 읽음 처리
+- 실시간 채팅: 그룹/개인 채팅, STOMP/SockJS 기반, 읽음 상태 전송
+- Join 플로우: 밴드 생성(곡/장르/아티스트), 채팅 개설, 모집글 관리
+- PWA 지향: 오프라인·설치형 UX 준비(현 시점 SW 비활성)
+- 접근 제어: 보호 라우트로 인증 요구 경로 관리
 
 <br/>
 <br/>
 
-## 4. Tasks & Responsibilities (작업 및 역할 분담)
+## 4. 프로젝트 폴더 구조
 
-|        |                                                                                                                                   |                                                     |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| 제로   | <img src="https://github.com/user-attachments/assets/98a0bbc9-6289-4960-a213-5a1e4a2c1b4c" alt="제로" height="150" width="150">   | <ul><li>회원가입/로그인</li><ul><li>사전테스트</li> |
-| 준혁   | <img src="https://github.com/user-attachments/assets/8196cb7b-5347-49ca-a09e-9f868803c1c0" alt="준혁" height="150" width="150">   | <ul><li>조인</li>                                   |
-| 인고사 | <img src="https://github.com/user-attachments/assets/a7cbfdb9-46f8-4f15-956a-7f69402cd53c" alt="인고사" height="150" width="150"> | <ul><li>MY페이지</li><li>                           |
-| 주이   | <img src="https://github.com/user-attachments/assets/175c0464-90e5-4b5a-8b12-1684e337c979" alt="주이" height="150" width="150">   | <ul><li>메인/홈, 채팅 및 소켓</li>                  |
+```
+├── DEPLOYMENT.md
+├── GITHUB_SECRETS_SETUP.md
+├── README.md
+├── eslint.config.cjs
+├── index.html
+├── package-lock.json
+├── package.json
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+├── vite.config.ts
+├── documents
+│   └── chat
+│       ├── README.md
+│       ├── v1.md
+│       ├── v2.md
+│       └── v3.md
+├── public
+│   ├── android-chrome-192x192.png
+│   ├── android-chrome-512x512.png
+│   ├── apple-touch-icon.png
+│   ├── favicon.ico
+│   ├── fonts
+│   │   ├── HakgyoansimBareondotumB.otf
+│   │   ├── HakgyoansimBareondotumB.ttf
+│   │   ├── HakgyoansimBareondotumR.otf
+│   │   └── ...
+│   ├── manifest.json
+│   └── styles
+│       └── style.css
+├── scripts
+│   ├── deploy-aws.sh
+│   └── setup-aws.sh
+└── src
+    ├── App.css
+    ├── index.css
+    ├── main.tsx
+    ├── api
+    │   └── API.ts
+    ├── app
+    │   └── router.tsx
+    ├── assets
+    │   ├── icons
+    │   │   ├── archive
+    │   │   │   ├── additem.svg
+    │   │   │   ├── back.svg
+    │   │   │   └── ...
+    │   │   ├── bottombar
+    │   │   │   ├── chat.svg
+    │   │   │   ├── home.svg
+    │   │   │   └── ...
+    │   │   ├── chat
+    │   │   ├── home
+    │   │   ├── join
+    │   │   ├── login
+    │   │   ├── my
+    │   │   ├── notification
+    │   │   ├── pretest
+    │   │   ├── profile
+    │   │   ├── setting
+    │   │   └── ...
+    │   ├── images
+    │   │   ├── guitar-boy.svg
+    │   │   ├── home-album1.svg
+    │   │   └── ...
+    │   ├── logos
+    │   │   ├── Banddy.svg
+    │   │   ├── LOGO1.svg
+    │   │   └── ...
+    │   └── splash-main.png
+    ├── constants
+    │   └── index.ts
+    ├── features
+    │   ├── archive
+    │   │   ├── hooks
+    │   │   │   ├── useAddArtistsToFolder.ts
+    │   │   │   ├── useAlbumDetail.ts
+    │   │   │   └── ...
+    │   │   └── utils
+    │   │       └── colorMapping.ts
+    │   ├── band
+    │   │   └── hooks
+    │   │       ├── keys.ts
+    │   │       └── useBandData.ts
+    │   ├── my
+    │   │   └── hooks
+    │   │       └── useProfile.ts
+    │   ├── notification
+    │   │   └── hooks
+    │   │       ├── useFriendRequestActions.ts
+    │   │       └── ...
+    │   ├── pretest
+    │   │   └── hooks
+    │   │       ├── keys.ts
+    │   │       └── useSurveyData.ts
+    │   ├── profile
+    │   │   └── hooks
+    │   │       ├── useOtherProfile.ts
+    │   │       └── ...
+    │   └── setting
+    │       └── hooks
+    │           ├── useAuth.ts
+    │           └── ...
+    ├── pages
+    │   ├── Archive
+    │   │   ├── _components
+    │   │   │   ├── ActionBar.tsx
+    │   │   │   ├── ArchiveGrid.tsx
+    │   │   │   └── ...
+    │   │   ├── AddPage.tsx
+    │   │   ├── Album
+    │   │   │   ├── AlbumDetailPage.tsx
+    │   │   │   └── ...
+    │   │   ├── ArchivePage.tsx
+    │   │   ├── Artist
+    │   │   │   ├── ArtistGrid.tsx
+    │   │   │   └── ...
+    │   │   └── Music
+    │   │       ├── _components
+    │   │       │   ├── AddFolderModal.tsx
+    │   │       │   └── ...
+    │   │       ├── MusicGrid.tsx
+    │   │       └── ...
+    │   ├── Artist
+    │   │   ├── ArtistDetailPage.tsx
+    │   │   └── ArtistsPage.tsx
+    │   ├── Band
+    │   │   ├── BandChatPage.tsx
+    │   │   └── BandDetailPage.tsx
+    │   ├── chat
+    │   │   ├── _components
+    │   │   │   ├── ChatDateDivider.tsx
+    │   │   │   └── ...
+    │   │   ├── hooks
+    │   │   │   ├── useChat.ts
+    │   │   │   └── useWebSocket.ts
+    │   │   ├── ChatPage.tsx
+    │   │   ├── ChatDemoPage.tsx
+    │   │   └── PrivateChatPage.tsx
+    │   ├── Home
+    │   │   ├── _components
+    │   │   │   ├── BandCarousel.tsx
+    │   │   │   └── ...
+    │   │   ├── BandDetailPage
+    │   │   │   ├── PeoplePage.tsx
+    │   │   │   └── ...
+    │   │   ├── GuestHomePage.tsx
+    │   │   └── HomePage.tsx
+    │   ├── Join
+    │   │   ├── _components
+    │   │   │   ├── band_recruit
+    │   │   │   │   ├── BandMenuContentBtn.tsx
+    │   │   │   │   └── ...
+    │   │   │   ├── chat
+    │   │   │   ├── create_band
+    │   │   │   ├── saved_band
+    │   │   │   ├── JoinHeader.tsx
+    │   │   │   └── ...
+    │   │   ├── _constants
+    │   │   │   ├── genres.ts
+    │   │   │   └── regions.ts
+    │   │   ├── _utils
+    │   │   │   ├── parseToKoreanText.ts
+    │   │   │   └── showMembers.ts
+    │   │   ├── BandRecruit.tsx
+    │   │   ├── create_band
+    │   │   │   ├── CreateBand.tsx
+    │   │   │   ├── CreateBandArtist.tsx
+    │   │   │   └── ...
+    │   │   ├── CreateChat.tsx
+    │   │   ├── CreateChat2.tsx
+    │   │   ├── saved_band
+    │   │   │   ├── SavedBand.tsx
+    │   │   │   └── SavedBandDetail.tsx
+    │   │   └── JoinChangeChatInfo.tsx
+    │   ├── Login
+    │   │   ├── _components
+    │   │   │   └── LoginInputField.tsx
+    │   │   └── LoginPage.tsx
+    │   ├── Manual
+    │   │   └── ManualPage.tsx
+    │   ├── My
+    │   │   ├── _components
+    │   │   │   ├── Archive
+    │   │   │   │   ├── ArchiveItem.tsx
+    │   │   │   │   └── ...
+    │   │   │   ├── HashTagList.tsx
+    │   │   │   └── ...
+    │   │   └── MyPage.tsx
+    │   ├── NotFound
+    │   │   └── NotFoundPage.tsx
+    │   ├── Notification
+    │   │   ├── _components
+    │   │   │   ├── NotificationItem.tsx
+    │   │   │   └── ...
+    │   │   ├── NotificationDetailPage.tsx
+    │   │   └── NotificationPage.tsx
+    │   ├── pretest
+    │   │   ├── artist
+    │   │   ├── session
+    │   │   └── profile
+    │   └── Profile
+    │       ├── _components
+    │       │   ├── ProfileActionButtons.tsx
+    │       │   └── ...
+    │       ├── OtherProfile.tsx
+    │       └── ProfileDetailPage.tsx
+    ├── services
+    │   └── WebSocketService.ts
+    ├── shared
+    │   ├── components
+    │   │   ├── AuthProvider.tsx
+    │   │   ├── ChatComponents.tsx
+    │   │   └── CommonBtn.tsx
+    │   ├── styles
+    │   │   └── fonts.css
+    │   ├── ui
+    │   │   ├── atoms
+    │   │   │   ├── CustomButton.tsx
+    │   │   │   └── ...
+    │   │   ├── molecules
+    │   │   │   └── TagList.tsx
+    │   │   └── organisms
+    │   │       ├── JoinBandModal.tsx
+    │   │       └── ProfileRequestModal.tsx
+    │   └── utils
+    │       └── authCleanup.ts
+    ├── store
+    │   ├── albumApi.ts
+    │   ├── artistApi.ts
+    │   ├── auth.ts
+    │   └── ...
+    ├── types
+    │   ├── album.ts
+    │   ├── artist.ts
+    │   └── ...
+    └── widgets
+        └── Layout
+            ├── BottomBar.tsx
+            ├── Header.tsx
+            └── Layout.tsx
+```
+
 
 <br/>
 <br/>

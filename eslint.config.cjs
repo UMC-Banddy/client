@@ -7,6 +7,7 @@ module.exports = [
     ignores: [
       "dist",
       "node_modules",
+      ".vite",
       "**/*.config.*", // vite, tailwind, postcss 등
       "**/*.d.ts",
       "**/*.test.*",

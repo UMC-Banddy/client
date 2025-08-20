@@ -1,7 +1,7 @@
 // 기존 타입들 (호환성 유지)
 export interface ChatMessage {
   id: string;
-  type: "me" | "other";
+  type: "me" | "other" | "system";
   name: string;
   avatar: string;
   text?: string;

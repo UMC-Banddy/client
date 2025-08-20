@@ -189,7 +189,7 @@ const BandRecruit = () => {
         </div>
       )}
       <section
-        className="flex flex-col justify-between w-full h-[228px] bg-cover bg-center bg-no-repeat px-[16px] pt-[16px]"
+        className="flex flex-col justify-between relative ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] h-[228px] bg-cover bg-center bg-no-repeat px-[16px] pt-[16px]"
         style={{
           background: `linear-gradient(0deg, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.50) 100%), url(${bandDetail?.profileImageUrl}) lightgray 50% / cover no-repeat`,
         }}

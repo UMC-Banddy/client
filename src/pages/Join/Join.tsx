@@ -10,6 +10,7 @@ import handRock from "@/assets/icons/join/ic_hand_rock.svg";
 import plus from "@/assets/icons/join/ic_plus.svg";
 import { API } from "@/api/API";
 import { useNavigate } from "react-router-dom";
+import { useWebSocket } from "@/pages/chat/hooks/useWebSocket";
 
 interface MemberInfo {
   memberId: number;
@@ -57,13 +58,23 @@ const Join = () => {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
 
   const navigate = useNavigate();
+  const { subscribeUnread, unsubscribeUnread, connect } = useWebSocket();
 
   useEffect(() => {
+    // 목록 화면 진입 시 WebSocket 연결 및 UNREAD 구독
+    connect();
+    subscribeUnread();
+
     const fetchData = async () => {
       const { data } = await API.get("/api/chat/rooms");
       setChatRooms(data.result.chatRoomInfos);
     };
     fetchData();
+
+    return () => {
+      // 목록 화면 이탈 시 UNREAD 구독 해제
+      unsubscribeUnread();
+    };
   }, []);
 
   const renderChatRooms = () => {
@@ -134,54 +145,56 @@ const Join = () => {
 
   return (
     <main className="relative min-h-screen w-[393px] mx-auto px-[24px] pt-[12px]">
-      <h1 className="text-hel-26 text-[#fff]">JOIN</h1>
-      <div className="flex justify-between mt-[24px] w-full relative">
-        <button
-          className="flex justify-center items-center gap-[4px] w-[142px] h-[48px] bg-transparent border-[1.5px] border-[#E9E9E9] rounded-[5px] text-hakgyo-b-17 whitespace-nowrap cursor-pointer text-[#fff]"
-          onClick={() => setOpenChatCategory(!openChatCategory)}
-        >
-          {category} <img src={downArrow} alt="" />
-        </button>
-        {openChatCategory && (
-          <div className="flex flex-col absolute top-[5.5px] translate-y-[33.3%] border-[1.5px] border-[#E9E9E9] rounded-[5px] bg-[#292929]">
-            <CategoryContentBtn
-              onClick={() => {
-                setCategory("전체 채팅방");
-                setOpenChatCategory(!openChatCategory);
-              }}
-            >
-              전체 채팅방
-            </CategoryContentBtn>
-            <CategoryContentBtn
-              onClick={() => {
-                setCategory("일반 채팅방");
-                setOpenChatCategory(!openChatCategory);
-              }}
-            >
-              일반 채팅방
-            </CategoryContentBtn>
-            <CategoryContentBtn
-              onClick={() => {
-                setCategory("밴드 채팅방");
-                setOpenChatCategory(!openChatCategory);
-              }}
-            >
-              밴드 채팅방
-            </CategoryContentBtn>
-          </div>
-        )}
-        <div className="flex">
+      <header className="ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] px-[24px] w-screen">
+        <h1 className="text-hel-26 text-[#fff]">JOIN</h1>
+        <div className="flex justify-between mt-[24px] w-full relative">
           <button
-            className="p-[0] bg-transparent border-none cursor-pointer"
-            onClick={() => navigate("/join/saved-band")}
+            className="flex justify-center items-center gap-[4px] w-[142px] h-[48px] bg-transparent border-[1.5px] border-[#E9E9E9] rounded-[5px] text-hakgyo-b-17 whitespace-nowrap cursor-pointer text-[#fff]"
+            onClick={() => setOpenChatCategory(!openChatCategory)}
           >
-            <img src={guitar} alt="" />
+            {category} <img src={downArrow} alt="" />
           </button>
-          {/* <button className="p-[0] bg-transparent border-none cursor-pointer">
+          {openChatCategory && (
+            <div className="flex flex-col absolute top-[5.5px] translate-y-[33.3%] border-[1.5px] border-[#E9E9E9] rounded-[5px] bg-[#292929]">
+              <CategoryContentBtn
+                onClick={() => {
+                  setCategory("전체 채팅방");
+                  setOpenChatCategory(!openChatCategory);
+                }}
+              >
+                전체 채팅방
+              </CategoryContentBtn>
+              <CategoryContentBtn
+                onClick={() => {
+                  setCategory("일반 채팅방");
+                  setOpenChatCategory(!openChatCategory);
+                }}
+              >
+                일반 채팅방
+              </CategoryContentBtn>
+              <CategoryContentBtn
+                onClick={() => {
+                  setCategory("밴드 채팅방");
+                  setOpenChatCategory(!openChatCategory);
+                }}
+              >
+                밴드 채팅방
+              </CategoryContentBtn>
+            </div>
+          )}
+          <div className="flex">
+            <button
+              className="p-[0] bg-transparent border-none cursor-pointer"
+              onClick={() => navigate("/join/saved-band")}
+            >
+              <img src={guitar} alt="" />
+            </button>
+            {/* <button className="p-[0] bg-transparent border-none cursor-pointer">
             <img src={moodHeart} alt="" />
           </button> */}
+          </div>
         </div>
-      </div>
+      </header>
       <section className="flex flex-col gap-[19px] mt-[48px] w-full">
         {renderChatRooms()}
       </section>

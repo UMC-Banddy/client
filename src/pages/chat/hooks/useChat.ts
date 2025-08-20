@@ -20,7 +20,11 @@ export const useChat = () => {
     leaveRoom,
     sendMessage: sendWebSocketMessage,
     error: webSocketError,
+    sendLastRead,
   } = useWebSocket();
+  // 현재 방 타입과 마지막으로 전송한 읽음 메시지 ID를 저장
+  const currentRoomTypeRef = useRef<"PRIVATE" | "GROUP" | "BAND">("GROUP");
+  const lastReadSentIdRef = useRef<number | null>(null);
 
   // Auto scroll to bottom when new messages arrive
   useEffect(() => {
@@ -30,15 +34,26 @@ export const useChat = () => {
   // 채팅방 입장 (loadMessages 이후에 선언되어야 함)
 
   // 채팅방 나가기
+  const isLeavingRef = useRef(false);
   const exitChatRoom = useCallback(async () => {
-    if (!currentRoomId) return;
-
+    if (!currentRoomId || isLeavingRef.current) return;
+    isLeavingRef.current = true;
     try {
-      // REST API로 채팅방 나가기
-      await leaveChatRoom(currentRoomId);
-
-      // WebSocket 구독 해제
+      // WebSocket 구독 해제 먼저 수행(중복 수신/에러 방지)
       leaveRoom();
+
+      // REST API로 채팅방 나가기 시도
+      try {
+        await leaveChatRoom(currentRoomId);
+      } catch (e: unknown) {
+        // 이미 나간 방 등으로 400이 반환될 수 있음 → 워닝만 남기고 계속 진행
+        const err = e as { response?: { status?: number } };
+        if (err?.response?.status === 400) {
+          console.warn("채팅방 나가기 400 무시 (이미 나간 상태 가능)");
+        } else {
+          throw e;
+        }
+      }
 
       // 메시지 초기화
       chatActions.clearMessages();
@@ -47,7 +62,9 @@ export const useChat = () => {
       console.log(`채팅방 ${currentRoomId} 나가기 완료`);
     } catch (error) {
       console.error("채팅방 나가기 실패:", error);
-      throw error;
+      // 여기서 throw하면 언마운트/뒤로가기 시 Uncaught 발생 → 로그만 남김
+    } finally {
+      isLeavingRef.current = false;
     }
   }, [currentRoomId, leaveRoom]);
 
@@ -61,19 +78,21 @@ export const useChat = () => {
         const response = await getChatMessages(roomId, cursor);
 
         // API 응답을 ChatMessage 형식으로 변환
-        const chatMessages: ChatMessage[] = response.result.messages.map((msg) => ({
-          id: msg.messageId.toString(),
-          type: "other", // 기본값, 실제로는 현재 사용자 ID와 비교해야 함
-          name: msg.senderName,
-          avatar: "/src/assets/images/profile1.png", // 기본 아바타
-          text: msg.content,
-          time: new Date(msg.timestamp).toLocaleTimeString("ko-KR", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          unreadCount: 0,
-        }));
+        const chatMessages: ChatMessage[] = response.result.messages.map(
+          (msg) => ({
+            id: msg.messageId.toString(),
+            type: "other", // 기본값, 실제로는 현재 사용자 ID와 비교해야 함
+            name: msg.senderName,
+            avatar: "/src/assets/images/profile1.png", // 기본 아바타
+            text: msg.content,
+            time: new Date(msg.timestamp).toLocaleTimeString("ko-KR", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            unreadCount: 0,
+          })
+        );
 
         if (cursor) {
           // 무한 스크롤: 기존 메시지 앞에 추가
@@ -105,6 +124,8 @@ export const useChat = () => {
     ) => {
       // 현재 방 아이디를 먼저 설정하여 sendMessage 가드 통과
       chatActions.setCurrentRoomId(roomId);
+      currentRoomTypeRef.current = roomType;
+      lastReadSentIdRef.current = null;
       try {
         // REST join 시도(이미 참가자 등록 시 실패 가능) → 실패해도 WS 진행
         await joinChatRoom(roomId);
@@ -188,6 +209,25 @@ export const useChat = () => {
     },
     [currentRoomId, isConnected, sendWebSocketMessage]
   );
+
+  // 메시지 목록이 갱신될 때마다 마지막 메시지를 기준으로 읽음 상태 전송
+  useEffect(() => {
+    if (!currentRoomId || snap.messages.length === 0) return;
+    const last = snap.messages[snap.messages.length - 1];
+    const lastId = Number(last.id);
+    if (!Number.isFinite(lastId)) return;
+    if (lastReadSentIdRef.current === lastId) return;
+    try {
+      sendLastRead(
+        currentRoomId,
+        lastId,
+        currentRoomTypeRef.current || "GROUP"
+      );
+      lastReadSentIdRef.current = lastId;
+    } catch {
+      // no-op
+    }
+  }, [snap.messages, currentRoomId, sendLastRead]);
 
   // 무한 스크롤로 더 많은 메시지 로드
   const loadMoreMessages = useCallback(() => {

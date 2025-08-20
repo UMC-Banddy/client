@@ -395,7 +395,12 @@ export const usePrivateChat = () => {
 
     try {
       // WebSocket으로 읽음 상태 전송
-      webSocketService.sendReadStatus(targetRoomId.toString(), messageId);
+      // 개인 채팅은 PRIVATE 목적지로 전송
+      webSocketService.sendLastRead(
+        targetRoomId.toString(),
+        messageId,
+        "PRIVATE"
+      );
       setLastSentReadMessageId(messageId);
       console.log("📖 읽음 상태 전송 성공:", messageId, "roomId:", targetRoomId);
     } catch (error) {

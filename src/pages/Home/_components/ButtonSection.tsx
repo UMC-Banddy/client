@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import whiteStar from "@/assets/logos/white-star.svg";
 import blackStar from "@/assets/logos/black-star.svg";
@@ -7,22 +7,42 @@ import onSoundIcon from "@/assets/icons/home/on-sound.svg";
 import starIcon from "@/assets/icons/home/like-star.svg";
 import scrabStarIcon from "@/assets/icons/home/scrab-star.svg";
 import MuiDialog from "@/shared/components/MuiDialog";
+import {
+  useIsBookmarked,
+  useToggleBandBookmark,
+} from "@/features/bandBookmark/hooks";
+import SessionSelectModal from "@/features/bandJoin/components/SessionSelectModal";
+import { postBandJoin } from "@/features/bandJoin/api";
+import type { SessionEmoji } from "@/features/bandJoin/types";
+
+interface ButtonSectionProps {
+  setToast: (open: boolean, text?: string) => void;
+  onJoinClick?: () => void;
+  bandId: number;
+  representativeSongFileUrl?: string | null;
+}
 
 const ButtonSection = ({
   setToast,
   onJoinClick,
-}: {
-  setToast: (v: boolean) => void;
-  onJoinClick?: () => void;
-}) => {
+  bandId,
+  representativeSongFileUrl,
+}: ButtonSectionProps) => {
   const navigate = useNavigate();
   const [soundOn, setSoundOn] = useState(false);
-  const [starOn, setStarOn] = useState(false);
+  const isBookmarked = useIsBookmarked(bandId);
+  const [starOn, setStarOn] = useState<boolean>(isBookmarked);
+  const toggleBookmark = useToggleBandBookmark();
+
+  useEffect(() => {
+    setStarOn(isBookmarked);
+  }, [isBookmarked]);
   const [open, setOpen] = useState(false);
+  const [openSession, setOpenSession] = useState(false);
 
   const handleJoinClick = () => {
-    // 항상 확인 모달을 띄우고, onJoinClick 제공 시 확인에서 콜백 실행
-    setOpen(true);
+    // 세션 선택 모달 먼저 표시
+    setOpenSession(true);
   };
 
   return (
@@ -30,7 +50,14 @@ const ButtonSection = ({
       <div className="flex items-center justify-center gap-x-4 px-4 pr-4 py-0 mt-0 mb-0">
         <button
           className="opacity-50 p-2 hover:opacity-80 transition"
-          onClick={() => setSoundOn((prev) => !prev)}
+          onClick={() => {
+            if (!representativeSongFileUrl) {
+              // 소리 파일이 없으면 동일 형태의 토스트 메시지 노출
+              setToast(true, "해당 밴드에서 올린 음원이 없습니다");
+              return;
+            }
+            setSoundOn((prev) => !prev);
+          }}
         >
           <img
             src={soundOn ? onSoundIcon : muteIcon}
@@ -48,10 +75,16 @@ const ButtonSection = ({
         <button
           className="opacity-50 p-2 hover:opacity-80 transition"
           onClick={() => {
-            setStarOn((prev) => {
-              if (!prev) setToast(true); // scrab-star가 되는 순간만 토스트
-              return !prev;
-            });
+            const next = !starOn;
+            setStarOn(next);
+            // API 연동 (낙관적 업데이트, 실패 시 롤백)
+            toggleBookmark(bandId, next)
+              .then(() => {
+                if (next) setToast(true, "밴드가 저장 되었습니다.");
+              })
+              .catch(() => {
+                setStarOn(!next);
+              });
           }}
         >
           <img
@@ -79,20 +112,37 @@ const ButtonSection = ({
             </button>
             <button
               className="flex-1 bg-red-600 text-white font-bold py-3 rounded-full text-lg"
-              onClick={() => {
-                setOpen(false);
-                if (onJoinClick) {
-                  onJoinClick();
-                } else {
-                  navigate("/home/chat-demo");
-                }
-              }}
+              onClick={() => setOpen(false)}
             >
               예
             </button>
           </div>
         </div>
       </MuiDialog>
+
+      {/* 세션 선택 → 지원 API → 채팅방 이동 */}
+      <SessionSelectModal
+        open={openSession}
+        onClose={() => setOpenSession(false)}
+        onConfirm={async (session: SessionEmoji) => {
+          try {
+            setOpenSession(false);
+            const res = await postBandJoin(bandId, session);
+            const roomId =
+              res?.result?.roomId ?? (res as { roomId?: number })?.roomId;
+            if (roomId) {
+              navigate(`/home/chat?roomId=${roomId}&roomType=GROUP`);
+            } else if (onJoinClick) {
+              onJoinClick();
+            } else {
+              navigate("/home/chat-demo");
+            }
+          } catch {
+            // 실패 시 기존 플로우로 대체
+            if (onJoinClick) onJoinClick();
+          }
+        }}
+      />
     </>
   );
 };

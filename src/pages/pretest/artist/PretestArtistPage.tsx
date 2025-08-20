@@ -197,9 +197,9 @@ const PretestArtistPage = () => {
     });
   };
 
-  // 건너뛰기 처리
+  // 건너뛰기 처리 - 홈으로 이동
   const handleSkip = () => {
-    navigate("/pre-test/session");
+    navigate("/");
   };
 
   // 다음 단계 처리

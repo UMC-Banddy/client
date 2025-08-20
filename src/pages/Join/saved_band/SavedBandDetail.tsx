@@ -82,8 +82,8 @@ const SavedBandDetail = () => {
 
   return (
     <main className="relative min-h-screen w-[393px] mx-auto px-[24px] pt-[12px]">
-      <div className="flex justify-end w-full mb-[24px]">
-        <button
+      <div className="flex justify-end ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] px-[24px] w-screen mb-[24px]">
+        <button 
           className="p-[0] bg-transparent border-none cursor-pointer"
           onClick={() => navigate("/join")}
         >

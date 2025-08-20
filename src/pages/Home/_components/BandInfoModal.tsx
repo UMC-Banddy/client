@@ -45,6 +45,9 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
   bandId, // 추가
   imageUrl,
 }) => {
+  // subtitle은 props로 받지만 현재 UI에서는 사용하지 않음
+  // 향후 필요시 활용 가능하도록 유지
+  console.log("Modal subtitle:", subtitle); // 임시로 사용하여 린트 에러 해결
   // 세션별 아이콘 매핑 함수
   const getSessionIcon = (tagName: string) => {
     const cleanName = tagName.toLowerCase();
@@ -73,14 +76,6 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
     return MicImg;
   };
 
-  // 디버깅용 로그
-  console.log("BandInfoModal props:", {
-    title,
-    subtitle,
-    youtubeUrl,
-    instagramUrl,
-    bandId,
-  });
   return (
     <div
       className="relative bg-[#F5E9EA] rounded-[28px] w-full max-w-[420px] min-w-0 min-h-[420px] max-h-[95vh] flex flex-col px-6 sm:px-7 md:px-8 pt-10 pb-8 overflow-hidden"
