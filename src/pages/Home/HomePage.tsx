@@ -480,17 +480,30 @@ const HomePage = () => {
 
       // 2-2) 목록에도 없으면 방 생성 시도(그룹 채팅)
       try {
+        console.log(`밴드 ${band.id}를 위한 그룹 채팅방 생성 시도...`);
+        
+        // 테스트용 멤버 ID (실제 사용자 ID로 변경 필요)
+        const testMemberIds = [1, 2]; // 테스트용 사용자 ID들
+        
         const createRes = await createGroupChat({
-          memberIds: [],
+          memberIds: testMemberIds,
           roomName: band.title || `밴드 모집_${band.id}`,
         });
+        
+        console.log("채팅방 생성 응답:", createRes);
+        
         const newRoomId = (createRes as { roomId?: number })?.roomId;
         if (newRoomId) {
+          console.log(`그룹 채팅방 생성 성공: ${newRoomId}`);
+          // 채팅방 생성 성공 시 바로 이동
           navigate(`/home/chat?roomId=${newRoomId}&roomType=GROUP`);
           return;
+        } else {
+          console.warn("채팅방 생성 응답에 roomId가 없음:", createRes);
         }
-      } catch {
-        // 방 생성 실패 시 무시
+      } catch (error) {
+        console.error("그룹 채팅방 생성 실패:", error);
+        // 방 생성 실패 시 무시하고 계속 진행
       }
 
       // 3) roomId를 얻지 못한 경우, 기존 모달로 fallback

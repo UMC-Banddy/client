@@ -175,14 +175,14 @@ export const getBandDetail = async (
     if (import.meta.env.DEV) {
       console.log(`밴드 ${bandId} 상세정보 조회 시작`);
     }
-    
+
     const response = await API.get(API_ENDPOINTS.BANDS.DETAIL(bandId));
     const data = response.data.result || response.data;
-    
+
     if (import.meta.env.DEV) {
       console.log(`밴드 ${bandId} 상세정보 조회 성공:`, data);
     }
-    
+
     return data as BandDetail;
   } catch (error) {
     // HTTP 500 에러 등 서버 오류 시 null 반환하여 에러 전파 방지
@@ -193,7 +193,7 @@ export const getBandDetail = async (
         status: (error as any)?.response?.status,
         statusText: (error as any)?.response?.statusText,
         data: (error as any)?.response?.data,
-        message: (error as any)?.message
+        message: (error as any)?.message,
       });
     } else {
       console.warn(`밴드 ${bandId} 상세정보 조회 실패:`, error);
@@ -503,7 +503,10 @@ export const probeSomeBandDetails = async (options?: {
           return detail;
         } else {
           if (import.meta.env.DEV) {
-            console.warn(`밴드 ${id} 상세정보는 조회되었지만 bandName이 비어있음:`, detail);
+            console.warn(
+              `밴드 ${id} 상세정보는 조회되었지만 bandName이 비어있음:`,
+              detail
+            );
           }
           return null;
         }
@@ -538,12 +541,18 @@ export const probeSomeBandDetails = async (options?: {
         const detail = await getBandDetail(String(id));
         if (detail && detail.bandName) {
           if (import.meta.env.DEV) {
-            console.log(`Fallback 밴드 ${id} 상세정보 조회 성공:`, detail.bandName);
+            console.log(
+              `Fallback 밴드 ${id} 상세정보 조회 성공:`,
+              detail.bandName
+            );
           }
           results.push(detail);
         } else {
           if (import.meta.env.DEV) {
-            console.warn(`Fallback 밴드 ${id} 상세정보는 조회되었지만 bandName이 비어있음:`, detail);
+            console.warn(
+              `Fallback 밴드 ${id} 상세정보는 조회되었지만 bandName이 비어있음:`,
+              detail
+            );
           }
         }
       } catch (error) {

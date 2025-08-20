@@ -18,6 +18,12 @@ export const useWebSocket = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 메시지 핸들러
+  const handleMessage = useCallback((message: WebSocketMessage) => {
+    console.log("실시간 메시지 수신:", message);
+    chatActions.addRealtimeMessage(message);
+  }, []);
+
   // WebSocket 연결 상태
   const isConnected = snap.webSocketConnected;
   const currentRoomId = snap.currentRoomId;
@@ -72,8 +78,9 @@ export const useWebSocket = () => {
   const subscribeUnread = useCallback(() => {
     if (!isConnected) return;
     try {
-      webSocketService.subscribeToUnread((payload: UnreadPayload) => {
+      webSocketService.subscribeToUnread((data: unknown) => {
         try {
+          const payload = data as UnreadPayload;
           const roomId = Number(payload?.data?.roomId);
           if (Number.isFinite(roomId)) {
             chatActions.incrementUnreadCount(roomId);
@@ -100,139 +107,105 @@ export const useWebSocket = () => {
     webSocketService.disconnect();
   }, []);
 
-  // 채팅방 입장
-  const joinRoom = useCallback(
-    (roomId: string, roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP") => {
-      if (!isConnected) {
-        console.warn("WebSocket이 연결되지 않았습니다. 연결을 시도합니다.");
-        connect().then(() => {
-          joinRoom(roomId, roomType);
-        });
-        return;
-      }
-
-      // 현재 채팅방 ID 설정
-      chatActions.setCurrentRoomId(roomId);
-
-      // 채팅방 구독 (roomType에 따라 분기)
-      const onMessage = (message: WebSocketMessage) => {
-        console.log("실시간 메시지 수신:", message);
-        chatActions.addRealtimeMessage(message);
-      };
-      if (roomType === "PRIVATE") {
-        webSocketService.subscribeToPrivateRoom(roomId, onMessage);
-      } else {
-        webSocketService.subscribeToGroupRoom(roomId, onMessage);
-      }
-
-      console.log(`채팅방 ${roomId} 입장 완료`);
-    },
-    [isConnected, connect]
-  );
-
   // 채팅방 나가기
   const leaveRoom = useCallback(() => {
     if (currentRoomId) {
-      webSocketService.unsubscribeFromRoom(currentRoomId);
-      chatActions.setCurrentRoomId(null);
-      console.log(`채팅방 ${currentRoomId} 나가기 완료`);
+      try {
+        webSocketService.unsubscribeFromRoom(currentRoomId);
+        chatActions.setCurrentRoomId(null);
+        console.log(`채팅방 ${currentRoomId} 나가기 완료`);
+      } catch (error) {
+        console.error("채팅방 나가기 실패:", error);
+      }
     }
   }, [currentRoomId]);
 
-  // 메시지 전송
-  const sendMessage = useCallback(
-    (
-      content: string,
-      roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP",
-      receiverId?: number
-    ) => {
-      if (!currentRoomId) {
-        console.error("현재 채팅방이 설정되지 않았습니다.");
-        return;
+  // 채팅방 입장
+  const joinRoom = useCallback(
+    async (roomId: string, roomType: "PRIVATE" | "GROUP" | "BAND") => {
+      if (!isConnected) {
+        console.warn("WebSocket이 연결되지 않음. 연결 시도 중...");
+        await connect();
+        // 연결 후 잠시 대기
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
       if (!isConnected) {
-        console.warn("WebSocket이 연결되지 않았습니다. 연결을 시도합니다.");
-        connect().then(() => {
-          sendMessage(content, roomType, receiverId);
-        });
+        console.error("WebSocket 연결 실패. 채팅방 입장 불가.");
+        return;
+      }
+
+      console.log(`채팅방 ${roomId} 입장 시도 (타입: ${roomType})`);
+      
+      try {
+        // 기존 구독 해제
+        if (currentRoomId) {
+          leaveRoom();
+        }
+
+        // 새로운 방 구독
+        if (roomType === "PRIVATE") {
+          webSocketService.subscribeToPrivateRoom(roomId, handleMessage);
+        } else {
+          webSocketService.subscribeToGroupRoom(roomId, handleMessage);
+        }
+
+        chatActions.setCurrentRoomId(roomId);
+        
+        console.log(`채팅방 ${roomId} 입장 성공 (타입: ${roomType})`);
+      } catch (error) {
+        console.error(`채팅방 ${roomId} 입장 실패:`, error);
+      }
+    },
+    [isConnected, connect, leaveRoom, currentRoomId]
+  );
+
+  // 메시지 전송
+  const sendMessage = useCallback(
+    async (content: string, roomType: "PRIVATE" | "GROUP" | "BAND", receiverId?: number) => {
+      if (!isConnected || !currentRoomId) {
+        console.error("WebSocket이 연결되지 않았거나 채팅방에 입장하지 않음");
         return;
       }
 
       try {
-        webSocketService.sendMessage(
-          currentRoomId,
-          content,
-          roomType,
-          receiverId
-        );
-        console.log("메시지 전송 완료:", content);
+        await webSocketService.sendMessage(currentRoomId, content, roomType, receiverId);
+        console.log("메시지 전송 성공:", content);
       } catch (error) {
         console.error("메시지 전송 실패:", error);
         throw error;
       }
     },
-    [currentRoomId, isConnected, connect]
+    [isConnected, currentRoomId]
   );
 
-  // 연결 상태 확인
-  const checkConnection = useCallback(() => {
-    return webSocketService.isConnected();
-  }, []);
+  // 마지막 읽음 시간 전송
+  const sendLastRead = useCallback(
+    async (messageId: number) => {
+      if (!isConnected || !currentRoomId) return;
 
-  // 현재 구독 중인 채팅방 목록
-  const getSubscriptions = useCallback(() => {
-    return webSocketService.getCurrentSubscriptions();
-  }, []);
-
-  // 수동 재연결
-  const reconnect = useCallback(async () => {
-    if (isConnecting) return;
-
-    console.log("수동 재연결 시도...");
-    disconnect();
-
-    // 잠시 대기 후 재연결
-    reconnectTimeoutRef.current = setTimeout(async () => {
       try {
-        await connect();
-
-        // 이전 채팅방 재구독
-        if (currentRoomId) {
-          joinRoom(currentRoomId);
-        }
+        await webSocketService.sendLastRead(currentRoomId, messageId);
+        console.log("마지막 읽음 시간 전송 성공:", messageId);
       } catch (error) {
-        console.error("재연결 실패:", error);
+        console.error("마지막 읽음 시간 전송 실패:", error);
       }
-    }, 1000);
-  }, [isConnecting, disconnect, connect, currentRoomId, joinRoom]);
+    },
+    [isConnected, currentRoomId]
+  );
 
   return {
-    // 상태
     isConnected,
     isConnecting,
     currentRoomId,
-    error: snap.error,
-
-    // 연결 관리
     connect,
     disconnect,
-    reconnect,
-    checkConnection,
-
-    // 채팅방 관리
     joinRoom,
     leaveRoom,
-
-    // 메시지 관리
     sendMessage,
-
-    // 구독 관리
-    getSubscriptions,
+    sendLastRead,
     subscribeUnread,
     unsubscribeUnread,
-
-    // 읽음 상태 전송
-    sendLastRead: webSocketService.sendLastRead.bind(webSocketService),
+    error: null,
   };
 };
