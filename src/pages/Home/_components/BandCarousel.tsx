@@ -139,6 +139,7 @@ const BandCarousel: React.FC<{
               <p className="text-gray-400 text-sm mb-4">{band.subtitle}</p>
               <ButtonSection
                 setToast={setToast}
+                bandId={band.id}
                 onJoinClick={onJoinClick ? () => onJoinClick(band) : undefined}
               />
             </div>
