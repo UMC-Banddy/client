@@ -353,8 +353,7 @@ const HomePage = () => {
           }
 
           return {
-            id:
-              Number((detail as Partial<BandDetail>)?.bandId) || index + 1,
+            id: Number((detail as Partial<BandDetail>)?.bandId) || index + 1,
             image:
               (detail as Partial<BandDetail>)?.profileImageUrl ||
               representativeTrack?.imageUrl ||
