@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import whiteStar from "@/assets/logos/white-star.svg";
 import blackStar from "@/assets/logos/black-star.svg";
@@ -7,17 +7,29 @@ import onSoundIcon from "@/assets/icons/home/on-sound.svg";
 import starIcon from "@/assets/icons/home/like-star.svg";
 import scrabStarIcon from "@/assets/icons/home/scrab-star.svg";
 import MuiDialog from "@/shared/components/MuiDialog";
+import {
+  useIsBookmarked,
+  useToggleBandBookmark,
+} from "@/features/bandBookmark/hooks";
 
 const ButtonSection = ({
   setToast,
   onJoinClick,
+  bandId,
 }: {
   setToast: (v: boolean) => void;
   onJoinClick?: () => void;
+  bandId: number;
 }) => {
   const navigate = useNavigate();
   const [soundOn, setSoundOn] = useState(false);
-  const [starOn, setStarOn] = useState(false);
+  const isBookmarked = useIsBookmarked(bandId);
+  const [starOn, setStarOn] = useState<boolean>(isBookmarked);
+  const toggleBookmark = useToggleBandBookmark();
+
+  useEffect(() => {
+    setStarOn(isBookmarked);
+  }, [isBookmarked]);
   const [open, setOpen] = useState(false);
 
   const handleJoinClick = () => {
@@ -48,10 +60,16 @@ const ButtonSection = ({
         <button
           className="opacity-50 p-2 hover:opacity-80 transition"
           onClick={() => {
-            setStarOn((prev) => {
-              if (!prev) setToast(true); // scrab-star가 되는 순간만 토스트
-              return !prev;
-            });
+            const next = !starOn;
+            setStarOn(next);
+            // API 연동 (낙관적 업데이트, 실패 시 롤백)
+            toggleBookmark(bandId, next)
+              .then(() => {
+                if (next) setToast(true);
+              })
+              .catch(() => {
+                setStarOn(!next);
+              });
           }}
         >
           <img
