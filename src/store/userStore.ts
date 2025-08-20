@@ -237,6 +237,115 @@ export const getBandRecruitDetail = async (
   }
 };
 
+// 홈 전용: 리쿠르팅 목록 캐시 (간단 TTL 캐시)
+let recruitingListCache: {
+  expiresAt: number;
+  data: Array<Record<string, unknown>>;
+} | null = null;
+
+export const getRecruitingBandSummaries = async (options?: {
+  page?: number;
+  size?: number;
+  useCache?: boolean;
+  cacheMs?: number;
+}): Promise<Array<Record<string, unknown>>> => {
+  const page = options?.page ?? 0;
+  const size = options?.size ?? 40;
+  const useCache = options?.useCache !== false;
+  const cacheMs = options?.cacheMs ?? 60 * 1000;
+
+  if (
+    useCache &&
+    recruitingListCache &&
+    recruitingListCache.expiresAt > Date.now()
+  ) {
+    return recruitingListCache.data;
+  }
+
+  const normalize = (item: any) => ({
+    bandId: Number(item?.bandId ?? item?.id ?? 0) || undefined,
+    name: item?.name ?? item?.bandName ?? undefined,
+    description: item?.description ?? undefined,
+    profileImageUrl: item?.profileImageUrl ?? item?.imageUrl ?? undefined,
+    sessions: Array.isArray(item?.sessions) ? item.sessions : [],
+    artists: Array.isArray(item?.artists) ? item.artists : [],
+    tracks: Array.isArray(item?.tracks) ? item.tracks : [],
+    jobs: Array.isArray(item?.jobs) ? item.jobs : [],
+    averageAge: item?.averageAge,
+    maleCount: item?.maleCount,
+    femaleCount: item?.femaleCount,
+    representativeSongFile: item?.representativeSongFile ?? null,
+    status: item?.status,
+  });
+
+  const viaIdsFallback = async () => {
+    try {
+      const ids = (await getRecruitingBandIds())?.slice(0, size) ?? [];
+      const batchSize = 8;
+      const results: any[] = [];
+      for (let i = 0; i < ids.length; i += batchSize) {
+        const batch = ids.slice(i, i + batchSize);
+        const batchResults = await Promise.all(
+          batch.map(async (id) => {
+            const recruitRes = await getBandRecruitDetail(String(id));
+            const recruit = recruitRes?.result;
+            if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
+              return normalize({ ...recruit, bandId: id });
+            }
+            return null;
+          })
+        );
+        results.push(...batchResults.filter(Boolean));
+      }
+
+      if (useCache) {
+        recruitingListCache = {
+          expiresAt: Date.now() + cacheMs,
+          data: results,
+        };
+      }
+      return results;
+    } catch (e) {
+      console.warn("리쿠르팅 목록 ID 폴백 실패:", e);
+      return [];
+    }
+  };
+
+  try {
+    const res = await API.get(API_ENDPOINTS.BANDS.RECRUIT, {
+      params: { status: "RECRUITING", page, size },
+    });
+    const list = Array.isArray(res?.data)
+      ? res.data
+      : Array.isArray(res?.data?.result)
+      ? res.data.result
+      : [];
+
+    // 서버가 GET을 지원하지 않거나 빈 리스트면 폴백
+    if (!Array.isArray(list) || list.length === 0) {
+      return await viaIdsFallback();
+    }
+
+    const normalized: Array<Record<string, unknown>> = list.map(normalize);
+
+    if (useCache) {
+      recruitingListCache = {
+        expiresAt: Date.now() + cacheMs,
+        data: normalized,
+      };
+    }
+    return normalized;
+  } catch (error: any) {
+    // 405/404 등은 자연스럽게 폴백
+    const status = error?.response?.status;
+    if (status === 405 || status === 404) {
+      return await viaIdsFallback();
+    }
+    console.warn("리쿠르팅 목록 조회 실패:", error);
+    return await viaIdsFallback();
+  }
+};
+
 // 추천 밴드 목록 조회 API (홈페이지용)
 export const getRecommendedBands = async () => {
   try {
