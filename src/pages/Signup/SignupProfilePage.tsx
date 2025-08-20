@@ -61,7 +61,7 @@ const SignupProfilePage: React.FC = () => {
         region: authStore.region,
         age: authStore.age,
       });
-      navigate("/signup/complete");
+      navigate("/signup/complete", { state: { email: authStore.email, password: authStore.password } });
     } catch (err) {
       console.error("회원가입 실패", err);
     }
