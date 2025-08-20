@@ -1,8 +1,9 @@
 import guitarActivated from "@/assets/icons/join/ic_guitar_activated.svg";
 // import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
 import volumeOff from "@/assets/icons/join/ic_volume_off.svg";
+import volumeOn from "@/assets/icons/join/ic_volume_on.svg";
 import star from "@/assets/icons/join/ic_star.svg";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dialog } from "@mui/material";
 import closeBtn from "@/assets/icons/join/ic_close_btn.svg";
 import StatusIndicator from "../_components/saved_band/StatusIndicator";
@@ -32,19 +33,37 @@ const SavedBandDetail = () => {
   const [data, setData] = useState<BandDetail>();
 
   const navigate = useNavigate();
-  const { memberSummary } = useLocation().state;
+  const { memberSummary, soundUrl } = useLocation().state;
 
   const { id } = useParams();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       const { data } = await API.get(`/api/band/${id}/detail`);
       setData(data);
-      // console.log(data);
     };
 
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio(soundUrl);
+      audioRef.current.loop = true;
+    }
+
+    if (isPlaying) {
+      audioRef.current.play();
+    } else {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    return () => {
+      audioRef.current?.pause();
+    };
+  }, [isPlaying, soundUrl]);
 
   const handleDeleteSaving = async () => {
     try {
@@ -91,7 +110,7 @@ const SavedBandDetail = () => {
             }}
           ></div>
           <img
-            src={isPlaying ? volumeOff : volumeOff}
+            src={isPlaying ? volumeOn : volumeOff}
             alt=""
             className="absolute bottom-[4px] right-[4px] size-[48px] cursor-pointer z-20"
             onClick={() => setIsPlaying((prev) => !prev)}
