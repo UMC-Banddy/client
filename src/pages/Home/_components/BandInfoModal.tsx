@@ -160,16 +160,20 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
                 </Link>
               );
             } else {
+              const absoluteLink = link.startsWith("http")
+                ? link
+                : `https://${link.replace(/^\/+/, "")}`;
               return (
-                <a
+                <button
                   key={idx}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  type="button"
+                  onClick={() =>
+                    window.open(absoluteLink, "_blank", "noopener,noreferrer")
+                  }
                   style={{ display: "inline-block" }}
                 >
                   {iconElement}
-                </a>
+                </button>
               );
             }
           } else {
