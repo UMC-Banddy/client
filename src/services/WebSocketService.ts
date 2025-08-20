@@ -35,11 +35,13 @@ class WebSocketService {
   private initClient() {
     // WS URL 결정: VITE_WS_URL 우선 → VITE_API_BASE_URL + /ws → 상대경로 /ws
     const explicitWsUrl = import.meta.env.VITE_WS_URL as string | undefined;
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "https://api.banddy.co.kr";
     const wsUrl =
       explicitWsUrl && explicitWsUrl.length > 0
         ? explicitWsUrl
         : `${baseUrl}/ws`;
+
+    console.log("WebSocket 연결 URL:", wsUrl);
 
     this.stompClient = new Client({
       webSocketFactory: () =>
@@ -337,11 +339,14 @@ class WebSocketService {
     }
   }
 
-  unsubscribeFromRoom(roomId: string): void {
-    const subscription = this.subscriptions.get(roomId);
+  // 특정 채팅방 구독 해제
+  unsubscribeFromRoom(roomId: string) {
+    const subscriptionKey = `room_${roomId}`;
+    const subscription = this.subscriptions.get(subscriptionKey);
+    
     if (subscription) {
       subscription.unsubscribe();
-      this.subscriptions.delete(roomId);
+      this.subscriptions.delete(subscriptionKey);
       console.log(`채팅방 ${roomId} 구독 해제 완료`);
     }
   }
