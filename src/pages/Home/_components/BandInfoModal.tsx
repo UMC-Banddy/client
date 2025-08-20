@@ -76,6 +76,14 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
     return MicImg;
   };
 
+  const YOUTUBE_FALLBACK = "https://www.youtube.com/@Banddy79";
+  const INSTAGRAM_FALLBACK = "https://www.instagram.com/banddy79/";
+
+  const resolvedYoutubeLink =
+    youtubeUrl && youtubeUrl.trim() ? youtubeUrl : YOUTUBE_FALLBACK;
+  const resolvedInstagramLink =
+    instagramUrl && instagramUrl.trim() ? instagramUrl : INSTAGRAM_FALLBACK;
+
   return (
     <div
       className="relative bg-[#F5E9EA] rounded-[28px] w-full max-w-[420px] min-w-0 min-h-[420px] max-h-[95vh] flex flex-col px-6 sm:px-7 md:px-8 pt-10 pb-8 overflow-hidden"
@@ -119,13 +127,13 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
           {
             Comp: Youtube,
             color: "gray-700",
-            link: "https://www.youtube.com/@Banddy79",
+            link: resolvedYoutubeLink,
             hasLink: true,
           },
           {
             Comp: Instagram,
             color: "gray-700",
-            link: "https://www.instagram.com/banddy79",
+            link: resolvedInstagramLink,
             hasLink: true,
           },
           {
