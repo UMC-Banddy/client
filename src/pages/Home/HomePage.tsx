@@ -308,11 +308,19 @@ const HomePage = () => {
         return;
       }
 
-      // 밴드 프로필 데이터를 캐러셀 형식으로 변환
-      // const bands: Band[] = validProfiles.map((profile: any, index: number) => {
-      const bands: Band[] = validProfiles.map(
-        (profile: BandProfileData, index: number) => {
-          const detail = details[index];
+      // 상세 조회가 성공한 항목만 남기기 위해 프로필/상세를 짝지은 뒤 필터링
+      const paired = validProfiles.map((profile, index) => ({
+        profile,
+        detail: details[index],
+        index,
+      }));
+      const filteredPairs = paired.filter(({ detail }) =>
+        Boolean(detail && (detail as Partial<BandDetail>).bandName)
+      );
+
+      // 상세 조회 성공한 밴드만 캐러셀로 변환
+      const bands: Band[] = (filteredPairs.length > 0 ? filteredPairs : paired) // 상세가 전무하면 기존 로직 유지 (fallback 대비)
+        .map(({ profile, detail, index }) => {
           // API 응답 구조에 따라 안전하게 접근
           const goalTracks = profile.goalTracks || [];
           const preferredArtists = profile.preferredArtists || [];
@@ -347,13 +355,13 @@ const HomePage = () => {
           return {
             id: index + 1, // 임시 ID
             image:
-              detail?.profileImageUrl ||
+              (detail as Partial<BandDetail>)?.profileImageUrl ||
               representativeTrack?.imageUrl ||
               representativeArtist?.imageUrl ||
               fallbackBandData[index]?.image ||
               homeAlbum3Img,
             title:
-              detail?.bandName ||
+              (detail as Partial<BandDetail>)?.bandName ||
               representativeTrack?.title ||
               representativeArtist?.name ||
               fallbackBandData[index]?.title ||
@@ -365,10 +373,9 @@ const HomePage = () => {
               "혼또니 아리가또 고자이마스",
             tags,
             profileData: profile, // 원본 데이터 저장
-            bandName: detail?.bandName,
+            bandName: (detail as Partial<BandDetail>)?.bandName,
           };
-        }
-      );
+        });
 
       // memberId 36/37 계정에서 bandId 49를 캐러셀에 보장 노출
       try {
