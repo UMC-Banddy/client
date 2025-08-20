@@ -17,6 +17,8 @@ export const useWebSocket = () => {
   const authSnap = useVSnapshot(authStore);
   const [isConnecting, setIsConnecting] = useState(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isJoiningRef = useRef(false);
+  const subscribedRoomIdRef = useRef<string | null>(null);
 
   // 메시지 핸들러
   const handleMessage = useCallback((message: WebSocketMessage) => {
@@ -111,8 +113,11 @@ export const useWebSocket = () => {
   const leaveRoom = useCallback(() => {
     if (currentRoomId) {
       try {
-        webSocketService.unsubscribeFromRoom(currentRoomId);
+        if (subscribedRoomIdRef.current) {
+          webSocketService.unsubscribeFromRoom(subscribedRoomIdRef.current);
+        }
         chatActions.setCurrentRoomId(null);
+        subscribedRoomIdRef.current = null;
         console.log(`채팅방 ${currentRoomId} 나가기 완료`);
       } catch (error) {
         console.error("채팅방 나가기 실패:", error);
@@ -123,6 +128,10 @@ export const useWebSocket = () => {
   // 채팅방 입장
   const joinRoom = useCallback(
     async (roomId: string, roomType: "PRIVATE" | "GROUP" | "BAND") => {
+      // 동일 방 재입장, 혹은 진행 중이면 무시
+      if (isJoiningRef.current) return;
+      if (subscribedRoomIdRef.current === roomId) return;
+
       if (!isConnected) {
         console.warn("WebSocket이 연결되지 않음. 연결 시도 중...");
         await connect();
@@ -138,8 +147,15 @@ export const useWebSocket = () => {
       console.log(`채팅방 ${roomId} 입장 시도 (타입: ${roomType})`);
 
       try {
-        // 어떤 방이든 현재 유지 중인 모든 구독을 해제하고 단일 방만 유지
-        webSocketService.unsubscribeAllRooms();
+        isJoiningRef.current = true;
+        // 다른 방에 구독 중이면 해제
+        if (
+          subscribedRoomIdRef.current &&
+          subscribedRoomIdRef.current !== roomId
+        ) {
+          webSocketService.unsubscribeFromRoom(subscribedRoomIdRef.current);
+          subscribedRoomIdRef.current = null;
+        }
 
         // 새로운 방 구독
         if (roomType === "PRIVATE") {
@@ -149,10 +165,13 @@ export const useWebSocket = () => {
         }
 
         chatActions.setCurrentRoomId(roomId);
+        subscribedRoomIdRef.current = roomId;
 
         console.log(`채팅방 ${roomId} 입장 성공 (타입: ${roomType})`);
       } catch (error) {
         console.error(`채팅방 ${roomId} 입장 실패:`, error);
+      } finally {
+        isJoiningRef.current = false;
       }
     },
     [isConnected, connect]
