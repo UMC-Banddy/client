@@ -30,8 +30,9 @@ const ButtonSection = ({
 }: ButtonSectionProps) => {
   const navigate = useNavigate();
   const [soundOn, setSoundOn] = useState(false);
-  const audioRef = useState<HTMLAudioElement | null>(null)[0];
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(
+    null
+  );
   const isBookmarked = useIsBookmarked(bandId);
   const [starOn, setStarOn] = useState<boolean>(isBookmarked);
   const toggleBookmark = useToggleBandBookmark();
@@ -64,12 +65,14 @@ const ButtonSection = ({
               // 재생/중지 토글
               if (currentAudio) {
                 currentAudio.pause();
+                currentAudio.currentTime = 0;
                 setCurrentAudio(null);
                 setSoundOn(false);
                 return;
               }
 
               const audio = new Audio(representativeSongFileUrl);
+              audio.loop = true;
               audio.onended = () => {
                 setCurrentAudio(null);
                 setSoundOn(false);
