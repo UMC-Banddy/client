@@ -63,6 +63,7 @@ interface Band {
   subtitle: string;
   tags: string[];
   profileData?: BandProfileData; // 원본 프로필 데이터 저장
+  bandName?: string; // 상세 정보에서 가져온 밴드명 (없으면 undefined)
 }
 
 interface ChatRoomInfo {
@@ -362,6 +363,7 @@ const HomePage = () => {
               "혼또니 아리가또 고자이마스",
             tags,
             profileData: profile, // 원본 데이터 저장
+            bandName: detail?.bandName,
           };
         }
       );
@@ -571,11 +573,7 @@ const HomePage = () => {
             selectedBand?.profileData?.goalTracks?.[0]?.imageUrl ||
             selectedBand?.image
           }
-          title={
-            selectedBand?.profileData?.goalTracks?.[0]?.title ||
-            selectedBand?.title ||
-            "냥커버!!"
-          }
+          title={selectedBand?.bandName || "--"}
           subtitle={
             selectedBand?.profileData?.goalTracks?.[0]?.artist ||
             selectedBand?.subtitle ||
