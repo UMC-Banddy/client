@@ -179,19 +179,18 @@ export const useWebSocket = () => {
     [isConnected, currentRoomId]
   );
 
-  // 마지막 읽음 시간 전송
+  // 마지막 읽음 시간 전송 (roomId, messageId, roomType)
   const sendLastRead = useCallback(
-    async (messageId: number) => {
-      if (!isConnected || !currentRoomId) return;
-
+    (roomId: string, messageId: number, roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP") => {
+      if (!isConnected) return;
       try {
-        await webSocketService.sendLastRead(currentRoomId, messageId);
-        console.log("마지막 읽음 시간 전송 성공:", messageId);
+        webSocketService.sendLastRead(roomId, messageId, roomType);
+        console.log("마지막 읽음 시간 전송 성공:", { roomId, messageId, roomType });
       } catch (error) {
         console.error("마지막 읽음 시간 전송 실패:", error);
       }
     },
-    [isConnected, currentRoomId]
+    [isConnected]
   );
 
   return {
@@ -206,6 +205,6 @@ export const useWebSocket = () => {
     sendLastRead,
     subscribeUnread,
     unsubscribeUnread,
-    error: null,
+    error: snap.error,
   };
 };

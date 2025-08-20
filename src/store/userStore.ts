@@ -187,13 +187,23 @@ export const getBandDetail = async (
   } catch (error) {
     // HTTP 500 에러 등 서버 오류 시 null 반환하여 에러 전파 방지
     if (import.meta.env.DEV) {
+      // axios 오류 형태를 안전하게 추출
+      type MaybeAxiosError = {
+        response?: {
+          status?: number;
+          statusText?: string;
+          data?: unknown;
+        };
+        message?: string;
+      };
+      const e = error as MaybeAxiosError;
       console.error(`밴드 ${bandId} 상세정보 조회 실패:`, {
         bandId,
         error,
-        status: (error as any)?.response?.status,
-        statusText: (error as any)?.response?.statusText,
-        data: (error as any)?.response?.data,
-        message: (error as any)?.message,
+        status: e?.response?.status,
+        statusText: e?.response?.statusText,
+        data: e?.response?.data,
+        message: e?.message,
       });
     } else {
       console.warn(`밴드 ${bandId} 상세정보 조회 실패:`, error);
