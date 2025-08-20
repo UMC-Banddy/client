@@ -215,11 +215,22 @@ export const getBandDetail = async (
 // 신규 상세 스펙(모집 공고) 조회 API
 export const getBandRecruitDetail = async (
   bandId: string
-): Promise<BandRecruitDetail | null> => {
+): Promise<{
+  isSuccess: boolean;
+  result: BandRecruitDetail | null;
+  message?: string;
+} | null> => {
   try {
     const res = await API.get(API_ENDPOINTS.RECRUITMENT.DETAIL(bandId));
-    const data = (res.data?.result || res.data) as Partial<BandRecruitDetail>;
-    return (data || null) as BandRecruitDetail;
+    const isSuccess: boolean = Boolean(res?.data?.isSuccess ?? true);
+    const result = (res.data?.result ||
+      null) as Partial<BandRecruitDetail> | null;
+    const message = (res?.data?.message as string | undefined) ?? undefined;
+    return {
+      isSuccess,
+      result: (result || null) as BandRecruitDetail | null,
+      message,
+    };
   } catch (error) {
     console.warn("밴드 모집 상세 조회 실패:", { bandId, error });
     return null;
@@ -377,6 +388,47 @@ export const getBandArtists = async (bandId: string) => {
     console.error("밴드 선호 아티스트 조회 실패:", error);
     throw error;
   }
+};
+
+// 모집중 밴드 ID 조회 (재사용 가능):
+// 1) 환경변수 VITE_RECRUITING_BAND_IDS="4,10,11" 우선 사용
+// 2) 서버에 /api/recruitments?status=RECRUITING 지원 시 시도 (GET 미지원이면 무시)
+// 3) 마지막으로 하드코딩된 임시 목록(운영 전환 시 제거)
+export const getRecruitingBandIds = async (): Promise<number[]> => {
+  // 1) ENV 우선
+  const envIdsRaw = (import.meta as any)?.env?.VITE_RECRUITING_BAND_IDS as
+    | string
+    | undefined;
+  if (typeof envIdsRaw === "string" && envIdsRaw.trim().length > 0) {
+    return envIdsRaw
+      .split(",")
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isFinite(n));
+  }
+
+  // 2) 서버 목록 시도 (405 등 에러시 무시)
+  try {
+    const res = await API.get(API_ENDPOINTS.BANDS.RECRUIT, {
+      params: { status: "RECRUITING", page: 0, size: 1000 },
+    });
+    const list = Array.isArray(res?.data)
+      ? res.data
+      : Array.isArray(res?.data?.result)
+      ? res.data.result
+      : [];
+    const ids = list
+      .map((r: any) => Number(r?.bandId ?? r?.id))
+      .filter((n: number) => Number.isFinite(n));
+    if (ids.length > 0) return Array.from(new Set(ids));
+  } catch {
+    // ignore
+  }
+
+  // 3) 임시 하드코딩 (운영 API 준비 전까지만 사용)
+  return [
+    4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 28, 42, 45, 49, 51, 63, 64, 65, 67,
+    68,
+  ];
 };
 
 // 모든 밴드 목록 조회 API
