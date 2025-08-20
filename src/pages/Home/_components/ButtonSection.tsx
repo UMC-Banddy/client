@@ -11,6 +11,9 @@ import {
   useIsBookmarked,
   useToggleBandBookmark,
 } from "@/features/bandBookmark/hooks";
+import SessionSelectModal from "@/features/bandJoin/components/SessionSelectModal";
+import { postBandJoin } from "@/features/bandJoin/api";
+import type { SessionEmoji } from "@/features/bandJoin/types";
 
 interface ButtonSectionProps {
   setToast: (open: boolean, text?: string) => void;
@@ -35,10 +38,11 @@ const ButtonSection = ({
     setStarOn(isBookmarked);
   }, [isBookmarked]);
   const [open, setOpen] = useState(false);
+  const [openSession, setOpenSession] = useState(false);
 
   const handleJoinClick = () => {
-    // 항상 확인 모달을 띄우고, onJoinClick 제공 시 확인에서 콜백 실행
-    setOpen(true);
+    // 세션 선택 모달 먼저 표시
+    setOpenSession(true);
   };
 
   return (
@@ -108,20 +112,38 @@ const ButtonSection = ({
             </button>
             <button
               className="flex-1 bg-red-600 text-white font-bold py-3 rounded-full text-lg"
-              onClick={() => {
-                setOpen(false);
-                if (onJoinClick) {
-                  onJoinClick();
-                } else {
-                  navigate("/home/chat-demo");
-                }
-              }}
+              onClick={() => setOpen(false)}
             >
               예
             </button>
           </div>
         </div>
       </MuiDialog>
+
+      {/* 세션 선택 → 지원 API → 채팅방 이동 */}
+      <SessionSelectModal
+        open={openSession}
+        onClose={() => setOpenSession(false)}
+        onConfirm={async (session: SessionEmoji) => {
+          try {
+            setOpenSession(false);
+            const res = await postBandJoin(bandId, session);
+            const roomId = (res?.result?.roomId ?? (res as any)?.roomId) as
+              | number
+              | undefined;
+            if (roomId) {
+              navigate(`/home/chat?roomId=${roomId}&roomType=GROUP`);
+            } else if (onJoinClick) {
+              onJoinClick();
+            } else {
+              navigate("/home/chat-demo");
+            }
+          } catch (e) {
+            // 실패 시 기존 플로우로 대체
+            if (onJoinClick) onJoinClick();
+          }
+        }}
+      />
     </>
   );
 };
