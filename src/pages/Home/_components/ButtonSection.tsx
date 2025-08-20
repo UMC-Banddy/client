@@ -30,6 +30,8 @@ const ButtonSection = ({
 }: ButtonSectionProps) => {
   const navigate = useNavigate();
   const [soundOn, setSoundOn] = useState(false);
+  const audioRef = useState<HTMLAudioElement | null>(null)[0];
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const isBookmarked = useIsBookmarked(bandId);
   const [starOn, setStarOn] = useState<boolean>(isBookmarked);
   const toggleBookmark = useToggleBandBookmark();
@@ -52,13 +54,34 @@ const ButtonSection = ({
       <div className="flex items-center justify-center gap-x-4 px-4 pr-4 py-0 mt-0 mb-0">
         <button
           className="opacity-50 p-2 hover:opacity-80 transition"
-          onClick={() => {
+          onClick={async () => {
             if (!representativeSongFileUrl) {
-              // 소리 파일이 없으면 동일 형태의 토스트 메시지 노출
-              setToast(true, "해당 밴드에서 올린 음원이 없습니다");
+              setToast(true, "해당 밴드의 녹음 파일이 없습니다");
               return;
             }
-            setSoundOn((prev) => !prev);
+
+            try {
+              // 재생/중지 토글
+              if (currentAudio) {
+                currentAudio.pause();
+                setCurrentAudio(null);
+                setSoundOn(false);
+                return;
+              }
+
+              const audio = new Audio(representativeSongFileUrl);
+              audio.onended = () => {
+                setCurrentAudio(null);
+                setSoundOn(false);
+              };
+              await audio.play();
+              setCurrentAudio(audio);
+              setSoundOn(true);
+            } catch (e) {
+              setToast(true, "해당 밴드의 녹음 파일이 없습니다");
+              setCurrentAudio(null);
+              setSoundOn(false);
+            }
           }}
         >
           <img

@@ -37,14 +37,25 @@ const BandCarousel: React.FC<{
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 토스트 상태를 여기서 관리
-  const [toast, setToast] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string>("");
 
   useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(false), 2000);
+    if (toastOpen) {
+      const timer = setTimeout(() => setToastOpen(false), 2000);
       return () => clearTimeout(timer);
     }
-  }, [toast]);
+  }, [toastOpen]);
+
+  // 하위에서 사용할 토스트 표시 헬퍼
+  const showToast = (open: boolean, text?: string) => {
+    if (open) {
+      setToastMessage(text || "");
+      setToastOpen(true);
+    } else {
+      setToastOpen(false);
+    }
+  };
 
   const handleNext = () => {
     if (isAnimating) return;
@@ -151,7 +162,7 @@ const BandCarousel: React.FC<{
               </h2>
               <p className="text-gray-400 text-sm mb-4">{band.subtitle}</p>
               <ButtonSection
-                setToast={setToast}
+                setToast={showToast}
                 bandId={band.id}
                 representativeSongFileUrl={band.representativeSongFileUrl}
                 onJoinClick={onJoinClick ? () => onJoinClick(band) : undefined}
@@ -174,7 +185,7 @@ const BandCarousel: React.FC<{
         </button>
       </div>
       {/* 토스트 메시지 */}
-      {toast && (
+      {toastOpen && (
         <div
           className={
             "fixed left-1/2 bottom-26 z-50 px-8 py-3 bg-black text-white rounded-full text-xl font-hakgyoansim -translate-x-1/2 transition-all duration-400 animate-toast-updown"
@@ -189,7 +200,7 @@ const BandCarousel: React.FC<{
             userSelect: "none",
           }}
         >
-          밴드가 저장 되었습니다.
+          {toastMessage || "밴드가 저장 되었습니다."}
         </div>
       )}
     </div>
