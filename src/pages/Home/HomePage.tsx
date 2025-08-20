@@ -220,7 +220,9 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const { data: recommended = [], isFetching } = useRecommendedBands();
   // 홈 진입 시 채팅방 목록 선조회(캐시 용도)
-  const [chatRoomInfosCache, setChatRoomInfosCache] = useState<ChatRoomInfo[]>([]);
+  const [chatRoomInfosCache, setChatRoomInfosCache] = useState<ChatRoomInfo[]>(
+    []
+  );
   // 밴드별 매칭된 roomId 매핑
   const [bandRoomMap, setBandRoomMap] = useState<Record<number, number>>({});
 
@@ -483,17 +485,17 @@ const HomePage = () => {
       // 2-2) 목록에도 없으면 방 생성 시도(그룹 채팅)
       try {
         console.log(`밴드 ${band.id}를 위한 그룹 채팅방 생성 시도...`);
-        
+
         // 테스트용 멤버 ID (실제 사용자 ID로 변경 필요)
         const testMemberIds = [1, 2]; // 테스트용 사용자 ID들
-        
+
         const createRes = await createGroupChat({
           memberIds: testMemberIds,
           roomName: band.title || `밴드 모집_${band.id}`,
         });
-        
+
         console.log("채팅방 생성 응답:", createRes);
-        
+
         const newRoomId = (createRes as { roomId?: number })?.roomId;
         if (newRoomId) {
           console.log(`그룹 채팅방 생성 성공: ${newRoomId}`);
@@ -538,8 +540,11 @@ const HomePage = () => {
   useEffect(() => {
     if (import.meta.env.DEV && myBands.length > 0) {
       console.log("=== 밴드 상세정보 조회 테스트 시작 ===");
-      console.log("현재 설정된 밴드들:", myBands.map(b => ({ id: b.id, title: b.title })));
-      
+      console.log(
+        "현재 설정된 밴드들:",
+        myBands.map((b) => ({ id: b.id, title: b.title }))
+      );
+
       // 첫 번째 밴드의 상세정보 조회 테스트
       const testBandId = myBands[0]?.id;
       if (testBandId) {

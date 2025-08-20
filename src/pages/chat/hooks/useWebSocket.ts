@@ -127,7 +127,7 @@ export const useWebSocket = () => {
         console.warn("WebSocket이 연결되지 않음. 연결 시도 중...");
         await connect();
         // 연결 후 잠시 대기
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       if (!isConnected) {
@@ -136,7 +136,7 @@ export const useWebSocket = () => {
       }
 
       console.log(`채팅방 ${roomId} 입장 시도 (타입: ${roomType})`);
-      
+
       try {
         // 기존 구독 해제
         if (currentRoomId) {
@@ -151,7 +151,7 @@ export const useWebSocket = () => {
         }
 
         chatActions.setCurrentRoomId(roomId);
-        
+
         console.log(`채팅방 ${roomId} 입장 성공 (타입: ${roomType})`);
       } catch (error) {
         console.error(`채팅방 ${roomId} 입장 실패:`, error);
@@ -162,14 +162,23 @@ export const useWebSocket = () => {
 
   // 메시지 전송
   const sendMessage = useCallback(
-    async (content: string, roomType: "PRIVATE" | "GROUP" | "BAND", receiverId?: number) => {
+    async (
+      content: string,
+      roomType: "PRIVATE" | "GROUP" | "BAND",
+      receiverId?: number
+    ) => {
       if (!isConnected || !currentRoomId) {
         console.error("WebSocket이 연결되지 않았거나 채팅방에 입장하지 않음");
         return;
       }
 
       try {
-        await webSocketService.sendMessage(currentRoomId, content, roomType, receiverId);
+        await webSocketService.sendMessage(
+          currentRoomId,
+          content,
+          roomType,
+          receiverId
+        );
         console.log("메시지 전송 성공:", content);
       } catch (error) {
         console.error("메시지 전송 실패:", error);
@@ -181,11 +190,19 @@ export const useWebSocket = () => {
 
   // 마지막 읽음 시간 전송 (roomId, messageId, roomType)
   const sendLastRead = useCallback(
-    (roomId: string, messageId: number, roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP") => {
+    (
+      roomId: string,
+      messageId: number,
+      roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP"
+    ) => {
       if (!isConnected) return;
       try {
         webSocketService.sendLastRead(roomId, messageId, roomType);
-        console.log("마지막 읽음 시간 전송 성공:", { roomId, messageId, roomType });
+        console.log("마지막 읽음 시간 전송 성공:", {
+          roomId,
+          messageId,
+          roomType,
+        });
       } catch (error) {
         console.error("마지막 읽음 시간 전송 실패:", error);
       }
