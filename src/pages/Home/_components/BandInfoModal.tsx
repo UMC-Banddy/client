@@ -119,14 +119,14 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
           {
             Comp: Youtube,
             color: "gray-700",
-            link: youtubeUrl,
-            hasLink: "https://www.youtube.com/@Banddy79",
+            link: "https://www.youtube.com/@Banddy79",
+            hasLink: true,
           },
           {
             Comp: Instagram,
             color: "gray-700",
-            link: instagramUrl,
-            hasLink: "https://www.instagram.com/banddy79",
+            link: "https://www.instagram.com/banddy79",
+            hasLink: true,
           },
           {
             Comp: Tictok,
