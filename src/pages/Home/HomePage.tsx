@@ -375,7 +375,8 @@ const HomePage = () => {
             profileData: profile, // 원본 데이터 저장
             bandName: (detail as Partial<BandDetail>)?.bandName,
             // 신규 스펙 반영: 대표 음원 파일 URL 전달 (없으면 null)
-            representativeSongFileUrl: (detail as any)?.representativeSongFile?.fileUrl ?? null,
+            representativeSongFileUrl:
+              (detail as any)?.representativeSongFile?.fileUrl ?? null,
           };
         });
 

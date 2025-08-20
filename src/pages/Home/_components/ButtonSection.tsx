@@ -7,7 +7,10 @@ import onSoundIcon from "@/assets/icons/home/on-sound.svg";
 import starIcon from "@/assets/icons/home/like-star.svg";
 import scrabStarIcon from "@/assets/icons/home/scrab-star.svg";
 import MuiDialog from "@/shared/components/MuiDialog";
-import { useIsBookmarked, useToggleBandBookmark } from "@/features/bandBookmark/hooks";
+import {
+  useIsBookmarked,
+  useToggleBandBookmark,
+} from "@/features/bandBookmark/hooks";
 
 interface ButtonSectionProps {
   setToast: (open: boolean, text?: string) => void;

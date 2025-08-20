@@ -1,4 +1,3 @@
-
 export interface TrackDto {
   title: string;
   artist: string;
