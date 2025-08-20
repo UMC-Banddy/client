@@ -7,6 +7,8 @@ import BandInfoModal from "./_components/BandInfoModal";
 import {
   getRecommendedFromSimilar,
   getRecruitingBandSummaries,
+  getBandRecruitDetail,
+  getBandDetail,
 } from "@/store/userStore";
 import { useRecommendedBands } from "@/features/band/hooks/useBandData";
 import type {} from "@/types/band";
@@ -246,11 +248,21 @@ const HomePage = () => {
       }
 
       // 서버 리쿠르팅 목록을 직접 가져와 카드로 구성 (상세 다중 호출 제거)
+      // memberId별 보장 포함 ID 구성
+      let includeIds: number[] = [];
+      try {
+        const memberIdRaw = localStorage.getItem("memberId");
+        if (memberIdRaw === "36" || memberIdRaw === "37") includeIds.push(49);
+        // 73 사용자의 밴드 ID가 76으로 확인됨 → 모집중이면 최상단 포함
+        if (memberIdRaw === "73") includeIds.push(76);
+      } catch {}
+
       const recruitingSummaries = await getRecruitingBandSummaries({
         page: 0,
         size: 50,
         useCache: true,
         cacheMs: 60 * 1000,
+        includeBandIds: includeIds,
       });
 
       // profiles가 빈 배열이거나 undefined인 경우 기본 데이터 사용
@@ -335,19 +347,89 @@ const HomePage = () => {
         } as Band;
       });
 
-      // memberId 36/37 계정에서 bandId 49를 캐러셀에 보장 노출
+      // 특정 멤버에게 특정 밴드 보장 노출
       try {
         const memberId = localStorage.getItem("memberId");
-        if (memberId === "36" || memberId === "37") {
-          const exists49 = bands.some((b) => b.id === 49);
-          if (!exists49) {
-            bands.unshift({
-              id: 49,
-              image: homeAlbum3Img,
-              title: "Banddy 밴드 #49",
-              subtitle: "관리자 36, 멤버 36·37",
-              tags: ["그룹채팅", "bandId 49", "roomId 52"],
-            });
+        // 36/37: bandId 49 고정, 73: 본인 밴드(모집중이면) 우선 노출
+        const ensureBands: number[] = [];
+        if (memberId === "36" || memberId === "37") ensureBands.push(49);
+        if (memberId === "73") ensureBands.push(76);
+
+        for (const mustId of ensureBands) {
+          const exists = bands.some((b) => b.id === mustId);
+          if (!exists) {
+            // 상세/모집 공고를 조회해 실제 정보로 카드 구성 (모집중이 아니어도 노출)
+            try {
+              const [detail, recruitRes] = await Promise.all([
+                getBandDetail(String(mustId)),
+                getBandRecruitDetail(String(mustId)),
+              ]);
+              const recruit = recruitRes?.result;
+              const goalTracks = Array.isArray(recruit?.tracks)
+                ? recruit.tracks.map((t: any) => ({
+                    title: String(t?.title || ""),
+                    artist: "",
+                    imageUrl: String(t?.imageUrl || ""),
+                  }))
+                : [];
+              const preferredArtists = Array.isArray(recruit?.artists)
+                ? recruit.artists.map((a: any) => ({
+                    name: String(a?.name || ""),
+                    imageUrl: String(a?.imageUrl || ""),
+                  }))
+                : [];
+              const composition = {
+                averageAge: String(recruit?.averageAge || ""),
+                maleCount: Number(recruit?.maleCount || 0),
+                femaleCount: Number(recruit?.femaleCount || 0),
+              };
+              const sessions = Array.isArray(recruit?.sessions)
+                ? recruit.sessions
+                : [];
+
+              const representativeTrack = goalTracks[0];
+              const representativeArtist = preferredArtists[0];
+
+              const tags =
+                sessions.length > 0
+                  ? sessions.map((session: string) => cleanSessionName(session))
+                  : ["추천", `bandId ${mustId}`];
+
+              bands.unshift({
+                id: mustId,
+                image:
+                  String(
+                    detail?.profileImageUrl || recruit?.profileImageUrl || ""
+                  ) ||
+                  representativeTrack?.imageUrl ||
+                  representativeArtist?.imageUrl ||
+                  homeAlbum3Img,
+                title:
+                  detail?.bandName || String(recruit?.name || `밴드 ${mustId}`),
+                subtitle: String(
+                  detail?.description || recruit?.description || ""
+                ),
+                tags,
+                profileData: {
+                  goalTracks,
+                  preferredArtists,
+                  composition,
+                  sns: [],
+                  sessions,
+                  jobs: Array.isArray(recruit?.jobs) ? recruit.jobs : [],
+                },
+                bandName: detail?.bandName || String(recruit?.name || ""),
+              });
+            } catch {
+              // 실패 시 최소 카드라도 노출
+              bands.unshift({
+                id: mustId,
+                image: homeAlbum3Img,
+                title: `밴드 ${mustId}`,
+                subtitle: "",
+                tags: ["추천", `bandId ${mustId}`],
+              });
+            }
           }
         }
       } catch (error) {

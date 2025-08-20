@@ -248,11 +248,15 @@ export const getRecruitingBandSummaries = async (options?: {
   size?: number;
   useCache?: boolean;
   cacheMs?: number;
+  includeBandIds?: number[]; // 추가 포함 대상(보장 노출)
 }): Promise<Array<Record<string, unknown>>> => {
   const page = options?.page ?? 0;
   const size = options?.size ?? 40;
   const useCache = options?.useCache !== false;
   const cacheMs = options?.cacheMs ?? 60 * 1000;
+  const includeBandIds = Array.isArray(options?.includeBandIds)
+    ? Array.from(new Set(options!.includeBandIds!))
+    : [];
 
   if (
     useCache &&
@@ -280,7 +284,11 @@ export const getRecruitingBandSummaries = async (options?: {
 
   const viaIdsFallback = async () => {
     try {
-      const ids = (await getRecruitingBandIds())?.slice(0, size) ?? [];
+      const idsBase = (await getRecruitingBandIds()) ?? [];
+      const ids = Array.from(new Set([...includeBandIds, ...idsBase])).slice(
+        0,
+        size
+      );
       const batchSize = 8;
       const results: any[] = [];
       for (let i = 0; i < ids.length; i += batchSize) {
@@ -323,10 +331,77 @@ export const getRecruitingBandSummaries = async (options?: {
 
     // 서버가 GET을 지원하지 않거나 빈 리스트면 폴백
     if (!Array.isArray(list) || list.length === 0) {
+      // 대체 1순위: /api/bands 전체 목록이 있으면 그중 RECRUITING만 필터
+      try {
+        const allRes = await API.get(API_ENDPOINTS.BANDS.LIST);
+        const raw = Array.isArray(allRes?.data)
+          ? allRes.data
+          : Array.isArray(allRes?.data?.result)
+          ? allRes.data.result
+          : [];
+        if (Array.isArray(raw) && raw.length > 0) {
+          let normalized = raw
+            .map(normalize)
+            .filter((x) => !x.status || x.status === "RECRUITING");
+
+          // includeBandIds 상단 합류
+          for (const mustId of includeBandIds) {
+            const exists = normalized.some(
+              (item) => Number(item.bandId) === Number(mustId)
+            );
+            if (!exists) {
+              try {
+                const recruitRes = await getBandRecruitDetail(String(mustId));
+                const recruit = recruitRes?.result;
+                if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
+                  normalized.unshift(normalize({ ...recruit, bandId: mustId }));
+                }
+              } catch {}
+            }
+          }
+
+          normalized = normalized
+            .filter(
+              (v, i, arr) =>
+                i === arr.findIndex((x) => x && x.bandId === v.bandId)
+            )
+            .slice(0, size);
+
+          if (useCache) {
+            recruitingListCache = {
+              expiresAt: Date.now() + cacheMs,
+              data: normalized,
+            };
+          }
+          return normalized;
+        }
+      } catch {
+        // ignore and fallback to IDs
+      }
+
       return await viaIdsFallback();
     }
 
+    // 서버 목록 + includeBandIds를 합쳐 보장 포함
     const normalized: Array<Record<string, unknown>> = list.map(normalize);
+
+    // includeBandIds를 서버 결과에 합치기(중복 제거)
+    for (const mustId of includeBandIds) {
+      const exists = normalized.some(
+        (item) => Number(item.bandId) === Number(mustId)
+      );
+      if (!exists) {
+        try {
+          const recruitRes = await getBandRecruitDetail(String(mustId));
+          const recruit = recruitRes?.result;
+          if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
+            normalized.unshift(normalize({ ...recruit, bandId: mustId }));
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
 
     if (useCache) {
       recruitingListCache = {
