@@ -99,6 +99,18 @@ const BandCarousel: React.FC<{
     }
   }, [index]);
 
+  // 5초마다 자동으로 다음 슬라이드로 이동
+  useEffect(() => {
+    if (!bands || bands.length === 0) return;
+    const intervalId = window.setInterval(() => {
+      if (!isAnimating) {
+        setIsAnimating(true);
+        setIndex((prev) => prev + 1);
+      }
+    }, 5000);
+    return () => window.clearInterval(intervalId);
+  }, [bands.length, isAnimating]);
+
   const handleBandClick = (band: Band) => {
     if (onImageClick) {
       onImageClick(band);
