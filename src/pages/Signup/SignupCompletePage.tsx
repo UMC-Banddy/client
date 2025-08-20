@@ -1,10 +1,38 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import whiteStar from "../../assets/logos/white-star.svg";
 import SignupButton from "./_components/SignupButton";
+import { login } from "@/store/auth";
+import toast from "react-hot-toast";
 
 const SignupCompletePage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const autoLogin = async () => {
+      const { email, password } = location.state || {};
+      if (email && password) {
+        try {
+          const data = await login({ email, password });
+          if (data && data.memberId) {
+            toast.success("로그인 되었습니다.");
+          }
+        } catch (error) {
+          console.error("자동 로그인 실패:", error);
+          toast.error("자동 로그인에 실패했습니다. 다시 로그인해주세요.");
+          // 자동 로그인 실패 시 로그인 페이지로 보낼 수도 있습니다.
+          // navigate("/login");
+        }
+      }
+    };
+
+    autoLogin();
+  }, [location.state, navigate]);
+
+  const handleGoToPreTest = () => {
+    navigate("/pre-test/artist");
+  };
 
   return (
     <div className="relative w-full min-h-screen max-w-md mx-auto bg-black text-white overflow-hidden">
@@ -24,18 +52,12 @@ const SignupCompletePage: React.FC = () => {
           지금 하거나 나중에 언제든지 할 수 있어요!
         </p>
 
-        <SignupButton
-          onClick={() => navigate("/pre-test/artist")}
-          className="mb-4"
-        >
+        <SignupButton onClick={handleGoToPreTest} className="mb-4">
           사전 테스트 하러 가기
         </SignupButton>
 
-        <SignupButton
-          onClick={() => navigate("/")}
-          variant="secondary"
-        >
-          홈으로 바로 가기
+        <SignupButton onClick={() => navigate("/login")} variant="secondary">
+          로그인 하러 가기
         </SignupButton>
       </div>
     </div>
