@@ -329,63 +329,63 @@ const HomePage = () => {
       }));
 
       const bands: Band[] = paired.map(({ profile, detail, index }) => {
-          // API 응답 구조에 따라 안전하게 접근
-          const goalTracks = profile.goalTracks || [];
-          const preferredArtists = profile.preferredArtists || [];
-          const sessions = profile.sessions || [];
+        // API 응답 구조에 따라 안전하게 접근
+        const goalTracks = profile.goalTracks || [];
+        const preferredArtists = profile.preferredArtists || [];
+        const sessions = profile.sessions || [];
 
-          // 첫 번째 곡을 대표 이미지로 사용
-          const representativeTrack = goalTracks[0];
-          const representativeArtist = preferredArtists[0];
+        // 첫 번째 곡을 대표 이미지로 사용
+        const representativeTrack = goalTracks[0];
+        const representativeArtist = preferredArtists[0];
 
-          // 세션이 비어있으면 기본 태그 사용
-          const tags =
-            sessions.length > 0
-              ? sessions.map((session: string) => cleanSessionName(session))
-              : fallbackBandData[index]?.tags || [
-                  "기타 모집",
-                  "YOASOBI",
-                  "J-POP",
-                  "aiko",
-                ];
+        // 세션이 비어있으면 기본 태그 사용
+        const tags =
+          sessions.length > 0
+            ? sessions.map((session: string) => cleanSessionName(session))
+            : fallbackBandData[index]?.tags || [
+                "기타 모집",
+                "YOASOBI",
+                "J-POP",
+                "aiko",
+              ];
 
-          // 모든 데이터가 비어있으면 fallback 데이터 사용
-          const hasValidData =
-            goalTracks.length > 0 ||
-            preferredArtists.length > 0 ||
-            sessions.length > 0;
-          const fallbackBand = fallbackBandData[index];
+        // 모든 데이터가 비어있으면 fallback 데이터 사용
+        const hasValidData =
+          goalTracks.length > 0 ||
+          preferredArtists.length > 0 ||
+          sessions.length > 0;
+        const fallbackBand = fallbackBandData[index];
 
-          if (!hasValidData && fallbackBand) {
-            return fallbackBand;
-          }
+        if (!hasValidData && fallbackBand) {
+          return fallbackBand;
+        }
 
-          return {
-            id: Number((detail as Partial<BandDetail>)?.bandId) || index + 1,
-            image:
-              (detail as Partial<BandDetail>)?.profileImageUrl ||
-              representativeTrack?.imageUrl ||
-              representativeArtist?.imageUrl ||
-              fallbackBandData[index]?.image ||
-              homeAlbum3Img,
-            title:
-              (detail as Partial<BandDetail>)?.bandName ||
-              representativeTrack?.title ||
-              representativeArtist?.name ||
-              fallbackBandData[index]?.title ||
-              "그래요 저 왜색 짙어요",
-            subtitle:
-              representativeTrack?.artist ||
-              representativeArtist?.name ||
-              fallbackBandData[index]?.subtitle ||
-              "혼또니 아리가또 고자이마스",
-            tags,
-            profileData: profile, // 원본 데이터 저장
-            bandName: (detail as Partial<BandDetail>)?.bandName,
-            // 신규 스펙 반영: 대표 음원 파일 URL 전달 (없으면 null)
-            representativeSongFileUrl:
-              (detail as any)?.representativeSongFile?.fileUrl ?? null,
-          };
+        return {
+          id: Number((detail as Partial<BandDetail>)?.bandId) || index + 1,
+          image:
+            (detail as Partial<BandDetail>)?.profileImageUrl ||
+            representativeTrack?.imageUrl ||
+            representativeArtist?.imageUrl ||
+            fallbackBandData[index]?.image ||
+            homeAlbum3Img,
+          title:
+            (detail as Partial<BandDetail>)?.bandName ||
+            representativeTrack?.title ||
+            representativeArtist?.name ||
+            fallbackBandData[index]?.title ||
+            "그래요 저 왜색 짙어요",
+          subtitle:
+            representativeTrack?.artist ||
+            representativeArtist?.name ||
+            fallbackBandData[index]?.subtitle ||
+            "혼또니 아리가또 고자이마스",
+          tags,
+          profileData: profile, // 원본 데이터 저장
+          bandName: (detail as Partial<BandDetail>)?.bandName,
+          // 신규 스펙 반영: 대표 음원 파일 URL 전달 (없으면 null)
+          representativeSongFileUrl:
+            (detail as any)?.representativeSongFile?.fileUrl ?? null,
+        };
       });
 
       // memberId 36/37 계정에서 bandId 49를 캐러셀에 보장 노출
