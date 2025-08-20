@@ -130,11 +130,13 @@ export const chatActions = {
 
   addRealtimeMessage: (wsMessage: WebSocketMessage) => {
     // WebSocket 메시지를 ChatMessage 형식으로 변환
+    const isSystem =
+      !wsMessage.senderId || wsMessage.senderId === 0 || !wsMessage.senderName;
     const chatMessage: ChatMessage = {
       id: wsMessage.messageId.toString(),
-      type: "other", // 기본값, 실제로는 현재 사용자 ID와 비교해야 함
-      name: wsMessage.senderName,
-      avatar: "/src/assets/images/profile1.png", // 기본 아바타
+      type: isSystem ? ("system" as const) : ("other" as const),
+      name: isSystem ? "" : wsMessage.senderName,
+      avatar: isSystem ? "" : "/src/assets/images/profile1.png",
       text: wsMessage.content,
       time: new Date(wsMessage.timestamp).toLocaleTimeString("ko-KR", {
         hour: "numeric",
