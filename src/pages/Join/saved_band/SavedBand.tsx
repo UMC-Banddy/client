@@ -36,7 +36,7 @@ const SavedBand = () => {
   }, []);
   return (
     <main className="relative min-h-screen w-[393px] mx-auto px-[24px] pt-[12px]">
-      <div className="flex justify-end w-full mb-[24px]">
+      <div className="flex justify-end ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] w-screen px-[24px] mb-[24px]">
         <button
           className="p-[0] bg-transparent border-none cursor-pointer"
           onClick={() => {
