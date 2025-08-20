@@ -632,12 +632,12 @@ const HomePage = () => {
           youtubeUrl={
             selectedBand?.profileData?.sns?.find(
               (s) => s.platform === "youtube"
-            )?.url || "https://youtube.com"
+            )?.url || "https://www.youtube.com/@Banddy79"
           }
           instagramUrl={
             selectedBand?.profileData?.sns?.find(
               (s) => s.platform === "instagram"
-            )?.url || "/www.instagram.com/banddy79?igsh=NmhvNWlyc3gxNnlk"
+            )?.url || "https://www.instagram.com/banddy79/"
           }
           bandId={selectedBand?.id?.toString()} // 추가
         />
