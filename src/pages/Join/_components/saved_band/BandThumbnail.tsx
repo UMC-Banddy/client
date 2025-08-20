@@ -51,7 +51,7 @@ const BandThumbnail = ({
       className="flex flex-col gap-[12px]"
       onClick={() =>
         navigate(`/join/saved-band/${bandId}`, {
-          state: { memberSummary, memberCount, soundUrl },
+          state: { isRecruiting, memberSummary, memberCount, soundUrl },
         })
       }
     >

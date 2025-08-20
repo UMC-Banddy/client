@@ -3,6 +3,7 @@ import guitarActivated from "@/assets/icons/join/ic_guitar_activated.svg";
 import volumeOff from "@/assets/icons/join/ic_volume_off.svg";
 import volumeOn from "@/assets/icons/join/ic_volume_on.svg";
 import star from "@/assets/icons/join/ic_star.svg";
+import star3Disabled from "@/assets/icons/join/saved_band/ic_star_3_disabled.svg";
 import { useEffect, useRef, useState } from "react";
 import { Dialog } from "@mui/material";
 import closeBtn from "@/assets/icons/join/ic_close_btn.svg";
@@ -33,7 +34,7 @@ const SavedBandDetail = () => {
   const [data, setData] = useState<BandDetail>();
 
   const navigate = useNavigate();
-  const { memberSummary, soundUrl } = useLocation().state;
+  const { isRecruiting = false, memberSummary, soundUrl } = useLocation().state;
 
   const { id } = useParams();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -131,10 +132,11 @@ const SavedBandDetail = () => {
           삭제
         </button>
         <button
-          className="flex justify-center items-center gap-[4px] w-[164px] h-[50px] rounded-[61px] bg-[#B42127] text-ibm-sb-16 text-[#fff]"
+          className="flex justify-center items-center gap-[4px] w-[164px] h-[50px] rounded-[61px] bg-[#B42127] text-ibm-sb-16 text-[#fff] disabled:bg-[#959595] disabled:text-[#CACACA]"
           onClick={() => setShowJoinDialog(true)}
+          disabled={!isRecruiting}
         >
-          <img src={star} alt="" />
+          <img src={isRecruiting ? star : star3Disabled} alt="" />
           JOIN
         </button>
       </section>
