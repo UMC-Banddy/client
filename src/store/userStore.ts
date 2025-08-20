@@ -1,7 +1,7 @@
 import { proxy } from "valtio";
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
-import type { BandProfile, BandDetail } from "@/types/band";
+import type { BandProfile, BandDetail, BandRecruitDetail } from "@/types/band";
 
 interface User {
   id?: string;
@@ -172,13 +172,57 @@ export const getBandDetail = async (
   bandId: string
 ): Promise<BandDetail | null> => {
   try {
+    if (import.meta.env.DEV) {
+      console.log(`밴드 ${bandId} 상세정보 조회 시작`);
+    }
+
     const response = await API.get(API_ENDPOINTS.BANDS.DETAIL(bandId));
     const data = response.data.result || response.data;
+
+    if (import.meta.env.DEV) {
+      console.log(`밴드 ${bandId} 상세정보 조회 성공:`, data);
+    }
+
     return data as BandDetail;
   } catch (error) {
     // HTTP 500 에러 등 서버 오류 시 null 반환하여 에러 전파 방지
-    console.warn(`밴드 ${bandId} 상세정보 조회 실패:`, error);
+    if (import.meta.env.DEV) {
+      // axios 오류 형태를 안전하게 추출
+      type MaybeAxiosError = {
+        response?: {
+          status?: number;
+          statusText?: string;
+          data?: unknown;
+        };
+        message?: string;
+      };
+      const e = error as MaybeAxiosError;
+      console.error(`밴드 ${bandId} 상세정보 조회 실패:`, {
+        bandId,
+        error,
+        status: e?.response?.status,
+        statusText: e?.response?.statusText,
+        data: e?.response?.data,
+        message: e?.message,
+      });
+    } else {
+      console.warn(`밴드 ${bandId} 상세정보 조회 실패:`, error);
+    }
     return null; // 에러 대신 null 반환
+  }
+};
+
+// 신규 상세 스펙(모집 공고) 조회 API
+export const getBandRecruitDetail = async (
+  bandId: string
+): Promise<BandRecruitDetail | null> => {
+  try {
+    const res = await API.get(API_ENDPOINTS.RECRUITMENT.DETAIL(bandId));
+    const data = (res.data?.result || res.data) as Partial<BandRecruitDetail>;
+    return (data || null) as BandRecruitDetail;
+  } catch (error) {
+    console.warn("밴드 모집 상세 조회 실패:", { bandId, error });
+    return null;
   }
 };
 
@@ -472,11 +516,31 @@ export const probeSomeBandDetails = async (options?: {
     // similar로 걸러진 밴드들만 상세 정보 조회 (병렬 처리로 성능 향상)
     const detailPromises = similarBandIds.map(async (id) => {
       try {
+        if (import.meta.env.DEV) {
+          console.log(`밴드 ${id} 상세정보 조회 시도 중...`);
+        }
         const detail = await getBandDetail(String(id));
-        return detail && detail.bandName ? detail : null;
+        if (detail && detail.bandName) {
+          if (import.meta.env.DEV) {
+            console.log(`밴드 ${id} 상세정보 조회 성공:`, detail.bandName);
+          }
+          return detail;
+        } else {
+          if (import.meta.env.DEV) {
+            console.warn(
+              `밴드 ${id} 상세정보는 조회되었지만 bandName이 비어있음:`,
+              detail
+            );
+          }
+          return null;
+        }
       } catch (error) {
         // 에러 로그만 남김
-        console.warn(`밴드 ${id} 조회 실패:`, error);
+        if (import.meta.env.DEV) {
+          console.error(`밴드 ${id} 조회 중 예외 발생:`, error);
+        } else {
+          console.warn(`밴드 ${id} 조회 실패:`, error);
+        }
         return null;
       }
     });
@@ -495,13 +559,33 @@ export const probeSomeBandDetails = async (options?: {
       if (results.length >= limit) break;
 
       try {
+        if (import.meta.env.DEV) {
+          console.log(`Fallback 밴드 ${id} 상세정보 조회 시도 중...`);
+        }
         const detail = await getBandDetail(String(id));
         if (detail && detail.bandName) {
+          if (import.meta.env.DEV) {
+            console.log(
+              `Fallback 밴드 ${id} 상세정보 조회 성공:`,
+              detail.bandName
+            );
+          }
           results.push(detail);
+        } else {
+          if (import.meta.env.DEV) {
+            console.warn(
+              `Fallback 밴드 ${id} 상세정보는 조회되었지만 bandName이 비어있음:`,
+              detail
+            );
+          }
         }
       } catch (error) {
         // 에러 로그만 남김
-        console.warn(`Fallback 밴드 ${id} 조회 실패:`, error);
+        if (import.meta.env.DEV) {
+          console.error(`Fallback 밴드 ${id} 조회 중 예외 발생:`, error);
+        } else {
+          console.warn(`Fallback 밴드 ${id} 조회 실패:`, error);
+        }
         continue;
       }
     }

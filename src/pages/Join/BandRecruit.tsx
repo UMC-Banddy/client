@@ -3,6 +3,16 @@ import dotsVertical from "@/assets/icons/join/ic_dots_vertical.svg";
 // import mic from "@/assets/icons/join/ic_mic.svg";
 // import micRed from "@/assets/icons/join/ic_mic_red.svg";
 // import guitar from "@/assets/icons/join/ic_guitar_brighter.svg";
+import {
+  mic,
+  electricGuitar,
+  acousticGuitar,
+  bass,
+  drum,
+  piano,
+  trumpet,
+  violin,
+} from "@/assets/icons/join/band_recruit";
 import RecruitChat from "./_components/band_recruit/RecruitChat";
 import { useState, useEffect, useRef, useCallback } from "react";
 import BandMenuContentBtn from "./_components/band_recruit/BandMenuContentBtn";
@@ -14,6 +24,17 @@ import { API } from "@/api/API";
 import type { BandDetail } from "@/types/band";
 import { parseToKoreanText } from "./_utils/parseToKoreanText";
 import clsx from "clsx";
+
+const sessionsMap = {
+  "🎤 보컬 🎤": mic,
+  "🎸 일렉 기타 🎸": electricGuitar,
+  "🪕 어쿠스틱 기타 🪕": acousticGuitar,
+  "🎵 베이스 🎵": bass,
+  "🥁 드럼 🥁": drum,
+  "🎹 키보드 🎹": piano,
+  "🎻 바이올린 🎻": violin,
+  "🎺 트럼펫 🎺": trumpet,
+};
 
 interface Chat {
   bandName: string;
@@ -168,7 +189,7 @@ const BandRecruit = () => {
         </div>
       )}
       <section
-        className="flex flex-col justify-between w-full h-[228px] bg-cover bg-center bg-no-repeat px-[16px] pt-[16px]"
+        className="flex flex-col justify-between relative ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] h-[228px] bg-cover bg-center bg-no-repeat px-[16px] pt-[16px]"
         style={{
           background: `linear-gradient(0deg, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.50) 100%), url(${bandDetail?.profileImageUrl}) lightgray 50% / cover no-repeat`,
         }}
@@ -276,10 +297,17 @@ const BandRecruit = () => {
               <img className="size-[16px]" src={guitar} alt="guitar" />
               <p className="text-wanted-sb-13 text-[#CACACA]">일렉기타</p>
             </div> */}
-            <div className="flex gap-[4px]">
+            <div className="flex gap-[12.5px]">
               {chats?.sessions?.map((session, index) => {
                 return (
                   <div key={index} className="flex gap-[4px] items-center">
+                    {session in sessionsMap && (
+                      <img
+                        className="size-[16px]"
+                        src={sessionsMap[session as keyof typeof sessionsMap]}
+                        alt="session"
+                      />
+                    )}
                     <p className="text-wanted-sb-13 text-[#CACACA]">
                       {parseToKoreanText(session)}
                     </p>

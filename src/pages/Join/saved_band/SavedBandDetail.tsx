@@ -1,8 +1,10 @@
 import guitarActivated from "@/assets/icons/join/ic_guitar_activated.svg";
-import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
+// import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
 import volumeOff from "@/assets/icons/join/ic_volume_off.svg";
+import volumeOn from "@/assets/icons/join/ic_volume_on.svg";
 import star from "@/assets/icons/join/ic_star.svg";
-import { useEffect, useState } from "react";
+import star3Disabled from "@/assets/icons/join/saved_band/ic_star_3_disabled.svg";
+import { useEffect, useRef, useState } from "react";
 import { Dialog } from "@mui/material";
 import closeBtn from "@/assets/icons/join/ic_close_btn.svg";
 import StatusIndicator from "../_components/saved_band/StatusIndicator";
@@ -32,19 +34,37 @@ const SavedBandDetail = () => {
   const [data, setData] = useState<BandDetail>();
 
   const navigate = useNavigate();
-  const { memberSummary } = useLocation().state;
+  const { isRecruiting = false, memberSummary, soundUrl } = useLocation().state;
 
   const { id } = useParams();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       const { data } = await API.get(`/api/band/${id}/detail`);
       setData(data);
-      // console.log(data);
     };
 
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio(soundUrl);
+      audioRef.current.loop = true;
+    }
+
+    if (isPlaying) {
+      audioRef.current.play();
+    } else {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    return () => {
+      audioRef.current?.pause();
+    };
+  }, [isPlaying, soundUrl]);
 
   const handleDeleteSaving = async () => {
     try {
@@ -62,13 +82,16 @@ const SavedBandDetail = () => {
 
   return (
     <main className="relative min-h-screen w-[393px] mx-auto px-[24px] pt-[12px]">
-      <div className="flex justify-end w-full mb-[24px]">
-        <button className="p-[0] bg-transparent border-none cursor-pointer">
+      <div className="flex justify-end ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] px-[24px] w-screen mb-[24px]">
+        <button 
+          className="p-[0] bg-transparent border-none cursor-pointer"
+          onClick={() => navigate("/join")}
+        >
           <img src={guitarActivated} alt="" className="size-[48px]" />
         </button>
-        <button className="p-[0] bg-transparent border-none cursor-pointer">
+        {/* <button className="p-[0] bg-transparent border-none cursor-pointer">
           <img src={moodHeart} alt="" className="size-[48px]" />
-        </button>
+        </button> */}
       </div>
 
       <section className="flex flex-col items-center">
@@ -88,7 +111,7 @@ const SavedBandDetail = () => {
             }}
           ></div>
           <img
-            src={isPlaying ? volumeOff : volumeOff}
+            src={isPlaying ? volumeOn : volumeOff}
             alt=""
             className="absolute bottom-[4px] right-[4px] size-[48px] cursor-pointer z-20"
             onClick={() => setIsPlaying((prev) => !prev)}
@@ -109,10 +132,11 @@ const SavedBandDetail = () => {
           삭제
         </button>
         <button
-          className="flex justify-center items-center gap-[4px] w-[164px] h-[50px] rounded-[61px] bg-[#B42127] text-ibm-sb-16 text-[#fff]"
+          className="flex justify-center items-center gap-[4px] w-[164px] h-[50px] rounded-[61px] bg-[#B42127] text-ibm-sb-16 text-[#fff] disabled:bg-[#959595] disabled:text-[#CACACA]"
           onClick={() => setShowJoinDialog(true)}
+          disabled={!isRecruiting}
         >
-          <img src={star} alt="" />
+          <img src={isRecruiting ? star : star3Disabled} alt="" />
           JOIN
         </button>
       </section>

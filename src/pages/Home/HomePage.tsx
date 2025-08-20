@@ -11,6 +11,7 @@ import {
 } from "@/store/userStore";
 import { useRecommendedBands } from "@/features/band/hooks/useBandData";
 import type { BandDetail } from "@/types/band";
+import { getBandRecruitDetail } from "@/store/userStore";
 import { createGroupChat } from "@/store/chatApi";
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
@@ -63,6 +64,16 @@ interface Band {
   subtitle: string;
   tags: string[];
   profileData?: BandProfileData; // 원본 프로필 데이터 저장
+  bandName?: string; // 상세 정보에서 가져온 밴드명 (없으면 undefined)
+}
+
+interface ChatRoomInfo {
+  roomId: number;
+  roomType: string;
+  chatName?: string;
+  bandName?: string;
+  roomName?: string;
+  bandId?: number;
 }
 
 // 세션 이름 정리 및 아이콘 매핑 함수
@@ -210,7 +221,9 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const { data: recommended = [], isFetching } = useRecommendedBands();
   // 홈 진입 시 채팅방 목록 선조회(캐시 용도)
-  const [chatRoomInfosCache, setChatRoomInfosCache] = useState<any[]>([]);
+  const [chatRoomInfosCache, setChatRoomInfosCache] = useState<ChatRoomInfo[]>(
+    []
+  );
   // 밴드별 매칭된 roomId 매핑
   const [bandRoomMap, setBandRoomMap] = useState<Record<number, number>>({});
 
@@ -259,17 +272,30 @@ const HomePage = () => {
 
       let details: BandDetail[] = [];
       try {
-        details = await probeSomeBandDetails({
+        const baseDetails = await probeSomeBandDetails({
           limit: Math.min(100, candidateIds?.length ?? 40),
           candidateIds:
             candidateIds && candidateIds.length > 0
               ? candidateIds
               : fallbackIds,
         });
+        // 모집 공고 상태 확인: RECRUITING만 유지
+        const filtered = await Promise.all(
+          baseDetails.map(async (d) => {
+            try {
+              const recruit = await getBandRecruitDetail(String(d.bandId));
+              return recruit?.status === "RECRUITING" ? d : null;
+            } catch {
+              return null;
+            }
+          })
+        );
+        details = filtered.filter(Boolean) as BandDetail[];
       } catch (error) {
         // probeSomeBandDetails 실패 시 빈 배열 사용
         if (import.meta.env.DEV) {
-          console.warn("밴드 상세정보 조회 실패, 빈 배열 사용:", error);
+          console.warn("밴드 상세정보 조회 실패, 빈 배열 사용");
+          console.error("상세 에러 정보:", error);
         }
         details = [];
       }
@@ -295,66 +321,76 @@ const HomePage = () => {
         return;
       }
 
-      // 밴드 프로필 데이터를 캐러셀 형식으로 변환
-      // const bands: Band[] = validProfiles.map((profile: any, index: number) => {
-      const bands: Band[] = validProfiles.map(
-        (profile: BandProfileData, index: number) => {
-          const detail = details[index];
-          // API 응답 구조에 따라 안전하게 접근
-          const goalTracks = profile.goalTracks || [];
-          const preferredArtists = profile.preferredArtists || [];
-          const sessions = profile.sessions || [];
+      // 전체 추천 목록을 유지하고, 상세가 있으면 보강만 적용
+      const paired = validProfiles.map((profile, index) => ({
+        profile,
+        detail: details[index],
+        index,
+      }));
 
-          // 첫 번째 곡을 대표 이미지로 사용
-          const representativeTrack = goalTracks[0];
-          const representativeArtist = preferredArtists[0];
+      const bands: Band[] = paired.map(({ profile, detail, index }) => {
+        // API 응답 구조에 따라 안전하게 접근
+        const goalTracks = profile.goalTracks || [];
+        const preferredArtists = profile.preferredArtists || [];
+        const sessions = profile.sessions || [];
 
-          // 세션이 비어있으면 기본 태그 사용
-          const tags =
-            sessions.length > 0
-              ? sessions.map((session: string) => cleanSessionName(session))
-              : fallbackBandData[index]?.tags || [
-                  "기타 모집",
-                  "YOASOBI",
-                  "J-POP",
-                  "aiko",
-                ];
+        // 첫 번째 곡을 대표 이미지로 사용
+        const representativeTrack = goalTracks[0];
+        const representativeArtist = preferredArtists[0];
 
-          // 모든 데이터가 비어있으면 fallback 데이터 사용
-          const hasValidData =
-            goalTracks.length > 0 ||
-            preferredArtists.length > 0 ||
-            sessions.length > 0;
-          const fallbackBand = fallbackBandData[index];
+        // 세션이 비어있으면 기본 태그 사용
+        const tags =
+          sessions.length > 0
+            ? sessions.map((session: string) => cleanSessionName(session))
+            : fallbackBandData[index]?.tags || [
+                "기타 모집",
+                "YOASOBI",
+                "J-POP",
+                "aiko",
+              ];
 
-          if (!hasValidData && fallbackBand) {
-            return fallbackBand;
-          }
+        // 모든 데이터가 비어있으면 fallback 데이터 사용
+        const hasValidData =
+          goalTracks.length > 0 ||
+          preferredArtists.length > 0 ||
+          sessions.length > 0;
+        const fallbackBand = fallbackBandData[index];
 
-          return {
-            id: index + 1, // 임시 ID
-            image:
-              detail?.profileImageUrl ||
-              representativeTrack?.imageUrl ||
-              representativeArtist?.imageUrl ||
-              fallbackBandData[index]?.image ||
-              homeAlbum3Img,
-            title:
-              detail?.bandName ||
-              representativeTrack?.title ||
-              representativeArtist?.name ||
-              fallbackBandData[index]?.title ||
-              "그래요 저 왜색 짙어요",
-            subtitle:
-              representativeTrack?.artist ||
-              representativeArtist?.name ||
-              fallbackBandData[index]?.subtitle ||
-              "혼또니 아리가또 고자이마스",
-            tags,
-            profileData: profile, // 원본 데이터 저장
-          };
+        if (!hasValidData && fallbackBand) {
+          return fallbackBand;
         }
-      );
+
+        return {
+          id: Number((detail as Partial<BandDetail>)?.bandId) || index + 1,
+          image:
+            (detail as Partial<BandDetail>)?.profileImageUrl ||
+            representativeTrack?.imageUrl ||
+            representativeArtist?.imageUrl ||
+            fallbackBandData[index]?.image ||
+            homeAlbum3Img,
+          title:
+            (detail as Partial<BandDetail>)?.bandName ||
+            representativeTrack?.title ||
+            representativeArtist?.name ||
+            fallbackBandData[index]?.title ||
+            "그래요 저 왜색 짙어요",
+          subtitle:
+            representativeTrack?.artist ||
+            representativeArtist?.name ||
+            fallbackBandData[index]?.subtitle ||
+            "혼또니 아리가또 고자이마스",
+          tags,
+          profileData: profile, // 원본 데이터 저장
+          bandName: (detail as Partial<BandDetail>)?.bandName,
+          // 신규 스펙 반영: 대표 음원 파일 URL 전달 (없으면 null)
+          representativeSongFileUrl:
+            (
+              detail as Partial<BandDetail> & {
+                representativeSongFile?: { fileUrl?: string };
+              }
+            )?.representativeSongFile?.fileUrl ?? null,
+        };
+      });
 
       // memberId 36/37 계정에서 bandId 49를 캐러셀에 보장 노출
       try {
@@ -392,8 +428,8 @@ const HomePage = () => {
         const roomsRes = await API.get(API_ENDPOINTS.CHAT.ROOMS);
         const chatInfos = roomsRes?.data?.result?.chatRoomInfos ?? [];
         setChatRoomInfosCache(chatInfos);
-      } catch (error) {
-        // 조회 실패는 무시 (UI 영향 없음)
+      } catch {
+        // 조회 실패 시 무시
       }
     };
     fetchRooms();
@@ -411,7 +447,7 @@ const HomePage = () => {
     const roomMap: Record<number, number> = {};
     for (const band of myBands) {
       const bandName = normalize(band.title);
-      const candidate = chatRoomInfosCache.find((r: any) => {
+      const candidate = chatRoomInfosCache.find((r: ChatRoomInfo) => {
         const roomType = r?.roomType;
         const name = normalize(r?.chatName || r?.bandName || r?.roomName);
         const byId = Number(r?.bandId);
@@ -454,7 +490,7 @@ const HomePage = () => {
           : (await API.get(API_ENDPOINTS.CHAT.ROOMS))?.data?.result
               ?.chatRoomInfos ?? [];
         const bandRoom = chatInfosLocal.find(
-          (r: any) =>
+          (r: ChatRoomInfo) =>
             (r?.roomType === "BAND-APPLICANT" ||
               r?.roomType === "BAND-MANAGER") &&
             (r?.bandId === band.id || r?.bandName === band.title)
@@ -464,25 +500,42 @@ const HomePage = () => {
           navigate(`/home/chat?roomId=${fallbackRoomId}&roomType=GROUP`);
           return;
         }
-      } catch {}
+      } catch {
+        // 조회 실패 시 무시
+      }
 
       // 2-2) 목록에도 없으면 방 생성 시도(그룹 채팅)
       try {
+        console.log(`밴드 ${band.id}를 위한 그룹 채팅방 생성 시도...`);
+
+        // 테스트용 멤버 ID (실제 사용자 ID로 변경 필요)
+        const testMemberIds = [1, 2]; // 테스트용 사용자 ID들
+
         const createRes = await createGroupChat({
-          memberIds: [],
+          memberIds: testMemberIds,
           roomName: band.title || `밴드 모집_${band.id}`,
         });
-        const newRoomId = (createRes as any)?.roomId;
+
+        console.log("채팅방 생성 응답:", createRes);
+
+        const newRoomId = (createRes as { roomId?: number })?.roomId;
         if (newRoomId) {
+          console.log(`그룹 채팅방 생성 성공: ${newRoomId}`);
+          // 채팅방 생성 성공 시 바로 이동
           navigate(`/home/chat?roomId=${newRoomId}&roomType=GROUP`);
           return;
+        } else {
+          console.warn("채팅방 생성 응답에 roomId가 없음:", createRes);
         }
-      } catch {}
+      } catch (error) {
+        console.error("그룹 채팅방 생성 실패:", error);
+        // 방 생성 실패 시 무시하고 계속 진행
+      }
 
       // 3) roomId를 얻지 못한 경우, 기존 모달로 fallback
       setSelectedBand(band);
       setOpen(true);
-    } catch (e) {
+    } catch {
       // 오류 시에도 기존 모달로 fallback
       setSelectedBand(band);
       setOpen(true);
@@ -504,6 +557,24 @@ const HomePage = () => {
   }, [recommended]);
 
   // 홈에서는 WS 자동 연결을 수행하지 않음 (전역 AuthProvider에서 1회만 연결)
+
+  // 개발 모드에서 밴드 상세정보 조회 테스트
+  useEffect(() => {
+    if (import.meta.env.DEV && myBands.length > 0) {
+      console.log("=== 밴드 상세정보 조회 테스트 시작 ===");
+      console.log(
+        "현재 설정된 밴드들:",
+        myBands.map((b) => ({ id: b.id, title: b.title }))
+      );
+
+      // 첫 번째 밴드의 상세정보 조회 테스트
+      const testBandId = myBands[0]?.id;
+      if (testBandId) {
+        console.log(`테스트: 밴드 ${testBandId} 상세정보 조회 시도`);
+        // API 호출은 이미 probeSomeBandDetails에서 수행됨
+      }
+    }
+  }, [myBands]);
 
   if (loading || isFetching) {
     return <HomeSkeleton />;
@@ -529,11 +600,7 @@ const HomePage = () => {
             selectedBand?.profileData?.goalTracks?.[0]?.imageUrl ||
             selectedBand?.image
           }
-          title={
-            selectedBand?.profileData?.goalTracks?.[0]?.title ||
-            selectedBand?.title ||
-            "냥커버!!"
-          }
+          title={selectedBand?.bandName || "--"}
           subtitle={
             selectedBand?.profileData?.goalTracks?.[0]?.artist ||
             selectedBand?.subtitle ||
@@ -570,7 +637,7 @@ const HomePage = () => {
           instagramUrl={
             selectedBand?.profileData?.sns?.find(
               (s) => s.platform === "instagram"
-            )?.url || "https://instagram.com"
+            )?.url || "/www.instagram.com/banddy79?igsh=NmhvNWlyc3gxNnlk"
           }
           bandId={selectedBand?.id?.toString()} // 추가
         />
