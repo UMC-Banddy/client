@@ -35,7 +35,8 @@ class WebSocketService {
   private initClient() {
     // WS URL 결정: VITE_WS_URL 우선 → VITE_API_BASE_URL + /ws → 상대경로 /ws
     const explicitWsUrl = import.meta.env.VITE_WS_URL as string | undefined;
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || "https://api.banddy.co.kr";
+    const baseUrl =
+      import.meta.env.VITE_API_BASE_URL || "https://api.banddy.co.kr";
     const wsUrl =
       explicitWsUrl && explicitWsUrl.length > 0
         ? explicitWsUrl
@@ -138,7 +139,23 @@ class WebSocketService {
         // ignore
       }
       chatActions.setWebSocketConnected(false);
+      // 모든 구독 해제 및 정리
+      this.subscriptions.forEach((subscription) => {
+        try {
+          subscription.unsubscribe();
+        } catch {
+          // ignore
+        }
+      });
       this.subscriptions.clear();
+      if (this.unreadSubscription) {
+        try {
+          this.unreadSubscription.unsubscribe();
+        } catch {
+          // ignore
+        }
+        this.unreadSubscription = null;
+      }
       this.handleReconnect();
     };
   }
@@ -256,9 +273,17 @@ class WebSocketService {
       destination,
       (frame: StompFrame) => {
         try {
-          const message: WebSocketMessage = JSON.parse(frame.body || "");
-          console.log("실시간 메시지 수신:", message);
-          onMessage(message);
+          const parsed = JSON.parse(frame.body || "");
+          const payload: WebSocketMessage =
+            parsed && typeof parsed === "object" && "data" in parsed
+              ? (parsed.data as WebSocketMessage)
+              : (parsed as WebSocketMessage);
+          if (!payload || payload.messageId === undefined) {
+            console.warn("유효하지 않은 메시지 payload:", parsed);
+            return;
+          }
+          console.log("실시간 메시지 수신:", payload);
+          onMessage(payload);
         } catch (error) {
           console.error("메시지 파싱 에러:", error);
         }
@@ -288,9 +313,17 @@ class WebSocketService {
       destination,
       (frame: StompFrame) => {
         try {
-          const message: WebSocketMessage = JSON.parse(frame.body || "");
-          console.log("실시간 메시지 수신:", message);
-          onMessage(message);
+          const parsed = JSON.parse(frame.body || "");
+          const payload: WebSocketMessage =
+            parsed && typeof parsed === "object" && "data" in parsed
+              ? (parsed.data as WebSocketMessage)
+              : (parsed as WebSocketMessage);
+          if (!payload || payload.messageId === undefined) {
+            console.warn("유효하지 않은 메시지 payload:", parsed);
+            return;
+          }
+          console.log("실시간 메시지 수신:", payload);
+          onMessage(payload);
         } catch (error) {
           console.error("메시지 파싱 에러:", error);
         }
@@ -341,14 +374,26 @@ class WebSocketService {
 
   // 특정 채팅방 구독 해제
   unsubscribeFromRoom(roomId: string) {
-    const subscriptionKey = `room_${roomId}`;
-    const subscription = this.subscriptions.get(subscriptionKey);
-    
+    const subscription = this.subscriptions.get(roomId);
+
     if (subscription) {
       subscription.unsubscribe();
-      this.subscriptions.delete(subscriptionKey);
+      this.subscriptions.delete(roomId);
       console.log(`채팅방 ${roomId} 구독 해제 완료`);
     }
+  }
+
+  // 모든 채팅방 구독 해제
+  unsubscribeAllRooms() {
+    this.subscriptions.forEach((subscription, key) => {
+      try {
+        subscription.unsubscribe();
+      } catch {
+        // ignore
+      }
+      console.log(`채팅방 ${key} 구독 해제 완료`);
+    });
+    this.subscriptions.clear();
   }
 
   sendMessage(
