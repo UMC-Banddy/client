@@ -1,40 +1,38 @@
 import React from "react";
 import CustomButton from "@/shared/ui/atoms/CustomButton";
 import {
-  MicImg,
-  GuitarImg,
-  AcousticGuitarImg,
-  BassImg,
-  DrumImg,
-  PianoImg,
-  ViolinImg,
-  TrumpetImg,
-} from "@/shared/components/images";
+  mic,
+  electricGuitar,
+  acousticGuitar,
+  bass,
+  drum,
+  piano,
+  violin,
+  trumpet,
+} from "@/assets/icons/home/tag";
 
 // 세션별 아이콘 매핑 함수
 const getSessionIcon = (tagName: string) => {
   const cleanName = tagName.toLowerCase();
 
-  if (cleanName.includes("보컬") || cleanName.includes("vocal")) return MicImg;
+  if (cleanName.includes("보컬") || cleanName.includes("vocal")) return mic;
   if (
     cleanName.includes("어쿠스틱 기타") ||
     cleanName.includes("acoustic guitar")
   )
-    return AcousticGuitarImg;
+    return acousticGuitar;
   if (cleanName.includes("기타") || cleanName.includes("guitar"))
-    return GuitarImg;
-  if (cleanName.includes("베이스") || cleanName.includes("bass"))
-    return BassImg;
-  if (cleanName.includes("드럼") || cleanName.includes("drum")) return DrumImg;
-  if (cleanName.includes("피아노") || cleanName.includes("piano"))
-    return PianoImg;
+    return electricGuitar;
+  if (cleanName.includes("베이스") || cleanName.includes("bass")) return bass;
+  if (cleanName.includes("드럼") || cleanName.includes("drum")) return drum;
+  if (cleanName.includes("피아노") || cleanName.includes("piano")) return piano;
   if (cleanName.includes("바이올린") || cleanName.includes("violin"))
-    return ViolinImg;
+    return violin;
   if (cleanName.includes("트럼펫") || cleanName.includes("trumpet"))
-    return TrumpetImg;
+    return trumpet;
 
   // 기본값
-  return MicImg;
+  return mic;
 };
 
 const TagList: React.FC<{
@@ -49,10 +47,12 @@ const TagList: React.FC<{
         if (variant === "home") {
           if (idx === 0) {
             // 세션 태그: 붉은 배경 + 흰 글자, 좌측 점 뱃지
-            colorClass = "!bg-[#B42127] !text-white !border-none before:content-[''] before:inline-block before:mr-2 before:w-2 before:h-2 before:rounded-full before:bg-[#D9D9D9]";
+            colorClass =
+              "!bg-[#B42127] !text-white !border-none before:content-[''] before:inline-block before:mr-2 before:w-2 before:h-2 before:rounded-full before:bg-[#D9D9D9]";
           } else {
             // 나머지 태그: 얇은 흰색 테두리 + 반투명 블랙 배경
-            colorClass = "!bg-[rgba(0,0,0,0.5)] !text-white !border !border-white/60";
+            colorClass =
+              "!bg-[rgba(0,0,0,0.5)] !text-white !border !border-white/60";
           }
         } else if (variant === "card") {
           // 👉 캐러셀 카드 전용 스타일
@@ -84,7 +84,7 @@ const TagList: React.FC<{
         return (
           <CustomButton
             key={idx}
-            className={`inline-flex shrink-0 !rounded-full !px-4 !py-1 !text-[13px] !font-bold !shadow-none !w-auto !max-w-none !min-w-0 !h-auto tracking-tight ${colorClass}`}
+            className={`inline-flex !items-center shrink-0 !rounded-full !px-4 !py-1 !text-sm !font-medium !shadow-none !w-auto !max-w-none !min-w-0 !h-auto ${colorClass}`}
             style={{
               whiteSpace: "nowrap",
               overflow: "visible",
@@ -92,8 +92,8 @@ const TagList: React.FC<{
             }}
           >
             {variant === "home" && isSessionTag && SessionIcon && (
-              <div className="w-3 h-3 mr-1 inline-block align-middle">
-                <SessionIcon size={12} color="gray-200" />
+              <div className="size-[12px] mr-1 inline-block align-middle">
+                <img src={SessionIcon} alt="" />
               </div>
             )}
             {tag}
