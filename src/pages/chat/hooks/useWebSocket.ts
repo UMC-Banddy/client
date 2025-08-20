@@ -138,10 +138,8 @@ export const useWebSocket = () => {
       console.log(`채팅방 ${roomId} 입장 시도 (타입: ${roomType})`);
 
       try {
-        // 기존 구독 해제
-        if (currentRoomId) {
-          leaveRoom();
-        }
+        // 어떤 방이든 현재 유지 중인 모든 구독을 해제하고 단일 방만 유지
+        webSocketService.unsubscribeAllRooms();
 
         // 새로운 방 구독
         if (roomType === "PRIVATE") {
@@ -157,7 +155,7 @@ export const useWebSocket = () => {
         console.error(`채팅방 ${roomId} 입장 실패:`, error);
       }
     },
-    [isConnected, connect, leaveRoom, currentRoomId]
+    [isConnected, connect]
   );
 
   // 메시지 전송
