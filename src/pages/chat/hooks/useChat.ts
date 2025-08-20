@@ -34,15 +34,26 @@ export const useChat = () => {
   // 채팅방 입장 (loadMessages 이후에 선언되어야 함)
 
   // 채팅방 나가기
+  const isLeavingRef = useRef(false);
   const exitChatRoom = useCallback(async () => {
-    if (!currentRoomId) return;
-
+    if (!currentRoomId || isLeavingRef.current) return;
+    isLeavingRef.current = true;
     try {
-      // REST API로 채팅방 나가기
-      await leaveChatRoom(currentRoomId);
-
-      // WebSocket 구독 해제
+      // WebSocket 구독 해제 먼저 수행(중복 수신/에러 방지)
       leaveRoom();
+
+      // REST API로 채팅방 나가기 시도
+      try {
+        await leaveChatRoom(currentRoomId);
+      } catch (e: unknown) {
+        // 이미 나간 방 등으로 400이 반환될 수 있음 → 워닝만 남기고 계속 진행
+        const err = e as { response?: { status?: number } };
+        if (err?.response?.status === 400) {
+          console.warn("채팅방 나가기 400 무시 (이미 나간 상태 가능)");
+        } else {
+          throw e;
+        }
+      }
 
       // 메시지 초기화
       chatActions.clearMessages();
@@ -51,7 +62,9 @@ export const useChat = () => {
       console.log(`채팅방 ${currentRoomId} 나가기 완료`);
     } catch (error) {
       console.error("채팅방 나가기 실패:", error);
-      throw error;
+      // 여기서 throw하면 언마운트/뒤로가기 시 Uncaught 발생 → 로그만 남김
+    } finally {
+      isLeavingRef.current = false;
     }
   }, [currentRoomId, leaveRoom]);
 
