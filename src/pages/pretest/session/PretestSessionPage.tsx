@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PretestHeader from "../artist/_components/PretestHeader";
 import SessionList from "./_components/SessionList";
 import SkillGuideModal from "./_components/SkillGuideModal";
-import { profileAPI, artistSaveAPI } from "@/api/API";
+import { artistSaveAPI, profileAPI } from "@/api/API";
 import { SESSIONS } from "./_components/sessionData";
 import { useSurveySessions } from "@/features/pretest/hooks/useSurveyData";
 
@@ -228,8 +228,8 @@ const PretestSessionPage = () => {
             });
           }
 
-          // 성공 시 다음 페이지로 이동
-          navigate("/pre-test/profile/complete");
+        // 성공 시 다음 페이지로 이동
+        navigate("/pre-test/profile/complete");
         }
       } catch (error) {
         console.error("세션 데이터 제출 실패:", error);

@@ -1,15 +1,16 @@
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PretestHeader from "./_components/PretestHeader";
 import SearchBar from "./_components/SearchBar";
 import ArtistGrid from "./_components/ArtistGrid";
-import { artistSaveAPI, musicAPI } from "@/api/API";
+import { surveyAPI, musicAPI } from "@/api/API";
 import {
   useSurveyArtists,
   useSearchArtists,
 } from "@/features/pretest/hooks/useSurveyData";
 // import type { AutocompleteResult } from "@/api/API";
 import oasisImage from "@/assets/images/oasis.png";
+import toast from "react-hot-toast";
 
 // 아티스트 타입 정의 (API에서 import가 안 될 경우를 대비)
 interface Artist {
@@ -128,6 +129,8 @@ const ARTISTS: Artist[] = [
 ];
 
 const PretestArtistPage = () => {
+  const location = useLocation();
+  const [memberId, setMemberId] = useState<string | null>(null);
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -157,8 +160,18 @@ const PretestArtistPage = () => {
     setArtists(mapped.length > 0 ? mapped : ARTISTS);
   }, [apiArtists]);
 
-  // 검색어 변경 시 사전 테스트 아티스트 검색 API 데이터 반영
+  // 검색어 변경 시 사전 테스트 아티스트 검색 API 데이터 반영 및 memberId 확보
   useEffect(() => {
+    if (location.state && location.state.memberId) {
+      setMemberId(location.state.memberId);
+    } else {
+      // 회원가입/로그인 시 저장된 memberId 사용 (토큰 없어도 ID 기반 저장 가능)
+      const storedMemberId = localStorage.getItem("memberId");
+      if (storedMemberId) {
+        setMemberId(storedMemberId);
+      }
+    }
+
     if (!searchQuery.trim()) {
       setSearchResults([]);
       return;
@@ -176,7 +189,7 @@ const PretestArtistPage = () => {
       updatedAt: item.updatedAt,
     }));
     setSearchResults(mapped);
-  }, [searchQuery, searched]);
+  }, [searchQuery, searched, location.state]);
 
   // 검색 필터링된 아티스트 목록 (기본 아티스트 목록용)
   const filteredArtists = useMemo(() => {
@@ -230,55 +243,32 @@ const PretestArtistPage = () => {
           JSON.stringify(selectedArtistData)
         );
 
-        // memberId가 있으면 아이디 기반 저장, 없으면 토큰 기반 저장
-        const memberId = localStorage.getItem("memberId");
+        try {
+          // survey API는 spotifyId 목록을 요구하므로 selectedArtistData 사용
+          const payload = { selectedArtists: selectedArtistData };
 
-        if (memberId) {
-          // 아이디 기반 저장 (토큰 없이도 가능)
-          console.log("아이디 기반 저장 사용:", memberId);
+          if (memberId) {
+            // 아이디 기반 저장 (토큰 없이 가능)
+            await surveyAPI.submitSurvey(payload, memberId);
+          } else {
+            // memberId가 없으면 저장은 스킵하고 안내
+            console.warn("memberId가 없어 저장을 스킵합니다.");
+            toast("임시 저장 상태로 다음 단계로 이동합니다.");
+          }
 
-          // 선택된 아티스트 정보를 localStorage에 저장 (세션 페이지에서 사용)
-          localStorage.setItem(
-            "selectedArtists",
-            JSON.stringify(selectedArtistData)
-          );
-
-          // 다음 페이지로 이동 (아이디 기반 저장은 백엔드에서 처리)
+          // 다음 단계로 이동 (state 전달 없이)
           navigate("/pre-test/session");
-        } else {
-          // 토큰 기반 저장 (기존 방식)
-          console.log("토큰 기반 저장 사용");
-
-          // 선택된 아티스트 정보를 localStorage에 저장 (세션 페이지에서 사용)
-          localStorage.setItem(
-            "selectedArtists",
-            JSON.stringify(selectedArtistData)
-          );
-
-          // 각 아티스트를 개별적으로 저장
-          const savePromises = selectedArtistData.map(async (spotifyId) => {
-            try {
-              const result = await artistSaveAPI.saveArtist(spotifyId);
-              console.log(`아티스트 ${spotifyId} 저장 성공:`, result);
-              return result;
-            } catch (error) {
-              console.error(`아티스트 ${spotifyId} 저장 실패:`, error);
-              throw error;
-            }
-          });
-
-          // 모든 아티스트 저장 완료 대기
-          await Promise.all(savePromises);
-          console.log("모든 아티스트 저장 완료");
-
-          // 성공 시 다음 페이지로 이동
+        } catch (error) {
+          console.error("아티스트 저장 실패:", error);
+          // 에러가 발생해도 다음 페이지로 이동
           navigate("/pre-test/session");
+        } finally {
+          setSubmitting(false);
         }
       } catch (error) {
         console.error("아티스트 저장 실패:", error);
         // 에러가 발생해도 다음 페이지로 이동 (선택사항)
         navigate("/pre-test/session");
-      } finally {
         setSubmitting(false);
       }
     }
