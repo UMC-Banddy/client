@@ -35,6 +35,7 @@ import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import JoinHeader from "../_components/JoinHeader";
 import { API } from "@/api/API";
 import ToggleBtn from "../_components/ToggleBtn";
+import axios from "axios";
 
 const sessionList = [
   { key: "🎤 보컬 🎤", Icon: MicImg },
@@ -143,6 +144,10 @@ interface FetchedBandPayload {
     artist: string;
     trackTitle: string;
   };
+  representativeSongFile: {
+    originalFilename: string;
+    fileUrl: string;
+  };
   name: string;
   endDate: string;
   autoClose: boolean;
@@ -184,6 +189,9 @@ const CreateBand = () => {
   const [name, setName] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [fetchedAudioFileName, setFetchedAudioFileName] = useState<
+    string | null
+  >(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [automaticClosing, setAutomaticClosing] = useState(false);
   const [endDate, setEndDate] = useState(new Date());
@@ -249,6 +257,7 @@ const CreateBand = () => {
       const data = fetchedData.result;
 
       setName(data.name);
+      setFetchedAudioFileName(data.representativeSongFile.originalFilename);
       setEndDate(new Date(data.endDate));
       setAutomaticClosing(data.autoClose);
       setBandIntro(data.description);
@@ -376,6 +385,29 @@ const CreateBand = () => {
         .filter(([_, on]) => on)
         .map(([key]) => key);
 
+      let fileUrl = "";
+      // presignedURL 이미지 업로드
+      if (audioFile) {
+        const { data } = await API.post(
+          "/api/audio/presign",
+          {},
+          {
+            params: {
+              filename: audioFile.name,
+              contentType: audioFile.type,
+            },
+          }
+        );
+
+        const { uploadUrl, fileUrl: presignedFileUrl } = data.result;
+        // S3 PUT typically returns an empty body. Use fileUrl from the presign response.
+        await axios.put(uploadUrl, audioFile, {
+          headers: { "Content-Type": audioFile.type },
+        });
+        fileUrl = presignedFileUrl;
+      }
+
+      // formData 생성
       const payload: CreateBandPayload | EditBandPayload = {
         status: isRecruiting ? "RECRUITING" : "ACTIVE",
         representativeSong: songs[0]?.spotifyId.toString() ?? "",
@@ -402,10 +434,12 @@ const CreateBand = () => {
           additionalProp2: snsLink.instagram,
           additionalProp3: snsLink.tiktok,
         },
+        ...(audioFile && {
+          originalFilename: audioFile?.name,
+          fileUrl,
+        }),
         ...(isEditing && { bandId }),
       };
-
-      console.log(payload);
 
       const formData = new FormData();
 
@@ -421,11 +455,6 @@ const CreateBand = () => {
       if (fileInputRef.current?.files?.[0]) {
         formData.append("image", fileInputRef.current.files[0]);
       }
-
-      // 오디오 파일 추가 API 연결 후 주석 제거
-      // if (audioFile) {
-      //   formData.append("audioFiles", audioFile);
-      // }
 
       if (!isEditing) {
         await API.post("/api/recruitments", formData, {
@@ -502,7 +531,12 @@ const CreateBand = () => {
             <div className="flex items-center gap-[8px]">
               <img src={music} alt="music" />
               <p className="max-w-[280px] text-hakgyo-b-17 text-[#959595] whitespace-nowrap overflow-x-auto">
-                {audioFile ? audioFile.name : "노래를 추가하세요."}
+                {/* fetchedAudioFileName이 있을 경우 제목만 보여주기 (추가된 것처럼 보일 수 있도록) */}
+                {audioFile
+                  ? audioFile.name
+                  : fetchedAudioFileName
+                  ? fetchedAudioFileName
+                  : "노래를 추가하세요."}
               </p>
             </div>
             <button
