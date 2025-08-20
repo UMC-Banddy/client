@@ -353,7 +353,8 @@ const HomePage = () => {
           }
 
           return {
-            id: index + 1, // 임시 ID
+            id:
+              Number((detail as Partial<BandDetail>)?.bandId) || index + 1,
             image:
               (detail as Partial<BandDetail>)?.profileImageUrl ||
               representativeTrack?.imageUrl ||
