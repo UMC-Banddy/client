@@ -23,6 +23,14 @@ export const useWebSocket = () => {
   // 메시지 핸들러
   const handleMessage = useCallback((message: WebSocketMessage) => {
     console.log("실시간 메시지 수신:", message);
+    // 현재 방만 반영 (다른 방 브로드캐스트로 인한 중복 방지)
+    if (
+      message?.roomId &&
+      chatStore.currentRoomId &&
+      chatStore.currentRoomId.toString() !== message.roomId.toString()
+    ) {
+      return;
+    }
     chatActions.addRealtimeMessage(message);
   }, []);
 

@@ -187,21 +187,23 @@ export const useChat = () => {
         // WebSocket으로 메시지 전송
         sendWebSocketMessage(text, roomType, receiverId);
 
-        // 로컬에 즉시 메시지 추가 (낙관적 업데이트)
-        const newMessage: ChatMessage = {
-          id: Date.now().toString(),
-          type: "me",
-          name: "Beck",
-          avatar: "/src/assets/images/profile1.png",
-          text,
-          time: new Date().toLocaleTimeString("ko-KR", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          unreadCount: 0,
-        };
-        chatActions.addMessage(newMessage);
+        // 그룹 채팅은 서버 브로드캐스트를 수신하므로 낙관적 추가로 인한 중복(루프백) 방지
+        if (roomType === "PRIVATE") {
+          const newMessage: ChatMessage = {
+            id: Date.now().toString(),
+            type: "me",
+            name: "Beck",
+            avatar: "/src/assets/images/profile1.png",
+            text,
+            time: new Date().toLocaleTimeString("ko-KR", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            unreadCount: 0,
+          };
+          chatActions.addMessage(newMessage);
+        }
       } catch (error) {
         console.error("메시지 전송 실패:", error);
         throw error;
