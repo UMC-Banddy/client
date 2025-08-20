@@ -39,6 +39,8 @@ const ButtonSection = ({
   }, [isBookmarked]);
   const [open, setOpen] = useState(false);
   const [openSession, setOpenSession] = useState(false);
+  const [openSessionError, setOpenSessionError] = useState(false);
+  const [sessionErrorMessage, setSessionErrorMessage] = useState<string>("");
 
   const handleJoinClick = () => {
     // 세션 선택 모달 먼저 표시
@@ -137,12 +139,44 @@ const ButtonSection = ({
             } else {
               navigate("/home/chat-demo");
             }
-          } catch {
-            // 실패 시 기존 플로우로 대체
+          } catch (err: any) {
+            const code =
+              err?.response?.data?.code ?? err?.data?.code ?? err?.code;
+            const msg =
+              err?.response?.data?.message ??
+              err?.data?.message ??
+              err?.message;
+            if (code === "BAND_SESSION4000") {
+              setSessionErrorMessage(msg || "해당 세션은 모집 중이 아닙니다.");
+              setOpenSessionError(true);
+              return;
+            }
+            // 기타 실패 시 기존 플로우로 대체
             if (onJoinClick) onJoinClick();
           }
         }}
       />
+
+      {/* 세션 비모집 에러 모달 */}
+      <MuiDialog open={openSessionError} setOpen={setOpenSessionError}>
+        <div className="flex flex-col items-center justify-center px-6 py-8 min-w-[320px] max-w-[350px]">
+          <img src={blackStar} alt="logo" className="w-14 h-14 mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+            안내
+          </h2>
+          <p className="text-gray-500 text-base mb-8 text-center whitespace-pre-line">
+            {sessionErrorMessage || "해당 세션은 모집 중이 아닙니다."}
+          </p>
+          <div className="flex gap-4 w-full justify-center">
+            <button
+              className="flex-1 bg-red-600 text-white font-bold py-3 rounded-full text-lg"
+              onClick={() => setOpenSessionError(false)}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      </MuiDialog>
     </>
   );
 };
