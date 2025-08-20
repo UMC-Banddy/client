@@ -1,7 +1,7 @@
 import { proxy } from "valtio";
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
-import type { BandProfile, BandDetail } from "@/types/band";
+import type { BandProfile, BandDetail, BandRecruitDetail } from "@/types/band";
 
 interface User {
   id?: string;
@@ -209,6 +209,20 @@ export const getBandDetail = async (
       console.warn(`밴드 ${bandId} 상세정보 조회 실패:`, error);
     }
     return null; // 에러 대신 null 반환
+  }
+};
+
+// 신규 상세 스펙(모집 공고) 조회 API
+export const getBandRecruitDetail = async (
+  bandId: string
+): Promise<BandRecruitDetail | null> => {
+  try {
+    const res = await API.get(API_ENDPOINTS.BANDS.DETAIL(bandId));
+    const data = (res.data?.result || res.data) as Partial<BandRecruitDetail>;
+    return (data || null) as BandRecruitDetail;
+  } catch (error) {
+    console.warn("밴드 모집 상세 조회 실패:", { bandId, error });
+    return null;
   }
 };
 

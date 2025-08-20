@@ -11,6 +11,7 @@ interface Band {
   subtitle: string;
   image: string;
   tags: string[];
+  representativeSongFileUrl?: string | null;
 }
 
 const BandCarousel: React.FC<{
@@ -140,6 +141,7 @@ const BandCarousel: React.FC<{
               <ButtonSection
                 setToast={setToast}
                 bandId={band.id}
+                representativeSongFileUrl={band.representativeSongFileUrl}
                 onJoinClick={onJoinClick ? () => onJoinClick(band) : undefined}
               />
             </div>

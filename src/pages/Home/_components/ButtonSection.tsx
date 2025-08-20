@@ -7,20 +7,21 @@ import onSoundIcon from "@/assets/icons/home/on-sound.svg";
 import starIcon from "@/assets/icons/home/like-star.svg";
 import scrabStarIcon from "@/assets/icons/home/scrab-star.svg";
 import MuiDialog from "@/shared/components/MuiDialog";
-import {
-  useIsBookmarked,
-  useToggleBandBookmark,
-} from "@/features/bandBookmark/hooks";
+import { useIsBookmarked, useToggleBandBookmark } from "@/features/bandBookmark/hooks";
+
+interface ButtonSectionProps {
+  setToast: (open: boolean, text?: string) => void;
+  onJoinClick?: () => void;
+  bandId: number;
+  representativeSongFileUrl?: string | null;
+}
 
 const ButtonSection = ({
   setToast,
   onJoinClick,
   bandId,
-}: {
-  setToast: (v: boolean) => void;
-  onJoinClick?: () => void;
-  bandId: number;
-}) => {
+  representativeSongFileUrl,
+}: ButtonSectionProps) => {
   const navigate = useNavigate();
   const [soundOn, setSoundOn] = useState(false);
   const isBookmarked = useIsBookmarked(bandId);
@@ -42,7 +43,14 @@ const ButtonSection = ({
       <div className="flex items-center justify-center gap-x-4 px-4 pr-4 py-0 mt-0 mb-0">
         <button
           className="opacity-50 p-2 hover:opacity-80 transition"
-          onClick={() => setSoundOn((prev) => !prev)}
+          onClick={() => {
+            if (!representativeSongFileUrl) {
+              // 소리 파일이 없으면 동일 형태의 토스트 메시지 노출
+              setToast(true, "해당 밴드에서 올린 음원이 없습니다");
+              return;
+            }
+            setSoundOn((prev) => !prev);
+          }}
         >
           <img
             src={soundOn ? onSoundIcon : muteIcon}
@@ -65,7 +73,7 @@ const ButtonSection = ({
             // API 연동 (낙관적 업데이트, 실패 시 롤백)
             toggleBookmark(bandId, next)
               .then(() => {
-                if (next) setToast(true);
+                if (next) setToast(true, "밴드가 저장 되었습니다.");
               })
               .catch(() => {
                 setStarOn(!next);
