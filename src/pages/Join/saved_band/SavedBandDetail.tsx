@@ -1,5 +1,5 @@
 import guitarActivated from "@/assets/icons/join/ic_guitar_activated.svg";
-import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
+// import moodHeart from "@/assets/icons/join/ic_mood_heart.svg";
 import volumeOff from "@/assets/icons/join/ic_volume_off.svg";
 import star from "@/assets/icons/join/ic_star.svg";
 import { useEffect, useState } from "react";
@@ -63,12 +63,15 @@ const SavedBandDetail = () => {
   return (
     <main className="relative min-h-screen w-[393px] mx-auto px-[24px] pt-[12px]">
       <div className="flex justify-end w-full mb-[24px]">
-        <button className="p-[0] bg-transparent border-none cursor-pointer">
+        <button
+          className="p-[0] bg-transparent border-none cursor-pointer"
+          onClick={() => navigate("/join")}
+        >
           <img src={guitarActivated} alt="" className="size-[48px]" />
         </button>
-        <button className="p-[0] bg-transparent border-none cursor-pointer">
+        {/* <button className="p-[0] bg-transparent border-none cursor-pointer">
           <img src={moodHeart} alt="" className="size-[48px]" />
-        </button>
+        </button> */}
       </div>
 
       <section className="flex flex-col items-center">
