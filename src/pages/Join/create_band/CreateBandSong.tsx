@@ -6,7 +6,7 @@ import deleteIcon from "@/assets/icons/join/ic_delete.svg";
 import playIcon from "@/assets/icons/join/ic_play.svg";
 import { API } from "@/api/API";
 import JoinHeader from "../_components/JoinHeader";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSnapshot } from "valtio";
 import { createBandActions, createBandStore } from "@/store/createBandStore";
 
@@ -24,10 +24,28 @@ const CreateBandSong: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<Track[]>([]);
 
+  const [suggestion, setSuggestion] = useState<string>("");
+
   const { songs: selectedSongs } = useSnapshot(createBandStore);
   const setSongs = createBandActions.setSongs;
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+
+  const { bandId } = useLocation().state;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data } = await API.get(
+          bandId ? `/api/band/${bandId}/question` : "/api/band/question"
+        );
+        setSuggestion(data.suggestion);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, [bandId]);
 
   useEffect(() => {
     if (!searchTerm.trim()) {
@@ -114,7 +132,7 @@ const CreateBandSong: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <p className="mt-[20px] text-wanted-sb-12 text-[#959595]">
-            Shoegaze 장르의 Ride의 곡은 어때요?
+            {suggestion}
           </p>
         </section>
 

@@ -726,7 +726,9 @@ const CreateBand = () => {
             <button
               className="text-ibm-sb-16 text-[#D13D55]"
               onClick={() => {
-                navigate("/join/create-band/song");
+                navigate("/join/create-band/song", {
+                  state: { bandId: bandId },
+                });
               }}
             >
               수정
