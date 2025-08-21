@@ -283,7 +283,7 @@ const BandRecruit = () => {
           <div className="flex items-center gap-[12px]">
             <div
               className={clsx(
-                "px-[11px] py-[4px] rounded-full text-[#fff] text-wanted-sb-13",
+                "px-[11px] py-[4px] rounded-full text-[#fff] text-wanted-sb-13 whitespace-nowrap",
                 chats?.status === "RECRUITING" ? "bg-[#B42127]" : "bg-[#292929]"
               )}
             >
@@ -297,23 +297,21 @@ const BandRecruit = () => {
               <img className="size-[16px]" src={guitar} alt="guitar" />
               <p className="text-wanted-sb-13 text-[#CACACA]">일렉기타</p>
             </div> */}
-            <div className="flex gap-[12.5px]">
-              {chats?.sessions?.map((session, index) => {
-                return (
-                  <div key={index} className="flex gap-[4px] items-center">
-                    {session in sessionsMap && (
-                      <img
-                        className="size-[16px]"
-                        src={sessionsMap[session as keyof typeof sessionsMap]}
-                        alt="session"
-                      />
-                    )}
-                    <p className="text-wanted-sb-13 text-[#CACACA]">
-                      {parseToKoreanText(session)}
-                    </p>
-                  </div>
-                );
-              })}
+            <div className="flex flex-wrap gap-[4px] sm:gap-[12.5px] w-full">
+              {chats?.sessions?.map((session, index) => (
+                <div key={index} className="flex gap-[4px] items-center">
+                  {session in sessionsMap && (
+                    <img
+                      className="size-[16px]"
+                      src={sessionsMap[session as keyof typeof sessionsMap]}
+                      alt="session"
+                    />
+                  )}
+                  <p className="text-wanted-sb-13 text-[#CACACA]">
+                    {parseToKoreanText(session)}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
