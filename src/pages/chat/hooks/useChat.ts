@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSnapshot } from "valtio";
 import { chatStore, chatActions } from "@/store/chatStore";
 import { useWebSocket } from "./useWebSocket";
-import { getChatMessages, joinChatRoom, leaveChatRoom } from "@/store/chatApi";
+import { getChatMessages, leaveChatRoom } from "@/store/chatApi";
 import type { ChatMessage } from "@/types/chat";
 
 export const useChat = () => {
@@ -15,10 +15,8 @@ export const useChat = () => {
   // WebSocket 훅 사용
   const {
     isConnected,
-    isConnecting,
     currentRoomId,
     connect,
-    disconnect,
     joinRoom,
     leaveRoom,
     sendMessage: sendWebSocketMessage,
@@ -143,7 +141,9 @@ export const useChat = () => {
       try {
         // WebSocket 채팅방 입장 (BAND는 BAND-APPLICANT로 매핑)
         const mappedRoomType =
-          roomType === "BAND" ? "BAND-APPLICANT" : roomType;
+          roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER"
+            ? "BAND-APPLICANT"
+            : roomType;
         await joinRoom(roomId, mappedRoomType);
 
         // 채팅방 ID 설정
@@ -211,27 +211,34 @@ export const useChat = () => {
   );
 
   // 밴드 채팅방 첫 방문 시 봇 메시지 추가
-  const addBandBotMessage = useCallback((roomType: string, bandInfo?: any) => {
-    if (roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
-      const now = new Date();
-      const botMessage: ChatMessage = {
-        id: `bot-${now.getTime()}`,
-        type: "system",
-        name: "Banddy Bot",
-        avatar: bandInfo?.profileImageUrl || "/src/assets/images/profile1.png",
-        text:
-          bandInfo?.description ||
-          "밴드 채팅방입니다. 밴드 멤버들과 소통해보세요.",
-        time: now.toLocaleTimeString("ko-KR", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }),
-        unreadCount: 0,
-      };
-      chatActions.addMessage(botMessage);
-    }
-  }, []);
+  const addBandBotMessage = useCallback(
+    (
+      roomType: string,
+      bandInfo?: { profileImageUrl?: string; description?: string }
+    ) => {
+      if (roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
+        const now = new Date();
+        const botMessage: ChatMessage = {
+          id: `bot-${now.getTime()}`,
+          type: "system",
+          name: "Banddy Bot",
+          avatar:
+            bandInfo?.profileImageUrl || "/src/assets/images/profile1.png",
+          text:
+            bandInfo?.description ||
+            "밴드 채팅방입니다. 밴드 멤버들과 소통해보세요.",
+          time: now.toLocaleTimeString("ko-KR", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          unreadCount: 0,
+        };
+        chatActions.addMessage(botMessage);
+      }
+    },
+    []
+  );
 
   // 메시지 목록이 갱신될 때마다 마지막 메시지를 기준으로 읽음 상태 전송
   useEffect(() => {
@@ -316,22 +323,6 @@ export const useChat = () => {
   const markMessageAsRead = useCallback((messageId: string) => {
     chatActions.markAsRead(messageId);
   }, []);
-
-  // 데모용 단방향 메시지 전송
-  const handleSendMessage = useCallback(
-    (text: string) => {
-      if (!text.trim()) return;
-      const roomTypeParam = (searchParams.get("roomType") || "GROUP") as
-        | "PRIVATE"
-        | "GROUP"
-        | "BAND";
-      const receiverIdParam = searchParams.get("receiverId");
-      const receiverId = receiverIdParam ? Number(receiverIdParam) : undefined;
-      // 훅을 통해 WS 전송 + 낙관적 추가는 훅 내부 처리
-      sendMessage(text, roomTypeParam, receiverId);
-    },
-    [searchParams, sendMessage]
-  );
 
   return {
     // 상태

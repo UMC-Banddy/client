@@ -266,15 +266,19 @@ export const getRecruitingBandSummaries = async (options?: {
     return recruitingListCache.data;
   }
 
-  const normalize = (item: any) => ({
+  const normalize = (item: Record<string, unknown>) => ({
     bandId: Number(item?.bandId ?? item?.id ?? 0) || undefined,
     name: item?.name ?? item?.bandName ?? undefined,
     description: item?.description ?? undefined,
     profileImageUrl: item?.profileImageUrl ?? item?.imageUrl ?? undefined,
-    sessions: Array.isArray(item?.sessions) ? item.sessions : [],
-    artists: Array.isArray(item?.artists) ? item.artists : [],
-    tracks: Array.isArray(item?.tracks) ? item.tracks : [],
-    jobs: Array.isArray(item?.jobs) ? item.jobs : [],
+    sessions: Array.isArray(item?.sessions) ? (item.sessions as string[]) : [],
+    artists: Array.isArray(item?.artists)
+      ? (item.artists as Record<string, unknown>[])
+      : [],
+    tracks: Array.isArray(item?.tracks)
+      ? (item.tracks as Record<string, unknown>[])
+      : [],
+    jobs: Array.isArray(item?.jobs) ? (item.jobs as string[]) : [],
     averageAge: item?.averageAge,
     maleCount: item?.maleCount,
     femaleCount: item?.femaleCount,
@@ -290,7 +294,7 @@ export const getRecruitingBandSummaries = async (options?: {
         size
       );
       const batchSize = 8;
-      const results: any[] = [];
+      const results: Array<ReturnType<typeof normalize>> = [];
       for (let i = 0; i < ids.length; i += batchSize) {
         const batch = ids.slice(i, i + batchSize);
         const batchResults = await Promise.all(
@@ -303,7 +307,11 @@ export const getRecruitingBandSummaries = async (options?: {
             return null;
           })
         );
-        results.push(...batchResults.filter(Boolean));
+        results.push(
+          ...batchResults.filter(
+            (item): item is ReturnType<typeof normalize> => item !== null
+          )
+        );
       }
 
       if (useCache) {
@@ -347,7 +355,9 @@ export const getRecruitingBandSummaries = async (options?: {
               if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
                 normalized.unshift(normalize({ ...recruit, bandId: mustId }));
               }
-            } catch {}
+            } catch (error) {
+              console.warn(`포함 밴드 ${mustId} 조회 실패:`, error);
+            }
           }
         }
 
@@ -359,11 +369,14 @@ export const getRecruitingBandSummaries = async (options?: {
         }
         return normalized;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorResponse = error as {
+        response?: { status?: number; data?: unknown };
+      };
       console.warn(
         "전체 모집 공고 목록 조회 실패:",
-        error?.response?.status,
-        error?.response?.data
+        errorResponse?.response?.status,
+        errorResponse?.response?.data
       );
     }
 
@@ -396,7 +409,9 @@ export const getRecruitingBandSummaries = async (options?: {
               if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
                 normalized.unshift(normalize({ ...recruit, bandId: mustId }));
               }
-            } catch {}
+            } catch (error) {
+              console.warn(`상단 포함 밴드 ${mustId} 조회 실패:`, error);
+            }
           }
         }
 
@@ -415,17 +430,20 @@ export const getRecruitingBandSummaries = async (options?: {
         }
         return normalized;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorResponse = error as {
+        response?: { status?: number; data?: unknown };
+      };
       console.warn(
         "전체 밴드 목록 조회 실패:",
-        error?.response?.status,
-        error?.response?.data
+        errorResponse?.response?.status,
+        errorResponse?.response?.data
       );
     }
 
     // 방법 3: includeBandIds가 있으면 해당 밴드들의 상세 정보를 조회
     if (includeBandIds.length > 0) {
-      const results: any[] = [];
+      const results: Array<ReturnType<typeof normalize>> = [];
       for (const bandId of includeBandIds) {
         try {
           const recruitRes = await getBandRecruitDetail(String(bandId));
@@ -451,48 +469,20 @@ export const getRecruitingBandSummaries = async (options?: {
 
     // 방법 4: 모든 방법이 실패한 경우 최종 폴백
     return await viaIdsFallback();
-
-    // 서버 목록 + includeBandIds를 합쳐 보장 포함
-    const normalized: Array<Record<string, unknown>> = list.map(normalize);
-
-    // includeBandIds를 서버 결과에 합치기(중복 제거)
-    for (const mustId of includeBandIds) {
-      const exists = normalized.some(
-        (item) => Number(item.bandId) === Number(mustId)
-      );
-      if (!exists) {
-        try {
-          const recruitRes = await getBandRecruitDetail(String(mustId));
-          const recruit = recruitRes?.result;
-          if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
-            normalized.unshift(normalize({ ...recruit, bandId: mustId }));
-          }
-        } catch {
-          // ignore
-        }
-      }
-    }
-
-    if (useCache) {
-      recruitingListCache = {
-        expiresAt: Date.now() + cacheMs,
-        data: normalized,
-      };
-    }
-    return normalized;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // 401(인증 실패), 405(메서드 불허), 404(엔드포인트 없음) 등은 자연스럽게 폴백
-    const status = error?.response?.status;
+    const status = (error as { response?: { status?: number } })?.response
+      ?.status;
     if (status === 401) {
       console.warn(
         "리쿠르팅 목록 조회 인증 실패 (401):",
-        error?.response?.data
+        (error as { response?: { data?: unknown } })?.response?.data
       );
       // 인증 실패 시 사용자에게 알림을 주거나 로그인 페이지로 리다이렉트할 수 있음
     } else if (status === 405 || status === 404) {
       console.warn(
         "리쿠르팅 목록 API 미지원 (405/404):",
-        error?.response?.data
+        (error as { response?: { data?: unknown } })?.response?.data
       );
     } else {
       console.warn("리쿠르팅 목록 조회 실패:", error);
@@ -660,9 +650,8 @@ export const getBandArtists = async (bandId: string) => {
 // 3) 마지막으로 하드코딩된 임시 목록(운영 전환 시 제거)
 export const getRecruitingBandIds = async (): Promise<number[]> => {
   // 1) ENV 우선
-  const envIdsRaw = (import.meta as any)?.env?.VITE_RECRUITING_BAND_IDS as
-    | string
-    | undefined;
+  const envIdsRaw = (import.meta as { env?: Record<string, unknown> })?.env
+    ?.VITE_RECRUITING_BAND_IDS as string | undefined;
   if (typeof envIdsRaw === "string" && envIdsRaw.trim().length > 0) {
     return envIdsRaw
       .split(",")
@@ -683,17 +672,20 @@ export const getRecruitingBandIds = async (): Promise<number[]> => {
         ? res.data.result
         : [];
       const ids = list
-        .map((r: any) => Number(r?.bandId ?? r?.id))
+        .map((r: Record<string, unknown>) => Number(r?.bandId ?? r?.id))
         .filter((n: number) => Number.isFinite(n));
       if (ids.length > 0) {
         console.log("서버에서 전체 모집 공고 목록 조회 성공:", ids);
         return Array.from(new Set(ids));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorResponse = error as {
+        response?: { status?: number; data?: unknown };
+      };
       console.warn(
         "전체 모집 공고 목록 조회 실패:",
-        error?.response?.status,
-        error?.response?.data
+        errorResponse?.response?.status,
+        errorResponse?.response?.data
       );
     }
 
@@ -708,17 +700,20 @@ export const getRecruitingBandIds = async (): Promise<number[]> => {
         ? res.data.result
         : [];
       const ids = list
-        .map((r: any) => Number(r?.bandId ?? r?.id))
+        .map((r: Record<string, unknown>) => Number(r?.bandId ?? r?.id))
         .filter((n: number) => Number.isFinite(n));
       if (ids.length > 0) {
         console.log("서버에서 전체 밴드 목록 조회 성공:", ids);
         return Array.from(new Set(ids));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorResponse = error as {
+        response?: { status?: number; data?: unknown };
+      };
       console.warn(
         "전체 밴드 목록 조회 실패:",
-        error?.response?.status,
-        error?.response?.data
+        errorResponse?.response?.status,
+        errorResponse?.response?.data
       );
     }
 
@@ -785,10 +780,14 @@ export const getRecruitingBandIds = async (): Promise<number[]> => {
             }
           } catch (error) {
             // 에러가 발생하면 해당 범위는 건너뛰기
-            if (error?.response?.status === 404) {
+            const errorResponse = error as { response?: { status?: number } };
+            if (errorResponse?.response?.status === 404) {
               return null; // 404는 정상적인 상황 (존재하지 않는 밴드)
             }
-            console.warn(`밴드 ${id} 조회 중 에러:`, error?.response?.status);
+            console.warn(
+              `밴드 ${id} 조회 중 에러:`,
+              errorResponse?.response?.status
+            );
           }
           return null;
         });
@@ -824,18 +823,18 @@ export const getRecruitingBandIds = async (): Promise<number[]> => {
           break;
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.warn("범위별 조회 중 에러 발생:", error);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.warn("서버 리쿠르팅 밴드 ID 조회 실패:", error);
   }
 
   // 3) 임시 하드코딩 (운영 API 준비 전까지만 사용)
   // 76번 밴드가 보이지 않는 문제 해결을 위해 최신 ID들 포함
   return [
-    4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 28, 42, 45, 49, 51, 63, 64, 65, 67,
-    68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+    // 4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 28, 42, 45, 49, 51, 63, 64, 65, 67,
+    // 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
   ];
 };
 

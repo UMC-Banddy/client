@@ -80,7 +80,7 @@ const ButtonSection = ({
               await audio.play();
               setCurrentAudio(audio);
               setSoundOn(true);
-            } catch (e) {
+            } catch {
               setToast(true, "해당 밴드의 녹음 파일이 없습니다");
               setCurrentAudio(null);
               setSoundOn(false);
@@ -159,19 +159,35 @@ const ButtonSection = ({
             const roomId =
               res?.result?.roomId ?? (res as { roomId?: number })?.roomId;
             if (roomId) {
-              navigate(`/home/chat?roomId=${roomId}&roomType=GROUP`);
+              // 현재 사용자가 밴드 주인장인지 확인
+              // TODO: 실제 API에서 밴드 주인장 정보를 가져와서 비교
+              // 현재는 임시로 false로 설정 (밴드 주인장 확인 로직 구현 필요)
+              const isBandOwner = false;
+              const roomType = isBandOwner ? "BAND-MANAGER" : "BAND-APPLICANT";
+              console.log(
+                `밴드 ${bandId} 조인: ${
+                  isBandOwner ? "주인장" : "지원자"
+                }로 채팅방 생성`
+              );
+              navigate(`/home/chat?roomId=${roomId}&roomType=${roomType}`);
             } else if (onJoinClick) {
               onJoinClick();
             } else {
               navigate("/home/chat-demo");
             }
-          } catch (err: any) {
+          } catch (err: unknown) {
+            const error = err as {
+              response?: { data?: { code?: string; message?: string } };
+              data?: { code?: string; message?: string };
+              code?: string;
+              message?: string;
+            };
             const code =
-              err?.response?.data?.code ?? err?.data?.code ?? err?.code;
+              error?.response?.data?.code ?? error?.data?.code ?? error?.code;
             const msg =
-              err?.response?.data?.message ??
-              err?.data?.message ??
-              err?.message;
+              error?.response?.data?.message ??
+              error?.data?.message ??
+              error?.message;
             if (code === "BAND_SESSION4000") {
               setSessionErrorMessage(msg || "해당 세션은 모집 중이 아닙니다.");
               setOpenSessionError(true);

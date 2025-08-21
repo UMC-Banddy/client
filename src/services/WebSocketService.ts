@@ -1,5 +1,6 @@
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
+import type { StompSubscription } from "@stomp/stompjs";
 import { authStore } from "@/store/authStore";
 
 import { chatActions } from "@/store/chatStore";
@@ -12,15 +13,12 @@ interface StompFrame {
   body?: string;
 }
 
-interface WebSocketError {
-  message: string;
-  type: string;
-}
+
 
 class WebSocketService {
   private stompClient: Client | null = null;
-  private subscriptions = new Map<string, any>();
-  private unreadSubscription: any = null;
+  private subscriptions = new Map<string, StompSubscription>();
+  private unreadSubscription: StompSubscription | null = null;
   private isConnecting = false;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
@@ -94,7 +92,7 @@ class WebSocketService {
 
     // 연결 성공 시
     // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onConnect = (frame: any) => {
+    this.stompClient.onConnect = (frame: Record<string, unknown>) => {
       console.log("WebSocket 연결 성공:", frame);
       this.isConnecting = false;
       this.reconnectAttempts = 0;
@@ -107,20 +105,20 @@ class WebSocketService {
 
     // 연결 실패 시
     // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onStompError = (frame: any) => {
+    this.stompClient.onStompError = (frame: Record<string, unknown>) => {
       console.error("STOMP 에러:", frame);
       this.isConnecting = false;
       chatActions.setWebSocketConnected(false);
 
       // 서버 에러가 아닌 클라이언트 에러인 경우에만 재연결 시도
-      if (frame.headers.message && !frame.headers.message.includes("401")) {
+      if ((frame.headers as Record<string, string>)?.message && !(frame.headers as Record<string, string>).message.includes("401")) {
         this.handleReconnect();
       }
     };
 
     // 웹소켓 에러 시
     // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onWebSocketError = (error: any) => {
+    this.stompClient.onWebSocketError = (error: Record<string, unknown>) => {
       console.error("WebSocket 에러:", error);
       this.isConnecting = false;
       chatActions.setWebSocketConnected(false);
@@ -133,7 +131,7 @@ class WebSocketService {
 
     // 웹소켓 연결 종료 시
     // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onWebSocketClose = (event: any) => {
+    this.stompClient.onWebSocketClose = (event: Record<string, unknown>) => {
       console.log("WebSocket 연결 종료:", event);
       this.isConnecting = false;
       chatActions.setWebSocketConnected(false);
