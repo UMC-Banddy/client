@@ -79,7 +79,13 @@ const RecruitChat = ({
       className="flex items-center w-full"
       onClick={() => {
         if (!isOnlyName) {
-          navigate(`/home/private-chat?roomId=${roomId}&roomType=BAND-MANAGER`);
+          if (enableCheck) {
+            onCheck!();
+          } else {
+            navigate(
+              `/home/private-chat?roomId=${roomId}&roomType=BAND-MANAGER`
+            );
+          }
         }
       }}
     >
