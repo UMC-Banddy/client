@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MicImg,
   ElectricGuitarImg,
@@ -35,6 +35,34 @@ const SessionSection: React.FC<SessionSectionProps> = ({
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [sessionList, setSessionList] = useState<Session[]>([]);
 
+  // sessions prop이 변경될 때 sessionList 초기화
+  useEffect(() => {
+    if (sessions && Object.keys(sessions).length > 0) {
+      const newSessionList: Session[] = [];
+      
+      Object.entries(sessions).forEach(([sessionId]) => {
+        const availableSession = availableSessions.find(s => s.id === sessionId);
+        if (availableSession) {
+          const newSession: Session = {
+            id: sessionId,
+            name: availableSession.name,
+            icon: availableSession.icon,
+            levels: [
+              { id: "beginner", name: "초보" },
+              { id: "intermediate", name: "중수" },
+              { id: "expert", name: "고수" },
+            ],
+          };
+          newSessionList.push(newSession);
+        }
+      });
+      
+      setSessionList(newSessionList);
+    } else {
+      setSessionList([]);
+    }
+  }, [sessions]);
+
   const availableSessions = [
     {
       id: "vocal",
@@ -55,8 +83,8 @@ const SessionSection: React.FC<SessionSectionProps> = ({
       ),
     },
     {
-      id: "guitar",
-      name: "기타",
+      id: "acoustic-guitar",
+      name: "어쿠스틱 기타",
       icon: (
         <ImgCircle size={50} color="red">
           <GuitarImg size={50} color="red" />
@@ -143,6 +171,7 @@ const SessionSection: React.FC<SessionSectionProps> = ({
   };
 
   const handleLevelChange = (sessionId: string, levelId: string) => {
+    console.log(`🔍 SessionSection - 레벨 변경: ${sessionId} = ${levelId}`);
     onSessionChange?.(sessionId, levelId);
   };
 

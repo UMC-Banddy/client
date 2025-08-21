@@ -20,7 +20,7 @@ const ProfileImageSection: React.FC<ProfileImageSectionProps> = ({
         <img
           src={imageUrl}
           alt="프로필"
-          className="w-40 h-40 sm:w-44 sm:h-44 md:w-48 md:h-48 lg:w-52 lg:h-52 xl:w-56 xl:h-56 2xl:w-60 2xl:h-60 rounded-full object-cover"
+          className="w-30 h-30 sm:w-34 sm:h-34 md:w-38 md:h-38 lg:w-42 lg:h-42 xl:w-46 xl:h-46 2xl:w-50 2xl:h-50 rounded-full object-cover"
         />
         <button
           onClick={onImageChange}
@@ -35,7 +35,7 @@ const ProfileImageSection: React.FC<ProfileImageSectionProps> = ({
       </div>
       <button
         onClick={onImageUpload}
-        className="w-40 h-40 sm:w-44 sm:h-44 md:w-48 md:h-48 lg:w-52 lg:h-52 xl:w-56 xl:h-56 2xl:w-60 2xl:h-60 bg-[#B71C1C] rounded-full flex items-center justify-center"
+        className="w-30 h-30 sm:w-34 sm:h-34 md:w-38 md:h-38 lg:w-42 lg:h-42 xl:w-46 xl:h-46 2xl:w-50 2xl:h-50 bg-[#B71C1C] rounded-full flex items-center justify-center"
       >
         <svg
           className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-22 lg:h-22 xl:w-24 xl:h-24 2xl:w-26 2xl:h-26 text-white"

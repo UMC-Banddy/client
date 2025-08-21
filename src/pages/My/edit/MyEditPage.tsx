@@ -6,9 +6,9 @@ import ProfileEditHeader from "./_components/ProfileEditHeader";
 import ProfileImageSection from "./_components/ProfileImageSection";
 import BasicInfoSection from "./_components/BasicInfoSection";
 import LocationSection from "./_components/LocationSection";
-import SessionSection from "./_components/SessionSection";
+// import SessionSection from "./_components/SessionSection";
 import GenreSection from "./_components/GenreSection";
-import KeywordSection from "./_components/KeywordSection";
+// import KeywordSection from "./_components/KeywordSection";
 import IntroductionSection from "./_components/IntroductionSection";
 import { useProfileData, useUploadProfileMedia, useUpdateProfile } from "@/features/my/hooks/useProfileEdit";
 
@@ -72,7 +72,7 @@ const MyEditPage: React.FC = () => {
   const [profileImageUrl, setProfileImageUrl] = useState(profileImage);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [isEditingArtists, setIsEditingArtists] = useState(false);
+  // const [isEditingArtists, setIsEditingArtists] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -124,32 +124,87 @@ const MyEditPage: React.FC = () => {
         console.log("🔍 프로필 이미지 매핑:", data.profileImageUrl);
         setProfileImageUrl(data.profileImageUrl);
 
-        // 세션 데이터 변환 (올바른 매핑)
+        // 세션 데이터 변환 (서버 응답 구조에 맞춰 수정)
         if (data.sessions && Array.isArray(data.sessions) && data.sessions.length > 0) {
           console.log("🔍 세션 매핑 시작...");
           const sessionsMap: Record<string, string> = {};
           
-          // 세션 타입 매핑
-          const sessionTypeMapping: Record<string, string> = {
-            "🎸 일렉 기타 🎸": "ELECTRIC_GUITAR",
-            "🎤 보컬 🎤": "VOCAL",
-            "🪕 어쿠스틱 기타 🪕": "ACOUSTIC_GUITAR",
-            "🎵 베이스 🎵": "BASS",
-            "🥁 드럼 🥁": "DRUMS",
-            "🎹 키보드 🎹": "KEYBOARD",
-            "🎻 바이올린 🎻": "VIOLIN",
-            "🎺 트럼펫 🎺": "TRUMPET"
-          };
-          
-          data.sessions.forEach((session: { name: string; icon: string }, index: number) => {
+          data.sessions.forEach((session: { sessionType?: string; level?: string; name?: string; icon?: string }, index: number) => {
             console.log(`🔍 세션 ${index + 1}:`, session);
-            console.log(`🔍 세션 이름: "${session.name}"`);
-            console.log(`🔍 매핑된 sessionType: "${sessionTypeMapping[session.name]}"`);
             
-            const sessionType = sessionTypeMapping[session.name] || session.name;
-            sessionsMap[sessionType] = "초보"; // 기본값: 초보
+            let sessionType = "";
+            let level = "BEGINNER";
             
-            console.log(`🔍 최종 매핑: ${sessionType} = "초보"`);
+            // sessionType과 level이 있으면 그대로 사용
+            if (session.sessionType && session.level) {
+              sessionType = session.sessionType;
+              level = session.level;
+            } 
+            // name과 icon이 있으면 변환
+            else if (session.name && session.icon) {
+              // name에서 공백 제거하고 매핑
+              const cleanName = session.name.trim();
+              
+              // name을 sessionType으로 변환하는 매핑
+              const nameToSessionTypeMapping: Record<string, string> = {
+                "🪕 어쿠스틱 기타 🪕": "ACOUSTIC_GUITAR",
+                "🎸 일렉 기타 🎸": "ELECTRIC_GUITAR", 
+                "🎤 보컬 🎤": "VOCAL",
+                "🎵 베이스 🎵": "BASS",
+                "🥁 드럼 🥁": "DRUMS",
+                "🎹 키보드 🎹": "KEYBOARD",
+                "🎻 바이올린 🎻": "VIOLIN",
+                "🎺 트럼펫 🎺": "TRUMPET"
+              };
+              
+              console.log(`🔍 cleanName: "${cleanName}"`);
+              console.log("🔍 매핑 가능한 키들:", Object.keys(nameToSessionTypeMapping));
+              
+              sessionType = nameToSessionTypeMapping[cleanName] || cleanName;
+              
+              console.log(`🔍 매핑 결과 sessionType: "${sessionType}"`);
+              
+              // icon에서 레벨 추출 (현재는 기본값 사용)
+              // TODO: icon에서 레벨 정보를 추출하는 로직 추가 가능
+              level = "BEGINNER";
+            }
+            
+            console.log(`🔍 변환된 세션 타입: "${sessionType}"`);
+            console.log(`🔍 변환된 세션 레벨: "${level}"`);
+            
+            // 레벨을 UI 표시용으로 변환
+            const levelMapping: Record<string, string> = {
+              "BEGINNER": "초보",
+              "INTERMEDIATE": "중수", 
+              "ADVANCED": "고수"
+            };
+            
+            // 레벨을 영문 ID로 변환 (SessionSection과 매칭을 위해)
+            const levelIdMapping: Record<string, string> = {
+              "BEGINNER": "beginner",
+              "INTERMEDIATE": "intermediate", 
+              "ADVANCED": "expert"
+            };
+            
+            const displayLevel = levelMapping[level] || "초보";
+            const displayLevelId = levelIdMapping[level] || "beginner";
+            
+            // 세션 타입을 UI 키로 변환
+            const sessionTypeMapping: Record<string, string> = {
+              "ELECTRIC_GUITAR": "electric-guitar",
+              "VOCAL": "vocal",
+              "ACOUSTIC_GUITAR": "acoustic-guitar", 
+              "BASS": "bass",
+              "DRUMS": "drums",
+              "KEYBOARD": "keyboard",
+              "VIOLIN": "violin",
+              "TRUMPET": "trumpet"
+            };
+            
+            const uiSessionType = sessionTypeMapping[sessionType] || sessionType.toLowerCase();
+            sessionsMap[uiSessionType] = displayLevelId; // 영문 ID로 저장
+            
+            console.log(`🔍 최종 매핑: ${uiSessionType} = "${displayLevelId}" (${displayLevel})`);
           });
           
           console.log("🔍 최종 sessionsMap:", sessionsMap);
@@ -250,9 +305,9 @@ const MyEditPage: React.FC = () => {
 
           // 레벨을 서버가 기대하는 형식으로 변환
           const levelMapping: Record<string, string> = {
-            "초보": "BEGINNER",
-            "중수": "INTERMEDIATE",
-            "고수": "ADVANCED"
+            "beginner": "BEGINNER",
+            "intermediate": "INTERMEDIATE",
+            "expert": "ADVANCED"
           };
 
           const serverLevel = levelMapping[level] || "BEGINNER";
@@ -283,23 +338,18 @@ const MyEditPage: React.FC = () => {
       const serverGender = genderMap[gender] || "OTHER";
 
       // API로 프로필 업데이트
-      const updateData: Record<string, unknown> = {
+      const updateData = {
         nickname: name,
         age: parseInt(age.replace("세", "")) || 23,
         gender: serverGender,
         region: city,
         bio: introduction,
-        // profileImage는 별도로 처리하므로 제거
-        mediaUrl: "",
+        mediaUrl: "", // 빈 문자열로 설정
+        availableSessions: availableSessions.length > 0 ? availableSessions : undefined,
         genres: genresData,
         artists: artistsData,
         keywords: keywordsData,
       };
-
-      // 세션 데이터가 있을 때만 추가
-      if (availableSessions.length > 0) {
-        updateData.availableSessions = availableSessions;
-      }
 
       console.log("🔍 업데이트할 데이터 상세:", {
         nickname: updateData.nickname,
@@ -307,6 +357,7 @@ const MyEditPage: React.FC = () => {
         gender: updateData.gender,
         region: updateData.region,
         bio: updateData.bio,
+        mediaUrl: updateData.mediaUrl,
         availableSessions: updateData.availableSessions,
         genres: updateData.genres,
         artists: updateData.artists,
@@ -602,17 +653,26 @@ const MyEditPage: React.FC = () => {
     setName("");
   };
 
+  /*
   const handleSessionChange = (sessionId: string, levelId: string) => {
-    setSelectedSessions((prev) => ({
-      ...prev,
-      [sessionId]: levelId,
-    }));
+    console.log(`🔍 세션 레벨 변경: ${sessionId} = ${levelId}`);
+    setSelectedSessions((prev) => {
+      const newSessions = {
+        ...prev,
+        [sessionId]: levelId,
+      };
+      console.log("🔍 업데이트된 selectedSessions:", newSessions);
+      return newSessions;
+    });
   };
+  */
 
+  /*
   const handleEditArtist = () => {
     // 아티스트 편집 모드 토글
     setIsEditingArtists(!isEditingArtists);
   };
+  */
 
   const handleRemoveGenre = (genreId: string) => {
     // 장르 제거 로직
@@ -622,6 +682,7 @@ const MyEditPage: React.FC = () => {
     );
   };
 
+  /*
   const handleRemoveArtist = async (artistId: string) => {
     try {
       // API에서 아티스트 제거
@@ -643,11 +704,13 @@ const MyEditPage: React.FC = () => {
       setError("아티스트 제거에 실패했습니다.");
     }
   };
+  */
 
+  /*
   const handleKeywordsChange = (newKeywords: Array<{ id: string; text: string; category: string }>) => {
     setKeywords(newKeywords);
   };
-
+  */
   return (
     <div className="w-full h-full flex flex-col text-white">
       {/* 숨겨진 파일 입력 */}
@@ -757,10 +820,12 @@ const MyEditPage: React.FC = () => {
               />
 
               {/* 가능한 세션 및 실력 */}
+              {/*
               <SessionSection
                 sessions={selectedSessions}
                 onSessionChange={handleSessionChange}
               />
+              */}
 
               {/* 관심 장르 */}
               <GenreSection
@@ -772,6 +837,7 @@ const MyEditPage: React.FC = () => {
               />
 
               {/* 관심 아티스트 */}
+              {/*
               <div className="mb-6 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
                 <div className="flex items-center justify-between mb-4 sm:mb-5 md:mb-6 lg:mb-7 xl:mb-8 2xl:mb-9">
                   <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-medium text-white">
@@ -825,13 +891,15 @@ const MyEditPage: React.FC = () => {
                   ))}
                 </div>
               </div>
-
+              */}
+              
               {/* 키워드 */}
+              {/*
               <KeywordSection
                 keywords={keywords}
                 onKeywordsChange={handleKeywordsChange}
               />
-
+              */}
               {/* 소개글 */}
               <IntroductionSection
                 introduction={introduction}
