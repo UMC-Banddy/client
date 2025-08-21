@@ -80,8 +80,8 @@ class WebSocketService {
       },
       // 라이브러리의 자동 재연결은 비활성화하고, 내부 handleReconnect 로직만 사용
       reconnectDelay: 0,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
+      heartbeatIncoming: 10000, // 서버 스펙에 맞게 조정
+      heartbeatOutgoing: 10000, // 서버 스펙에 맞게 조정
     });
 
     this.setupEventHandlers();
@@ -101,6 +101,16 @@ class WebSocketService {
 
       // 연결 상태 주기적 체크 시작
       this.startConnectionCheck();
+      
+      // 연결 성공 즉시 unread 구독 시작
+      try {
+        this.subscribeToUnread((data) => {
+          console.log("Unread 메시지 수신:", data);
+          // 필요시 추가 처리 로직
+        });
+      } catch (error) {
+        console.warn("Unread 구독 실패:", error);
+      }
     };
 
     // 연결 실패 시
@@ -238,13 +248,13 @@ class WebSocketService {
 
       this.isConnecting = true;
 
-      // 접속 시 헤더 설정 (Authorization, heart-beat 등)
+      // 접속 시 헤더 설정 (서버 스펙에 맞게)
       const token = (authStore.accessToken || "").trim();
       // @ts-expect-error 타입 정의에 없지만 런타임에서 지원됨
       this.stompClient.connectHeaders = {
-        "accept-version": "1.2,1.1,1.0",
-        "heart-beat": "4000,4000",
-        Authorization: token ? `Bearer ${token}` : "",
+        "accept-version": "1.1,1.0", // 서버가 지원하는 버전
+        "heart-beat": "10000,10000", // 서버 스펙에 맞게 조정
+        Authorization: token || "", // Bearer 접두사 제거 (서버가 토큰만 기대하는 경우)
       } as unknown as Record<string, string>;
 
       // @stomp/stompjs v7.1.1에서는 activate() 메서드 사용
@@ -329,16 +339,30 @@ class WebSocketService {
       (frame: StompFrame) => {
         try {
           const parsed = JSON.parse(frame.body || "");
-          const payload: WebSocketMessage =
-            parsed && typeof parsed === "object" && "data" in parsed
-              ? (parsed.data as WebSocketMessage)
-              : (parsed as WebSocketMessage);
-          if (!payload || payload.messageId === undefined) {
-            console.warn("유효하지 않은 메시지 payload:", parsed);
-            return;
+          
+          // 서버 스펙에 맞는 메시지 형식 파싱
+          if (parsed.type === "MESSAGE" && parsed.data) {
+            const messageData = parsed.data;
+            const payload: WebSocketMessage = {
+              messageId: messageData.messageId,
+              senderId: messageData.senderId,
+              senderName: messageData.senderName,
+              content: messageData.content,
+              type: messageData.type || "TEXT",
+              roomId: messageData.roomId,
+              timestamp: messageData.timestamp
+            };
+            
+            if (!payload.messageId) {
+              console.warn("유효하지 않은 메시지 payload:", parsed);
+              return;
+            }
+            
+            console.log("실시간 메시지 수신:", payload);
+            onMessage(payload);
+          } else {
+            console.warn("알 수 없는 메시지 형식:", parsed);
           }
-          console.log("실시간 메시지 수신:", payload);
-          onMessage(payload);
         } catch (error) {
           console.error("메시지 파싱 에러:", error);
         }
@@ -370,16 +394,30 @@ class WebSocketService {
         (frame: StompFrame) => {
           try {
             const parsed = JSON.parse(frame.body || "");
-            const payload: WebSocketMessage =
-              parsed && typeof parsed === "object" && "data" in parsed
-                ? (parsed.data as WebSocketMessage)
-                : (parsed as WebSocketMessage);
-            if (!payload || payload.messageId === undefined) {
-              console.warn("유효하지 않은 메시지 payload:", parsed);
-              return;
+            
+            // 서버 스펙에 맞는 메시지 형식 파싱
+            if (parsed.type === "MESSAGE" && parsed.data) {
+              const messageData = parsed.data;
+              const payload: WebSocketMessage = {
+                messageId: messageData.messageId,
+                senderId: messageData.senderId,
+                senderName: messageData.senderName,
+                content: messageData.content,
+                type: messageData.type || "TEXT",
+                roomId: messageData.roomId,
+                timestamp: messageData.timestamp
+              };
+              
+              if (!payload.messageId) {
+                console.warn("유효하지 않은 메시지 payload:", parsed);
+                return;
+              }
+              
+              console.log("실시간 메시지 수신:", payload);
+              onMessage(payload);
+            } else {
+              console.warn("알 수 없는 메시지 형식:", parsed);
             }
-            console.log("실시간 메시지 수신:", payload);
-            onMessage(payload);
           } catch (error) {
             console.error("메시지 파싱 에러:", error);
           }
@@ -437,9 +475,15 @@ class WebSocketService {
     const subscription = this.subscriptions.get(roomId);
 
     if (subscription) {
-      subscription.unsubscribe();
-      this.subscriptions.delete(roomId);
-      console.log(`채팅방 ${roomId} 구독 해제 완료`);
+      try {
+        subscription.unsubscribe();
+        this.subscriptions.delete(roomId);
+        console.log(`채팅방 ${roomId} 구독 해제 완료`);
+      } catch (error) {
+        console.warn(`채팅방 ${roomId} 구독 해제 중 오류:`, error);
+        // 오류가 발생해도 Map에서 제거
+        this.subscriptions.delete(roomId);
+      }
     }
   }
 
@@ -456,11 +500,11 @@ class WebSocketService {
     this.subscriptions.clear();
   }
 
-  // 메시지 전송
+  // 메시지 전송 (서버 스펙에 맞게 수정)
   sendMessage(
     roomId: string,
     content: string,
-    roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER" = "GROUP",
+    roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER",
     receiverId?: number
   ): void {
     if (!this.stompClient || !this.stompClient.connected) {
@@ -468,41 +512,36 @@ class WebSocketService {
       return;
     }
 
-    let destination: string;
-    if (
-      roomType === "PRIVATE" ||
-      roomType === "BAND-APPLICANT" ||
-      roomType === "BAND-MANAGER"
-    ) {
-      destination = API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_PRIVATE(roomId);
-    } else {
-      destination = API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_GROUP(roomId);
-    }
+    // 서버 스펙에 맞는 destination 형식: /app/chat/sendMessage/{roomId}
+    const destination = `/app/chat/sendMessage/${roomId}`;
 
-    const message: WebSocketSendMessage = {
-      content,
-      roomId: parseInt(roomId, 10),
-      roomType:
-        roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER"
-          ? "BAND"
-          : roomType,
-      receiverId:
-        roomType === "PRIVATE" ||
-        roomType === "BAND-APPLICANT" ||
-        roomType === "BAND-MANAGER"
-          ? receiverId
-          : undefined,
-    };
+    // 서버가 기대하는 메시지 형식
+    let messageBody: Record<string, unknown>;
+    
+    if (roomType === "PRIVATE" || roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
+      // 개인 채팅 형식
+      messageBody = {
+        receiverId,
+        content,
+        roomType: roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER" ? "BAND" : "PRIVATE"
+      };
+    } else {
+      // 그룹 채팅 형식
+      messageBody = {
+        content,
+        roomType: "GROUP"
+      };
+    }
 
     try {
       this.stompClient.publish({
         destination,
-        body: JSON.stringify(message),
+        body: JSON.stringify(messageBody),
         headers: {
           "content-type": "application/json;charset=UTF-8",
         },
       });
-      console.log("메시지 전송:", message);
+      console.log("메시지 전송:", { destination, body: messageBody });
     } catch (error) {
       console.error("메시지 전송 중 오류:", error);
       throw error;
@@ -513,7 +552,7 @@ class WebSocketService {
   sendLastRead(
     roomId: string,
     messageId: number,
-    roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER" = "GROUP"
+    roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER"
   ): void {
     if (!this.stompClient || !this.stompClient.connected) {
       console.error("WebSocket이 연결되지 않았습니다.");
