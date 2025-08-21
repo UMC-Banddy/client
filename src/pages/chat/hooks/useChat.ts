@@ -24,8 +24,8 @@ export const useChat = () => {
   } = useWebSocket();
   // 현재 방 타입과 마지막으로 전송한 읽음 메시지 ID를 저장
   const currentRoomTypeRef = useRef<
-    "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER"
-  >("GROUP");
+    "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER" | null
+  >(null);
   const lastReadSentIdRef = useRef<number | null>(null);
 
   // Auto scroll to bottom when new messages arrive
@@ -79,7 +79,7 @@ export const useChat = () => {
       try {
         const response = await getChatMessages(roomId, cursor);
 
-        // API 응답을 ChatMessage 형식으로 변환
+        // API 응답을 ChatMessage 형식으로 변환 (서버 timestamp 활용)
         const chatMessages: ChatMessage[] = response.result.messages.map(
           (msg) => ({
             id: msg.messageId.toString(),
@@ -92,6 +92,7 @@ export const useChat = () => {
               minute: "2-digit",
               hour12: true,
             }),
+            timestamp: msg.timestamp, // 서버에서 제공하는 원본 timestamp 저장
             unreadCount: 0,
           })
         );
@@ -126,7 +127,7 @@ export const useChat = () => {
         | "PRIVATE"
         | "GROUP"
         | "BAND-APPLICANT"
-        | "BAND-MANAGER" = "GROUP"
+        | "BAND-MANAGER"
     ) => {
       if (!isConnected) {
         console.warn("WebSocket이 연결되지 않았습니다. 연결을 시도합니다.");
@@ -139,15 +140,11 @@ export const useChat = () => {
       }
 
       try {
-        // WebSocket 채팅방 입장 (BAND는 BAND-APPLICANT로 매핑)
-        const mappedRoomType =
-          roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER"
-            ? "BAND-APPLICANT"
-            : roomType;
-        await joinRoom(roomId, mappedRoomType);
+        // WebSocket 채팅방 입장 (역할별로 적절한 타입 유지)
+        await joinRoom(roomId, roomType);
 
-        // 채팅방 ID 설정
-        chatActions.setCurrentRoomId(roomId);
+        // 현재 룸타입 저장 (읽음 상태 전송에 사용)
+        currentRoomTypeRef.current = roomType;
 
         // 기존 메시지 로드
         await loadMessages(roomId);
@@ -168,7 +165,7 @@ export const useChat = () => {
         | "PRIVATE"
         | "GROUP"
         | "BAND-APPLICANT"
-        | "BAND-MANAGER" = "GROUP",
+        | "BAND-MANAGER",
       receiverId?: number
     ) => {
       if (!currentRoomId || !isConnected) {
@@ -242,7 +239,7 @@ export const useChat = () => {
 
   // 메시지 목록이 갱신될 때마다 마지막 메시지를 기준으로 읽음 상태 전송
   useEffect(() => {
-    if (!currentRoomId || snap.messages.length === 0) return;
+    if (!currentRoomId || snap.messages.length === 0 || !currentRoomTypeRef.current) return;
     const last = snap.messages[snap.messages.length - 1];
     const lastId = Number(last.id);
     if (!Number.isFinite(lastId)) return;
@@ -251,7 +248,7 @@ export const useChat = () => {
       sendLastRead(
         currentRoomId,
         lastId,
-        currentRoomTypeRef.current || "GROUP"
+        currentRoomTypeRef.current
       );
       lastReadSentIdRef.current = lastId;
     } catch {
