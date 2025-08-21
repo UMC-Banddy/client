@@ -44,21 +44,51 @@ export default function ChatPage() {
       // REST join + WS subscribe + 메시지 로드
       enterChatRoom(roomId, roomTypeParam);
     }
+
+    // 컴포넌트 언마운트 시 정리
     return () => {
+      console.log("ChatPage 언마운트, 채팅방 정리 중...");
       exitChatRoom();
     };
   }, [searchParams, enterChatRoom, exitChatRoom]);
+
+  // 뒤로가기 이벤트 처리
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      console.log("페이지 새로고침/닫기, 채팅방 정리 중...");
+      exitChatRoom();
+    };
+
+    const handlePopState = () => {
+      console.log("뒤로가기 감지, 채팅방 정리 중...");
+      exitChatRoom();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [exitChatRoom]);
 
   // Header용 밴드 정보 로드 + 첫 방문 봇 메시지 (밴드 관련일 때만)
   useEffect(() => {
     const roomTypeParam = (searchParams.get("roomType") || "GROUP") as
       | "PRIVATE"
       | "GROUP"
-      | "BAND";
+      | "BAND-APPLICANT"
+      | "BAND-MANAGER";
     const roomId = searchParams.get("roomId");
 
     // 밴드 관련 채팅방이 아니면 무시
-    if ((roomTypeParam !== "BAND-APPLICANT" && roomTypeParam !== "BAND-MANAGER") || !roomId) return;
+    if (
+      (roomTypeParam !== "BAND-APPLICANT" &&
+        roomTypeParam !== "BAND-MANAGER") ||
+      !roomId
+    )
+      return;
 
     // 첫 방문 봇 메시지 표시 (한 번만)
     if (!hasShownBotMessage && messages.length === 0) {

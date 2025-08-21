@@ -19,6 +19,9 @@ export const useWebSocket = () => {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isJoiningRef = useRef(false);
   const subscribedRoomIdRef = useRef<string | null>(null);
+  const connectionAttemptRef = useRef<number>(0);
+  const lastConnectionAttemptRef = useRef<number>(0);
+  const connectionCooldownRef = useRef<number>(5000); // 5초 쿨다운
 
   // 메시지 핸들러
   const handleMessage = useCallback((message: WebSocketMessage) => {
@@ -44,9 +47,24 @@ export const useWebSocket = () => {
       if (!authSnap.accessToken) {
         return;
       }
+
+      // 쿨다운 체크
+      const now = Date.now();
+      if (
+        now - lastConnectionAttemptRef.current <
+        connectionCooldownRef.current
+      ) {
+        console.log("연결 시도 쿨다운 중...");
+        return;
+      }
+
       if (!isConnected && !isConnecting) {
         setIsConnecting(true);
+        lastConnectionAttemptRef.current = now;
+        connectionAttemptRef.current++;
+
         try {
+          console.log(`WebSocket 연결 시도 ${connectionAttemptRef.current}...`);
           await webSocketService.connect();
         } catch (error) {
           console.error("WebSocket 연결 실패:", error);
@@ -64,17 +82,34 @@ export const useWebSocket = () => {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
-      webSocketService.disconnect();
+      // 컴포넌트 언마운트 시에는 연결을 완전히 해제하지 않고, 구독만 해제
+      if (subscribedRoomIdRef.current) {
+        webSocketService.unsubscribeFromRoom(subscribedRoomIdRef.current);
+      }
     };
   }, [isConnected, isConnecting, authSnap.accessToken]);
 
   // 연결 함수
   const connect = useCallback(async () => {
     if (!authSnap.accessToken) return;
+
+    // 쿨다운 체크
+    const now = Date.now();
+    if (
+      now - lastConnectionAttemptRef.current <
+      connectionCooldownRef.current
+    ) {
+      throw new Error("연결 시도 쿨다운 중입니다.");
+    }
+
     if (isConnected || isConnecting) return;
 
     setIsConnecting(true);
+    lastConnectionAttemptRef.current = now;
+    connectionAttemptRef.current++;
+
     try {
+      console.log(`WebSocket 연결 시도 ${connectionAttemptRef.current}...`);
       await webSocketService.connect();
     } catch (error) {
       console.error("WebSocket 연결 실패:", error);
@@ -122,10 +157,11 @@ export const useWebSocket = () => {
     if (currentRoomId) {
       try {
         if (subscribedRoomIdRef.current) {
+          console.log(`채팅방 ${subscribedRoomIdRef.current} 구독 해제 중...`);
           webSocketService.unsubscribeFromRoom(subscribedRoomIdRef.current);
+          subscribedRoomIdRef.current = null;
         }
         chatActions.setCurrentRoomId(null);
-        subscribedRoomIdRef.current = null;
         console.log(`채팅방 ${currentRoomId} 나가기 완료`);
       } catch (error) {
         console.error("채팅방 나가기 실패:", error);
@@ -135,25 +171,18 @@ export const useWebSocket = () => {
 
   // 채팅방 입장
   const joinRoom = useCallback(
-    async (roomId: string, roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER") => {
+    async (
+      roomId: string,
+      roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER"
+    ) => {
       // 동일 방 재입장, 혹은 진행 중이면 무시
-      if (isJoiningRef.current) return;
-      if (subscribedRoomIdRef.current === roomId) return;
-
-      if (!isConnected) {
-        console.warn("WebSocket이 연결되지 않음. 연결 시도 중...");
-        try {
-          await connect();
-          // 연결 후 잠시 대기
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        } catch (error) {
-          console.error("WebSocket 연결 실패:", error);
-          return;
-        }
+      if (isJoiningRef.current) {
+        console.log("이미 방 입장 진행 중...");
+        return;
       }
 
-      if (!isConnected) {
-        console.error("WebSocket 연결 실패. 채팅방 입장 불가.");
+      if (subscribedRoomIdRef.current === roomId) {
+        console.log(`이미 ${roomId} 방에 구독 중입니다.`);
         return;
       }
 
@@ -161,21 +190,50 @@ export const useWebSocket = () => {
 
       try {
         isJoiningRef.current = true;
+
         // 다른 방에 구독 중이면 해제
         if (
           subscribedRoomIdRef.current &&
           subscribedRoomIdRef.current !== roomId
         ) {
+          console.log(`기존 방 ${subscribedRoomIdRef.current} 구독 해제 중...`);
           webSocketService.unsubscribeFromRoom(subscribedRoomIdRef.current);
           subscribedRoomIdRef.current = null;
+
+          // 구독 해제 후 잠시 대기
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        // WebSocket 연결 상태 확인 및 연결
+        if (!isConnected) {
+          console.log("WebSocket 연결 시도 중...");
+          try {
+            await connect();
+            // 연결 후 잠시 대기
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          } catch (error) {
+            console.error("WebSocket 연결 실패:", error);
+            return;
+          }
+        }
+
+        if (!webSocketService.isConnected()) {
+          console.error("WebSocket 연결 실패. 채팅방 입장 불가.");
+          return;
         }
 
         // 새로운 방 구독
-        if (roomType === "PRIVATE" || roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
+        if (
+          roomType === "PRIVATE" ||
+          roomType === "BAND-APPLICANT" ||
+          roomType === "BAND-MANAGER"
+        ) {
           // 개인 채팅방 구독 (/user/queue/room/{roomId})
+          console.log(`개인 채팅방 ${roomId} 구독 시작...`);
           webSocketService.subscribeToPrivateRoom(roomId, handleMessage);
         } else if (roomType === "GROUP") {
           // 그룹 채팅방 구독 (/topic/room/{roomId})
+          console.log(`그룹 채팅방 ${roomId} 구독 시작...`);
           webSocketService.subscribeToGroupRoom(roomId, handleMessage);
         }
 
@@ -189,7 +247,7 @@ export const useWebSocket = () => {
         isJoiningRef.current = false;
       }
     },
-    [isConnected, connect]
+    [isConnected, connect, handleMessage]
   );
 
   // 메시지 전송
@@ -225,7 +283,11 @@ export const useWebSocket = () => {
     (
       roomId: string,
       messageId: number,
-      roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP"
+      roomType:
+        | "PRIVATE"
+        | "GROUP"
+        | "BAND-APPLICANT"
+        | "BAND-MANAGER" = "GROUP"
     ) => {
       if (!isConnected) return;
       try {

@@ -19,14 +19,16 @@ interface WebSocketError {
 
 class WebSocketService {
   private stompClient: Client | null = null;
-  private subscriptions: Map<string, { unsubscribe: () => void }> = new Map();
-  private unreadSubscription: { unsubscribe: () => void } | null = null;
+  private subscriptions = new Map<string, any>();
+  private unreadSubscription: any = null;
+  private isConnecting = false;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
-  private reconnectDelay = 1000; // 1초
-  private isConnecting = false;
-  private lastErrorLogTime = 0;
-  private errorLogIntervalMs = 5000;
+  private reconnectDelay = 2000;
+  private reconnectTimeoutRef: NodeJS.Timeout | null = null;
+  private connectionCheckInterval: NodeJS.Timeout | null = null;
+  private lastConnectionAttempt = 0;
+  private connectionCooldown = 5000; // 5초 쿨다운
 
   constructor() {
     this.initClient();
@@ -90,92 +92,93 @@ class WebSocketService {
   private setupEventHandlers() {
     if (!this.stompClient) return;
 
+    // 연결 성공 시
     // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onConnect = (frame: StompFrame) => {
+    this.stompClient.onConnect = (frame: any) => {
       console.log("WebSocket 연결 성공:", frame);
-      this.reconnectAttempts = 0;
       this.isConnecting = false;
+      this.reconnectAttempts = 0;
+      this.lastConnectionAttempt = Date.now();
       chatActions.setWebSocketConnected(true);
-      chatActions.setError(null);
+
+      // 연결 상태 주기적 체크 시작
+      this.startConnectionCheck();
     };
 
+    // 연결 실패 시
     // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onStompError = (frame: StompFrame) => {
-      // 콘솔 스팸 방지를 위해 주기적으로만 출력
-      const now = Date.now();
-      if (now - this.lastErrorLogTime >= this.errorLogIntervalMs) {
-        const message = frame?.headers?.message || "Unknown STOMP error";
-        try {
-          if (
-            import.meta.env.DEV &&
-            localStorage.getItem("STOMP_DEBUG") === "1"
-          ) {
-            console.warn(`STOMP ERROR: ${message}`);
-          }
-        } catch {
-          // ignore
-        }
-        this.lastErrorLogTime = now;
-      }
-      chatActions.setError("WebSocket 연결 에러가 발생했습니다.");
-      this.handleReconnect();
-    };
-
-    // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onWebSocketError = (error: WebSocketError) => {
-      const now = Date.now();
-      if (now - this.lastErrorLogTime >= this.errorLogIntervalMs) {
-        try {
-          if (
-            import.meta.env.DEV &&
-            localStorage.getItem("STOMP_DEBUG") === "1"
-          ) {
-            console.warn(`WebSocket ERROR: ${error?.message || "Unknown"}`);
-          }
-        } catch {
-          // ignore
-        }
-        this.lastErrorLogTime = now;
-      }
-      chatActions.setError("WebSocket 연결이 끊어졌습니다.");
-      this.handleReconnect();
-    };
-
-    // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
-    this.stompClient.onWebSocketClose = () => {
-      try {
-        if (
-          import.meta.env.DEV &&
-          localStorage.getItem("STOMP_DEBUG") === "1"
-        ) {
-          console.log("WebSocket 연결 종료");
-        }
-      } catch {
-        // ignore
-      }
+    this.stompClient.onStompError = (frame: any) => {
+      console.error("STOMP 에러:", frame);
+      this.isConnecting = false;
       chatActions.setWebSocketConnected(false);
-      // 모든 구독 해제 및 정리
-      this.subscriptions.forEach((subscription) => {
-        try {
-          subscription.unsubscribe();
-        } catch {
-          // ignore
-        }
-      });
-      this.subscriptions.clear();
-      if (this.unreadSubscription) {
-        try {
-          this.unreadSubscription.unsubscribe();
-        } catch {
-          // ignore
-        }
-        this.unreadSubscription = null;
+
+      // 서버 에러가 아닌 클라이언트 에러인 경우에만 재연결 시도
+      if (frame.headers.message && !frame.headers.message.includes("401")) {
+        this.handleReconnect();
       }
-      this.handleReconnect();
+    };
+
+    // 웹소켓 에러 시
+    // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
+    this.stompClient.onWebSocketError = (error: any) => {
+      console.error("WebSocket 에러:", error);
+      this.isConnecting = false;
+      chatActions.setWebSocketConnected(false);
+
+      // 네트워크 에러인 경우에만 재연결 시도
+      if (error.type === "error" || error.type === "close") {
+        this.handleReconnect();
+      }
+    };
+
+    // 웹소켓 연결 종료 시
+    // @ts-expect-error - STOMP 클라이언트의 이벤트 핸들러들
+    this.stompClient.onWebSocketClose = (event: any) => {
+      console.log("WebSocket 연결 종료:", event);
+      this.isConnecting = false;
+      chatActions.setWebSocketConnected(false);
+
+      // 정상 종료가 아닌 경우에만 재연결 시도
+      if (event.code !== 1000) {
+        this.handleReconnect();
+      }
     };
   }
 
+  private startConnectionCheck() {
+    // 기존 체크 인터벌 정리
+    if (this.connectionCheckInterval) {
+      clearInterval(this.connectionCheckInterval);
+    }
+
+    // 30초마다 연결 상태 체크
+    this.connectionCheckInterval = setInterval(() => {
+      if (
+        this.stompClient &&
+        !this.stompClient.connected &&
+        this.stompClient.active
+      ) {
+        console.log("연결 상태 불일치 감지, 재연결 시도...");
+        this.handleReconnect();
+      }
+    }, 30000);
+  }
+
+  private stopConnectionCheck() {
+    if (this.connectionCheckInterval) {
+      clearInterval(this.connectionCheckInterval);
+      this.connectionCheckInterval = null;
+    }
+  }
+
   private handleReconnect() {
+    // 쿨다운 체크
+    const now = Date.now();
+    if (now - this.lastConnectionAttempt < this.connectionCooldown) {
+      console.log("재연결 쿨다운 중...");
+      return;
+    }
+
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.error("최대 재연결 시도 횟수 초과");
       chatActions.setError(
@@ -184,28 +187,50 @@ class WebSocketService {
       return;
     }
 
-    if (this.isConnecting) return;
+    if (this.isConnecting) {
+      console.log("이미 연결 시도 중...");
+      return;
+    }
+
+    // 기존 재연결 타이머 정리
+    if (this.reconnectTimeoutRef) {
+      clearTimeout(this.reconnectTimeoutRef);
+    }
 
     this.reconnectAttempts++;
     this.isConnecting = true;
+    this.lastConnectionAttempt = now;
 
     console.log(
       `재연결 시도 ${this.reconnectAttempts}/${this.maxReconnectAttempts}`
     );
 
-    // 서버 ERROR 프레임이 연속 발생할 때 콘솔 스팸 방지 및 백오프 적용
-    const delay = Math.min(10000, this.reconnectDelay * this.reconnectAttempts);
-    setTimeout(() => {
+    // 백오프 적용된 지연 시간
+    const delay = Math.min(
+      10000,
+      this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1)
+    );
+
+    this.reconnectTimeoutRef = setTimeout(() => {
       this.connect();
     }, delay);
   }
 
   async connect(): Promise<void> {
+    // 쿨다운 체크
+    const now = Date.now();
+    if (now - this.lastConnectionAttempt < this.connectionCooldown) {
+      throw new Error("연결 시도 쿨다운 중입니다.");
+    }
+
     // 클라이언트 미생성 또는 이전에 inactive 상태면 재초기화
     if (!this.stompClient || (this.stompClient && !this.stompClient.active)) {
       this.initClient();
     }
-    if (this.isConnecting) return;
+
+    if (this.isConnecting) {
+      throw new Error("이미 연결 시도 중입니다.");
+    }
 
     return new Promise((resolve, reject) => {
       if (!this.stompClient) {
@@ -227,24 +252,31 @@ class WebSocketService {
       // @stomp/stompjs v7.1.1에서는 activate() 메서드 사용
       try {
         this.stompClient.activate();
-      } catch {
+      } catch (error) {
         // activate 중 throw되는 경우도 재연결 루프로 넘김
         this.isConnecting = false;
         this.handleReconnect();
+        reject(error);
         return;
       }
 
-      // 연결 성공을 기다림
+      // 연결 성공을 기다림 (최대 10초)
+      const maxWaitTime = 10000;
+      const startTime = Date.now();
+
       const checkConnection = () => {
         if (this.stompClient?.connected) {
           this.isConnecting = false;
           resolve();
-        } else if (this.stompClient?.active) {
-          // active 상태이지만 아직 connected가 아닌 경우
+        } else if (
+          this.stompClient?.active &&
+          Date.now() - startTime < maxWaitTime
+        ) {
+          // active 상태이지만 아직 connected가 아닌 경우, 계속 대기
           setTimeout(checkConnection, 100);
         } else {
           this.isConnecting = false;
-          reject(new Error("WebSocket 연결에 실패했습니다."));
+          reject(new Error("WebSocket 연결 시간 초과"));
         }
       };
 
@@ -254,12 +286,19 @@ class WebSocketService {
   }
 
   disconnect(): void {
+    // 재연결 타이머 정리
+    if (this.reconnectTimeoutRef) {
+      clearTimeout(this.reconnectTimeoutRef);
+      this.reconnectTimeoutRef = null;
+    }
+
+    // 연결 상태 체크 정리
+    this.stopConnectionCheck();
+
     if (this.stompClient && this.stompClient.active) {
       // 모든 구독 해제
-      this.subscriptions.forEach((subscription) => {
-        subscription.unsubscribe();
-      });
-      this.subscriptions.clear();
+      this.unsubscribeAllRooms();
+      this.unsubscribeUnread();
 
       // 연결 해제
       this.stompClient.deactivate().then(() => {
@@ -267,6 +306,9 @@ class WebSocketService {
         chatActions.setWebSocketConnected(false);
       });
     }
+
+    this.isConnecting = false;
+    this.reconnectAttempts = 0;
   }
 
   // 그룹 채팅방(topic) 구독
@@ -429,7 +471,11 @@ class WebSocketService {
     }
 
     let destination: string;
-    if (roomType === "PRIVATE" || roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
+    if (
+      roomType === "PRIVATE" ||
+      roomType === "BAND-APPLICANT" ||
+      roomType === "BAND-MANAGER"
+    ) {
       destination = API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_PRIVATE(roomId);
     } else {
       destination = API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_GROUP(roomId);
@@ -438,9 +484,16 @@ class WebSocketService {
     const message: WebSocketSendMessage = {
       content,
       roomId: parseInt(roomId, 10),
-      roomType: roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER" ? "BAND" : roomType,
+      roomType:
+        roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER"
+          ? "BAND"
+          : roomType,
       receiverId:
-        roomType === "PRIVATE" || roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER" ? receiverId : undefined,
+        roomType === "PRIVATE" ||
+        roomType === "BAND-APPLICANT" ||
+        roomType === "BAND-MANAGER"
+          ? receiverId
+          : undefined,
     };
 
     try {
@@ -462,7 +515,7 @@ class WebSocketService {
   sendLastRead(
     roomId: string,
     messageId: number,
-    roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP"
+    roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER" = "GROUP"
   ): void {
     if (!this.stompClient || !this.stompClient.connected) {
       console.error("WebSocket이 연결되지 않았습니다.");
@@ -470,7 +523,11 @@ class WebSocketService {
     }
 
     let destination: string;
-    if (roomType === "PRIVATE" || roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
+    if (
+      roomType === "PRIVATE" ||
+      roomType === "BAND-APPLICANT" ||
+      roomType === "BAND-MANAGER"
+    ) {
       destination = `/app/chat/private.lastRead/${roomId}`;
     } else {
       destination = `/app/chat/group.lastRead/${roomId}`;
