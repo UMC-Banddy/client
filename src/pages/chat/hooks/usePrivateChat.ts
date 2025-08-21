@@ -44,6 +44,7 @@ export const usePrivateChat = () => {
   const { data: currentUser } = useCurrentUser();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentRoomId, setCurrentRoomId] = useState<number | null>(null);
+  const [currentRoomType, setCurrentRoomType] = useState<"PRIVATE" | "BAND-APPLICANT" | "BAND-MANAGER" | "GROUP" | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const messageEndRef = useRef<HTMLDivElement>(null);
@@ -69,13 +70,18 @@ export const usePrivateChat = () => {
     };
 
     checkConnection();
-    const interval = setInterval(checkConnection, 1000);
+    const interval = setInterval(checkConnection, 5000); // 5초로 변경
     return () => clearInterval(interval);
   }, [isConnected]);
 
   // 채팅방 입장
-  const enterChatRoom = useCallback(async (roomId: number) => {
-    console.log("🎯 채팅방 입장:", roomId);
+  const enterChatRoom = useCallback(async (roomId: number, roomType: "PRIVATE" | "BAND-APPLICANT" | "BAND-MANAGER" | "GROUP") => {
+    if (currentRoomId === roomId) {
+      console.log("이미 같은 채팅방에 있습니다.");
+      return;
+    }
+    
+    console.log("🎯 채팅방 입장:", roomId, "타입:", roomType);
     setIsLoading(true);
     
     try {
@@ -157,153 +163,110 @@ export const usePrivateChat = () => {
         }
         
         // 상대방이 보낸 메시지인 경우
-        // timestamp에 시간대 표시자 추가 (Z가 없으면 UTC로 가정)
-        let normalizedTimestamp = parsedMessage.timestamp;
-        if (normalizedTimestamp && !normalizedTimestamp.endsWith("Z")) {
-          normalizedTimestamp = normalizedTimestamp + "Z";
-        }
+        console.log("📨 상대방 메시지 추가:", parsedMessage);
+        setMessages(prev => [...prev, parsedMessage]);
         
-        const newMessage: ChatMessage = {
-          messageId: parsedMessage.messageId || Date.now(),
-          senderId: parsedMessage.senderId || 0,
-          senderName: parsedMessage.senderName || "알 수 없음",
-          content: parsedMessage.content || "",
-          timestamp: normalizedTimestamp || new Date().toISOString(),
-          roomId: parsedMessage.roomId || roomId,
-          isRead: false, // 새 메시지는 기본적으로 안읽음
-          readBy: [], // 아직 아무도 읽지 않음
-        };
-
-        console.log("✅ 새 메시지 생성:", newMessage);
-        setMessages(prev => {
-          const updatedMessages = [...prev, newMessage];
-          console.log("📝 메시지 배열 업데이트:", updatedMessages.length, "개 메시지");
-          return updatedMessages;
-        });
-        
-        // 메시지 수신 시 읽음 상태 자동 전송
-        if (newMessage.senderId !== currentMemberId) {
-          // 상대방 메시지를 받았을 때만 읽음 상태 전송
-          setTimeout(() => {
-            sendReadStatus(newMessage.messageId, newMessage.roomId);
-          }, 1000); // 1초 후 읽음 상태 전송
-          
-          // 즉시 로컬에서 읽음 상태 업데이트
-          const currentMemberId = currentUser?.memberId || 0;
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.messageId === newMessage.messageId
-                ? {
-                    ...msg,
-                    isRead: true,
-                    readBy: [...(msg.readBy || []), currentMemberId]
-                  }
-                : msg
-            )
-          );
-        }
-        
-        // 스크롤을 맨 아래로
+        // 메시지 자동 스크롤
         setTimeout(() => {
           messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }, 100);
       });
 
-      // 채팅방 ID 즉시 설정 (메시지 로드 전에)
-      setCurrentRoomId(roomId);
-      console.log("🎯 채팅방 ID 설정:", roomId);
-      
-      // 채팅방 메시지 히스토리 로드
-      const response = await getPriChatMessages(roomId.toString());
-      console.log("📋 API 응답:", response);
-      console.log("📋 API 응답 구조:", {
-        hasResponse: !!response,
-        hasMessages: !!response?.result?.messages,
-        messagesLength: response?.result?.messages?.length,
-        responseKeys: response ? Object.keys(response) : []
-      });
-      
-      // 안전한 체크: messages가 존재하는지 확인 (API 응답 구조에 맞춤)
-      if (!response?.result?.messages) {
-        console.warn("⚠️ 메시지 데이터가 없습니다:", response);
-        setMessages([]);
-        return;
-      }
-      
-      // API에서 받은 메시지를 올바른 순서로 정렬 (오래된 메시지가 위에, 최신 메시지가 아래에)
-      const chatMessages: ChatMessage[] = response.result.messages
-        .slice() // 원본 배열 복사 (reverse는 원본을 변경하므로)
-        .reverse() // 배열을 역순으로 정렬하여 오래된 메시지가 앞에 오도록
-        .map((msg) => {
-          // timestamp에 시간대 표시자 추가 (Z가 없으면 UTC로 가정)
-          let normalizedTimestamp = msg.timestamp;
-          if (normalizedTimestamp && !normalizedTimestamp.endsWith("Z")) {
-            normalizedTimestamp = normalizedTimestamp + "Z";
-          }
-          
-          return {
-            messageId: msg.messageId,
-            senderId: msg.senderId,
-            senderName: msg.senderName,
-            content: msg.content,
-            timestamp: normalizedTimestamp,
-            roomId: roomId, // API 응답에 roomId가 없으므로 현재 roomId 사용
-            isRead: false, // 기존 메시지는 기본적으로 안읽음
-            readBy: [], // 아직 아무도 읽지 않음
-          };
-        });
+      // 기존 메시지 히스토리 로드
+      try {
+        console.log("📚 기존 메시지 히스토리 로드 시작...");
+        const response = await getPriChatMessages(roomId.toString());
+        console.log("📋 API 응답:", response);
+        
+        if (response?.result?.messages) {
+          // API에서 받은 메시지를 올바른 순서로 정렬 (오래된 메시지가 위에, 최신 메시지가 아래에)
+          const chatMessages: ChatMessage[] = response.result.messages
+            .slice() // 원본 배열 복사
+            .reverse() // 배열을 역순으로 정렬하여 오래된 메시지가 앞에 오도록
+            .map((msg) => {
+              // timestamp에 시간대 표시자 추가 (Z가 없으면 UTC로 가정)
+              let normalizedTimestamp = msg.timestamp;
+              if (normalizedTimestamp && !normalizedTimestamp.endsWith("Z")) {
+                normalizedTimestamp = normalizedTimestamp + "Z";
+              }
+              
+              return {
+                messageId: msg.messageId,
+                senderId: msg.senderId,
+                senderName: msg.senderName,
+                content: msg.content,
+                timestamp: normalizedTimestamp,
+                roomId: roomId,
+                isRead: false, // 기존 메시지는 기본적으로 안읽음
+                readBy: [], // 아직 아무도 읽지 않음
+              };
+            });
 
-      console.log("📝 로드된 메시지 개수:", chatMessages.length);
-      console.log("📝 첫 번째 메시지 (가장 오래된):", chatMessages[0]);
-      console.log("📝 마지막 메시지 (가장 최신):", chatMessages[chatMessages.length - 1]);
-      console.log("📝 메시지 정렬 확인 - 첫 번째 timestamp:", chatMessages[0]?.timestamp);
-      console.log("📝 메시지 정렬 확인 - 마지막 timestamp:", chatMessages[chatMessages.length - 1]?.timestamp);
-      
-      setMessages(chatMessages);
-      setCurrentRoomId(roomId);
-      
-      // 참가자 정보 초기화 (임시로 현재 사용자 정보 설정)
-      const currentMemberId = currentUser?.memberId || 0;
-      const initialParticipants: ParticipantInfo[] = [
-        {
-          memberId: currentMemberId,
-          nickname: "나",
-          imageUrl: null,
-          lastReadMessageId: 0
+          console.log("📝 로드된 메시지 개수:", chatMessages.length);
+          console.log("📝 첫 번째 메시지 (가장 오래된):", chatMessages[0]);
+          console.log("📝 마지막 메시지 (가장 최신):", chatMessages[chatMessages.length - 1]);
+          
+          setMessages(chatMessages);
+          
+          // 참가자 정보 초기화 (임시로 현재 사용자 정보 설정)
+          const currentMemberId = currentUser?.memberId || 0;
+          const initialParticipants: ParticipantInfo[] = [
+            {
+              memberId: currentMemberId,
+              nickname: "나",
+              imageUrl: null,
+              lastReadMessageId: 0
+            }
+          ];
+          setParticipants(initialParticipants);
+          
+          console.log("✅ 메시지 히스토리 로드 완료:", {
+            roomId,
+            messagesCount: chatMessages.length,
+            participants: initialParticipants
+          });
+        } else {
+          console.warn("⚠️ 메시지 데이터가 없습니다:", response);
+          setMessages([]);
         }
-      ];
-      setParticipants(initialParticipants);
-      
-      console.log("✅ 채팅방 입장 완료:", {
-        roomId,
-        isConnected,
-        webSocketConnected: webSocketService.isConnected(),
-        messagesCount: chatMessages.length,
-        participants: initialParticipants
-      });
-      
-      // 스크롤을 맨 아래로
-      setTimeout(() => {
-        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+      } catch (error) {
+        console.error("❌ 메시지 히스토리 로드 실패:", error);
+        setMessages([]);
+      }
+
+      setCurrentRoomId(roomId);
+      setCurrentRoomType(roomType);
+      console.log("✅ 채팅방 입장 완료:", roomId);
     } catch (error) {
       console.error("❌ 채팅방 입장 실패:", error);
-      // WebSocket 연결 실패 시 사용자에게 알림
-      if (error instanceof Error && error.message?.includes("WebSocket")) {
-        alert("연결에 실패했습니다. 다시 시도해주세요.");
-      }
     } finally {
       setIsLoading(false);
     }
-  }, [currentRoomId]);
+  }, [currentRoomId, currentUser?.memberId]); // currentUser?.memberId 의존성 추가
 
   // 채팅방 퇴장
-  const leaveChatRoom = useCallback(() => {
-    if (currentRoomId) {
+  const leaveChatRoom = useCallback(async () => {
+    if (!currentRoomId) {
+      console.log("퇴장할 채팅방이 없습니다.");
+      return;
+    }
+
+    console.log("🚪 채팅방 퇴장:", currentRoomId);
+    
+    try {
+      // WebSocket 구독 해제
       webSocketService.unsubscribeFromRoom(currentRoomId.toString());
+      
+      // 상태 초기화
       setCurrentRoomId(null);
       setMessages([]);
-      console.log("👋 채팅방 퇴장:", currentRoomId);
+      setParticipants([]);
+      setLastSentReadMessageId(0);
+      setCurrentRoomType(null);
+      
+      console.log("✅ 채팅방 퇴장 완료:", currentRoomId);
+    } catch (error) {
+      console.error("❌ 채팅방 퇴장 실패:", error);
     }
   }, [currentRoomId]);
 
@@ -314,7 +277,10 @@ export const usePrivateChat = () => {
       console.log("📋 전송 파라미터:", { roomId, receiverId, content });
       
       try {
-        webSocketService.sendMessage(roomId.toString(), content, "PRIVATE", receiverId);
+        if (!currentRoomType) {
+          throw new Error("채팅방 타입이 설정되지 않았습니다.");
+        }
+        webSocketService.sendMessage(roomId.toString(), content, currentRoomType, receiverId);
         console.log("✅ webSocketService.sendMessage 호출 완료");
         return { roomId, content };
       } catch (error) {
@@ -395,18 +361,21 @@ export const usePrivateChat = () => {
 
     try {
       // WebSocket으로 읽음 상태 전송
-      // 개인 채팅은 PRIVATE 목적지로 전송
+      if (!currentRoomType) {
+        console.error("❌ 채팅방 타입이 설정되지 않아 읽음 상태를 전송할 수 없습니다.");
+        return;
+      }
       webSocketService.sendLastRead(
         targetRoomId.toString(),
         messageId,
-        "PRIVATE"
+        currentRoomType
       );
       setLastSentReadMessageId(messageId);
       console.log("📖 읽음 상태 전송 성공:", messageId, "roomId:", targetRoomId);
     } catch (error) {
       console.error("❌ 읽음 상태 전송 실패:", error);
     }
-  }, [currentRoomId, isConnected, lastSentReadMessageId]);
+  }, [currentRoomId, isConnected, lastSentReadMessageId, currentRoomType]);
 
   // 읽음 상태 수신 처리 함수
   const handleReadMessage = useCallback((readMessage: ReadMessage) => {

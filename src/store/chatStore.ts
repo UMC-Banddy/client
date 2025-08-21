@@ -129,7 +129,7 @@ export const chatActions = {
   },
 
   addRealtimeMessage: (wsMessage: WebSocketMessage) => {
-    // WebSocket 메시지를 ChatMessage 형식으로 변환
+    // WebSocket 메시지를 ChatMessage 형식으로 변환 (서버 timestamp 활용)
     const isSystem =
       !wsMessage.senderId || wsMessage.senderId === 0 || !wsMessage.senderName;
     const chatMessage: ChatMessage = {
@@ -143,6 +143,7 @@ export const chatActions = {
         minute: "2-digit",
         hour12: true,
       }),
+      timestamp: wsMessage.timestamp, // 서버에서 제공하는 원본 timestamp 저장
       unreadCount: 0,
     };
 
