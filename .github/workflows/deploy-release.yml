@@ -34,9 +34,8 @@ jobs:
 
       - name: Build
         env:
-          # 필요 시 Vite 환경변수를 추가로 전달하세요 (예: VITE_API_BASE_URL 등)
-          # VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           NODE_OPTIONS: --max_old_space_size=4096
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: npm run build
 
       - name: Upload build artifact
@@ -98,3 +97,6 @@ jobs:
       - name: Output deployment info
         run: |
           echo "Deployed to s3://$S3_BUCKET (region: $AWS_REGION)"
+          if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
+            echo "CloudFront invalidation requested for distribution: $CLOUDFRONT_DISTRIBUTION_ID"
+          fi

@@ -76,6 +76,14 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
     return MicImg;
   };
 
+  const YOUTUBE_FALLBACK = "https://www.youtube.com/@Banddy79";
+  const INSTAGRAM_FALLBACK = "https://www.instagram.com/banddy79/";
+
+  const resolvedYoutubeLink =
+    youtubeUrl && youtubeUrl.trim() ? youtubeUrl : YOUTUBE_FALLBACK;
+  const resolvedInstagramLink =
+    instagramUrl && instagramUrl.trim() ? instagramUrl : INSTAGRAM_FALLBACK;
+
   return (
     <div
       className="relative bg-[#F5E9EA] rounded-[28px] w-full max-w-[420px] min-w-0 min-h-[420px] max-h-[95vh] flex flex-col px-6 sm:px-7 md:px-8 pt-10 pb-8 overflow-hidden"
@@ -119,14 +127,14 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
           {
             Comp: Youtube,
             color: "gray-700",
-            link: youtubeUrl,
-            hasLink: !!youtubeUrl,
+            link: resolvedYoutubeLink,
+            hasLink: true,
           },
           {
             Comp: Instagram,
             color: "gray-700",
-            link: instagramUrl,
-            hasLink: !!instagramUrl,
+            link: resolvedInstagramLink,
+            hasLink: true,
           },
           {
             Comp: Tictok,
@@ -160,16 +168,20 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
                 </Link>
               );
             } else {
+              const absoluteLink = link.startsWith("http")
+                ? link
+                : `https://${link.replace(/^\/+/, "")}`;
               return (
-                <a
+                <button
                   key={idx}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  type="button"
+                  onClick={() =>
+                    window.open(absoluteLink, "_blank", "noopener,noreferrer")
+                  }
                   style={{ display: "inline-block" }}
                 >
                   {iconElement}
-                </a>
+                </button>
               );
             }
           } else {

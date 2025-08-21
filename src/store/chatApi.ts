@@ -52,7 +52,7 @@ export const createDirectChat = async (
   data: CreateDirectChatRequest
 ): Promise<{ roomId: number }> => {
   const response = await API.post(API_ENDPOINTS.CHAT.PRIVATE, data);
-  return response.data;
+  return response.data.result; // result 객체 반환
 };
 
 // 면접 채팅방 생성 (밴드 가입 신청용) - API 문서에 없어서 주석 처리

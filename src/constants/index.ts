@@ -56,21 +56,21 @@ export const API_ENDPOINTS = {
     MEMBERS: (bandId: string) => `/api/band/${bandId}/members`,
     TRACKS: (bandId: string) => `/api/band/${bandId}/tracks`,
     ARTISTS: (bandId: string) => `/api/band/${bandId}/artists`,
-    LIST: "/api/bands", // 모든 밴드 목록 조회 (백엔드 구현 필요)
+    LIST: "/api/bands", // 모든 밴드 목록 조회 (status 파라미터로 필터링 가능)
     RECOMMENDED: "/api/bands/recommended", // 추천 밴드 목록 조회 (백엔드 구현 필요)
     BOOKMARK: (bandId: string) => `/api/bands/${bandId}/bookmark`,
     BOOKMARKS: "/api/bands/bookmarks",
     DELETE_BOOKMARK: (bandId: string) => `/api/bands/${bandId}/bookmark`,
-    RECRUIT: "/api/recruitments",
+    RECRUIT: "/api/recruitments", // POST/PUT만 지원 (생성/수정용)
     JOIN: (bandId: string) => `/api/bands/${bandId}/join`,
   },
 
   RECRUITMENT: {
     JOIN: (bandId: string) => `/api/bands/${bandId}/join`,
-    CREATE: "/api/recruitments",
-    EDIT: "/api/recruitments",
-    DETAIL: (bandId: string) => `/api/recruitments/${bandId}`,
-    PROCESS: (bandId: string) => `/api/recruitments/${bandId}`,
+    CREATE: "/api/recruitments", // POST: 밴드 모집 공고 생성
+    EDIT: "/api/recruitments", // PUT: 밴드 모집 공고 수정
+    DETAIL: (bandId: string) => `/api/recruitments/${bandId}`, // GET: 특정 모집 공고 상세 조회
+    PROCESS: (bandId: string) => `/api/recruitments/${bandId}`, // PUT: 모집 공고 처리 (지원/거절 등)
   },
 
   CHAT: {
@@ -101,10 +101,12 @@ export const API_ENDPOINTS = {
     SUBSCRIBE_PRIVATE: (roomId: string | number) =>
       `/user/queue/room/${roomId}`,
     SUBSCRIBE_UNREAD: "/user/queue/unread",
-    // 전송 경로 분리 (그룹/개인)
+    // 전송 경로 분리 (그룹/개인/밴드)
     SEND_MESSAGE_GROUP: (roomId: string | number) =>
       `/app/chat/group.sendMessage/${roomId}`,
     SEND_MESSAGE_PRIVATE: (roomId: string | number) =>
+      `/app/chat/private.sendMessage/${roomId}`,
+    SEND_MESSAGE_BAND: (roomId: string | number) =>
       `/app/chat/private.sendMessage/${roomId}`,
     BASE: "ws",
   },

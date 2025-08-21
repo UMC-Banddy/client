@@ -12,8 +12,10 @@ export interface ChatMessage {
     onPlay: () => void;
   };
   time: string;
+  timestamp?: string; // 서버에서 제공하는 원본 timestamp
   unreadCount?: number;
   showReadIndicator?: boolean; // 읽음 표시 여부
+  isOptimistic?: boolean; // 낙관적 메시지 여부 (로컬에서 임시로 추가된 메시지)
 }
 
 // API 스펙에 맞는 새로운 타입들
@@ -39,6 +41,51 @@ export interface ChatRoomInfo {
   unreadCount: number | null;
   lastMessageAt: string | null;
   pinnedAt?: string | null;
+}
+
+// 밴드 지원자 채팅방 정보 (BAND-APPLICANT)
+export interface BandApplicantRoomInfo {
+  roomType: "BAND-APPLICANT";
+  roomId: number;
+  bandId: number;
+  bandName: string;
+  profileImageUrl: string | null;
+  memberInfo: {
+    memberId: number;
+    nickname: string;
+    profileImageUrl: string | null;
+    lastReadMessageId: number;
+    session: string;
+    passFail: "PENDING" | "PASS" | "FAIL";
+  };
+  unreadCount: number | null;
+  lastMessageAt: string | null;
+  pinnedAt?: string | null;
+}
+
+// 밴드 관리자 채팅방 정보 (BAND-MANAGER)
+export interface BandManagerRoomInfo {
+  roomType: "BAND-MANAGER";
+  roomId: number;
+  bandId: number;
+  bandName: string;
+  profileImageUrl: string | null;
+  status: "RECRUITING" | "ACTIVE";
+  bandSessionList: string[];
+  chatRoomInfo: {
+    roomId: number;
+    memberInfo: {
+      memberId: number;
+      nickname: string;
+      profileImageUrl: string | null;
+      lastReadMessageId: number;
+    };
+    session: string;
+    passFail: "PENDING" | "PASS" | "FAIL";
+    lastMessageAt: string | null;
+    pinnedAt?: string | null;
+    unreadCount: number | null;
+  }[];
 }
 
 export interface RoomMemberInfo {
@@ -167,6 +214,7 @@ export interface WebSocketMessage {
   content: string;
   timestamp: string;
   roomId: number;
+  type?: string; // 메시지 타입 (TEXT, IMAGE 등)
 }
 
 export interface WebSocketSendMessage {
