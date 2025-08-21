@@ -5,10 +5,7 @@ import HomeSkeleton from "./_components/HomeSkeleton";
 import MuiDialog from "@/shared/components/MuiDialog";
 import BandInfoModal from "./_components/BandInfoModal";
 import {
-  getRecommendedFromSimilar,
   getRecruitingBandSummaries,
-  getBandRecruitDetail,
-  getBandDetail,
 } from "@/store/userStore";
 import { useRecommendedBands } from "@/features/band/hooks/useBandData";
 import type {} from "@/types/band";
@@ -138,7 +135,7 @@ const HomePage = () => {
 
       // status가 'RECRUITING'인 밴드만 필터링
       const recruitingBands = recruitingSummaries.filter(
-        (recruit: any) => recruit.status === "RECRUITING"
+        (recruit: Record<string, unknown>) => recruit.status === "RECRUITING"
       );
 
       if (recruitingBands.length === 0) {
@@ -148,16 +145,16 @@ const HomePage = () => {
       }
 
       // 모집중인 밴드들을 Band 인터페이스에 맞게 변환
-      const bands: Band[] = recruitingBands.map((recruit: any) => {
+      const bands: Band[] = recruitingBands.map((recruit: Record<string, unknown>) => {
         const goalTracks = Array.isArray(recruit?.tracks)
-          ? recruit.tracks.map((t: any) => ({
+          ? recruit.tracks.map((t: Record<string, unknown>) => ({
               title: String(t?.title || ""),
               artist: "",
               imageUrl: String(t?.imageUrl || ""),
             }))
           : [];
         const preferredArtists = Array.isArray(recruit?.artists)
-          ? recruit.artists.map((a: any) => ({
+          ? recruit.artists.map((a: Record<string, unknown>) => ({
               name: String(a?.name || ""),
               imageUrl: String(a?.imageUrl || ""),
             }))
@@ -203,7 +200,7 @@ const HomePage = () => {
           },
           bandName: String(recruit?.name || recruit?.bandName || ""),
           representativeSongFileUrl:
-            String(recruit?.representativeSongFile?.fileUrl || "") || null,
+            String((recruit?.representativeSongFile as Record<string, unknown>)?.fileUrl || "") || null,
         } as Band;
       });
 

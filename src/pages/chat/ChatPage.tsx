@@ -124,7 +124,9 @@ export default function ChatPage() {
               });
             }
             return;
-          } catch {}
+          } catch (error) {
+            console.warn("밴드 상세 정보 조회 실패:", error);
+          }
         }
         // 대체: 모집 상세 시도
         if (bandId) {
@@ -149,9 +151,13 @@ export default function ChatPage() {
                 description: intro,
               });
             }
-          } catch {}
+          } catch (error) {
+            console.warn("모집 상세 정보 조회 실패:", error);
+          }
         }
-      } catch {}
+      } catch (error) {
+        console.warn("밴드 정보 조회 실패:", error);
+      }
     })();
   }, [searchParams, messages, hasShownBotMessage, addBandBotMessage]);
 
