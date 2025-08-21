@@ -550,13 +550,13 @@ class WebSocketService {
       roomType === "BAND-MANAGER"
     ) {
       // 개인/밴드 채팅 형식
-      // PRIVATE일 때만 receiverId 필수
-      if (roomType === "PRIVATE" && !receiverId) {
-        console.error("PRIVATE에서는 receiverId가 필요합니다:", {
+      // PRIVATE, BAND-APPLICANT, BAND-MANAGER 모두 receiverId 필수
+      if (!receiverId) {
+        console.error(`${roomType}에서는 receiverId가 필요합니다:`, {
           roomType,
           receiverId,
         });
-        throw new Error("PRIVATE에서는 receiverId가 필요합니다.");
+        throw new Error(`${roomType}에서는 receiverId가 필요합니다.`);
       }
 
       messageBody = {

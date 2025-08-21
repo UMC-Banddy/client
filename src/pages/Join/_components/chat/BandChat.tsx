@@ -61,7 +61,7 @@ const BandChat = ({
       </div>
       {unreadCount ? (
         <div className="flex justify-center items-center size-[22px] rounded-full bg-[#C7242D] text-[#fff] text-wanted-sb-10">
-          {unreadCount}
+          {/* {unreadCount} */}
         </div>
       ) : null}
     </button>
