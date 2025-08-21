@@ -762,13 +762,17 @@ export const getRecruitingBandIds = async (): Promise<number[]> => {
     // 방법 4: 범위별 점진적 조회 (1~20, 21~40, 41~60, 61~80 등)
     try {
       const rangeSize = 20;
-      const maxRange = 100; // 최대 100까지 시도
+      const maxRange = 200; // 최대 200까지 시도 (더 넓게)
+      let emptyRangeCount = 0;
+      let totalFound = 0;
 
       for (let start = 1; start <= maxRange; start += rangeSize) {
         const end = start + rangeSize - 1;
         const rangeIds = Array.from({ length: rangeSize }, (_, i) => start + i);
 
-        console.log(`범위 ${start}-${end} 조회 시도...`);
+        console.log(
+          `범위 ${start}-${end} 조회 시도... (현재까지 ${totalFound}개 발견)`
+        );
 
         const batchPromises = rangeIds.map(async (id) => {
           try {
@@ -794,21 +798,30 @@ export const getRecruitingBandIds = async (): Promise<number[]> => {
 
         if (validIds.length > 0) {
           recruitingIds.push(...validIds);
+          totalFound += validIds.length;
           console.log(
             `범위 ${start}-${end}에서 ${validIds.length}개 밴드 발견:`,
             validIds
           );
         }
 
-        // 연속으로 3개 범위에서 아무것도 찾지 못하면 중단
+        // 연속으로 5개 범위에서 아무것도 찾지 못하면 중단
         if (validIds.length === 0) {
-          const emptyRanges = (start - 1) / rangeSize;
-          if (emptyRanges >= 3) {
+          emptyRangeCount++;
+          if (emptyRangeCount >= 5) {
             console.log(
-              `연속 ${emptyRanges}개 범위에서 밴드를 찾지 못함. 조회 중단.`
+              `연속 ${emptyRangeCount}개 범위에서 밴드를 찾지 못함. 조회 중단. 총 ${totalFound}개 발견.`
             );
             break;
           }
+        } else {
+          emptyRangeCount = 0; // 리셋
+        }
+
+        // 충분한 밴드를 찾았으면 중단
+        if (totalFound >= 50) {
+          console.log(`충분한 밴드를 찾았습니다 (${totalFound}개). 조회 중단.`);
+          break;
         }
       }
     } catch (error: any) {
@@ -819,9 +832,10 @@ export const getRecruitingBandIds = async (): Promise<number[]> => {
   }
 
   // 3) 임시 하드코딩 (운영 API 준비 전까지만 사용)
+  // 76번 밴드가 보이지 않는 문제 해결을 위해 최신 ID들 포함
   return [
     4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 28, 42, 45, 49, 51, 63, 64, 65, 67,
-    68, 76,
+    68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
   ];
 };
 

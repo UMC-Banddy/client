@@ -25,9 +25,9 @@ export const useChat = () => {
     sendLastRead,
   } = useWebSocket();
   // 현재 방 타입과 마지막으로 전송한 읽음 메시지 ID를 저장
-  const currentRoomTypeRef = useRef<"PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER">(
-    "GROUP"
-  );
+  const currentRoomTypeRef = useRef<
+    "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER"
+  >("GROUP");
   const lastReadSentIdRef = useRef<number | null>(null);
 
   // Auto scroll to bottom when new messages arrive
@@ -124,7 +124,11 @@ export const useChat = () => {
   const enterChatRoom = useCallback(
     async (
       roomId: string,
-      roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER" = "GROUP"
+      roomType:
+        | "PRIVATE"
+        | "GROUP"
+        | "BAND-APPLICANT"
+        | "BAND-MANAGER" = "GROUP"
     ) => {
       if (!isConnected) {
         console.warn("WebSocket이 연결되지 않았습니다. 연결을 시도합니다.");
@@ -138,7 +142,8 @@ export const useChat = () => {
 
       try {
         // WebSocket 채팅방 입장 (BAND는 BAND-APPLICANT로 매핑)
-        const mappedRoomType = roomType === "BAND" ? "BAND-APPLICANT" : roomType;
+        const mappedRoomType =
+          roomType === "BAND" ? "BAND-APPLICANT" : roomType;
         await joinRoom(roomId, mappedRoomType);
 
         // 채팅방 ID 설정
@@ -159,7 +164,11 @@ export const useChat = () => {
   const sendMessage = useCallback(
     (
       text: string,
-      roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER" = "GROUP",
+      roomType:
+        | "PRIVATE"
+        | "GROUP"
+        | "BAND-APPLICANT"
+        | "BAND-MANAGER" = "GROUP",
       receiverId?: number
     ) => {
       if (!currentRoomId || !isConnected) {
