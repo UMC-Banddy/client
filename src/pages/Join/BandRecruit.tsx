@@ -324,6 +324,7 @@ const BandRecruit = () => {
           return (
             <RecruitChat
               key={item.roomId}
+              roomId={item.roomId}
               name={item.nickname}
               thumbnail={item.imageUrl}
               content={item.content}
