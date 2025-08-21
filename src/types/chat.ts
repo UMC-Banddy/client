@@ -12,6 +12,7 @@ export interface ChatMessage {
     onPlay: () => void;
   };
   time: string;
+  timestamp?: string; // 서버에서 제공하는 원본 timestamp
   unreadCount?: number;
   showReadIndicator?: boolean; // 읽음 표시 여부
 }
@@ -212,6 +213,7 @@ export interface WebSocketMessage {
   content: string;
   timestamp: string;
   roomId: number;
+  type?: string; // 메시지 타입 (TEXT, IMAGE 등)
 }
 
 export interface WebSocketSendMessage {
