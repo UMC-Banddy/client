@@ -4,6 +4,7 @@ import { chatStore, chatActions } from "@/store/chatStore";
 import { useWebSocket } from "./useWebSocket";
 import { getChatMessages, leaveChatRoom } from "@/store/chatApi";
 import type { ChatMessage } from "@/types/chat";
+import webSocketService from "@/services/WebSocketService";
 
 export const useChat = () => {
   const snap = useSnapshot(chatStore);
@@ -168,8 +169,34 @@ export const useChat = () => {
         | "BAND-MANAGER",
       receiverId?: number
     ) => {
+      // 디버깅 로그 추가
+      console.log("sendMessage 호출:", {
+        currentRoomId,
+        isConnected,
+        roomType,
+        text: text.substring(0, 20) + (text.length > 20 ? "..." : "")
+      });
+      
+      // WebSocket 서비스 상태도 확인
+      const wsConnected = webSocketService.isConnected();
+      const isSubscribed = currentRoomId ? webSocketService.getSubscriptionStatus(currentRoomId) : false;
+      
+      console.log("WebSocket 상세 상태:", {
+        storeConnected: isConnected,
+        serviceConnected: wsConnected,
+        roomSubscribed: isSubscribed,
+        currentRoomId
+      });
+      
       if (!currentRoomId || !isConnected) {
-        console.error("채팅방에 입장하지 않았거나 WebSocket이 연결되지 않음");
+        console.error("채팅방에 입장하지 않았거나 WebSocket이 연결되지 않음", {
+          currentRoomId,
+          isConnected,
+          wsConnected,
+          isSubscribed
+        });
+        // 추가 디버깅을 위해 WebSocket 상태 출력
+        webSocketService.logConnectionStatus();
         return;
       }
 

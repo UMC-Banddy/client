@@ -257,6 +257,8 @@ export const useWebSocket = () => {
         subscribedRoomIdRef.current = roomId;
 
         console.log(`채팅방 ${roomId} 입장 성공 (타입: ${roomType})`);
+        console.log(`chatStore.currentRoomId 설정됨:`, roomId);
+        console.log(`subscribedRoomIdRef.current 설정됨:`, subscribedRoomIdRef.current);
       } catch (error) {
         console.error(`채팅방 ${roomId} 입장 실패:`, error);
       } finally {

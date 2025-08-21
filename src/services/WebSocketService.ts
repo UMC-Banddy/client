@@ -371,6 +371,7 @@ class WebSocketService {
 
       this.subscriptions.set(roomId, subscription);
       console.log(`그룹 채팅방 ${roomId} 구독 완료 (${destination})`);
+      console.log(`현재 구독 중인 방 목록:`, Array.from(this.subscriptions.keys()));
     } catch (error) {
       console.error(`그룹 채팅방 ${roomId} 구독 실패:`, error);
       throw error;
@@ -429,6 +430,7 @@ class WebSocketService {
 
       this.subscriptions.set(roomId, subscription);
       console.log(`개인 채팅방 ${roomId} 구독 완료 (${destination})`);
+      console.log(`현재 구독 중인 방 목록:`, Array.from(this.subscriptions.keys()));
     } catch (error) {
       console.error(`개인 채팅방 ${roomId} 구독 실패:`, error);
       throw error;
@@ -617,6 +619,20 @@ class WebSocketService {
 
   getCurrentSubscriptions(): string[] {
     return Array.from(this.subscriptions.keys());
+  }
+
+  // 디버깅용: 구독 상태 확인
+  getSubscriptionStatus(roomId: string): boolean {
+    return this.subscriptions.has(roomId);
+  }
+
+  // 디버깅용: 전체 연결 및 구독 상태 출력
+  logConnectionStatus(): void {
+    console.log("=== WebSocket 연결 상태 ===");
+    console.log("STOMP 연결됨:", this.stompClient?.connected || false);
+    console.log("구독 중인 방 목록:", Array.from(this.subscriptions.keys()));
+    console.log("UNREAD 구독 상태:", !!this.unreadSubscription);
+    console.log("========================");
   }
 }
 
