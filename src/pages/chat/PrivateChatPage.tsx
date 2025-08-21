@@ -76,13 +76,13 @@ const PrivateChatPage: React.FC = () => {
     if (urlRoomId && urlRoomType === "PRIVATE" && privateChatRooms.length > 0) {
       const roomId = parseInt(urlRoomId);
       const room = privateChatRooms.find((r: ChatRoomInfo) => r.roomId === roomId);
-      if (room) {
+      if (room && currentRoomId !== roomId) { // 현재 방과 다른 경우에만 입장
         console.log("🎯 URL 파라미터로 채팅방 입장:", roomId);
         enterChatRoom(roomId);
         handleEnterRoom(room);
       }
     }
-  }, [urlRoomId, urlRoomType, privateChatRooms, enterChatRoom]);
+  }, [urlRoomId, urlRoomType, privateChatRooms, currentRoomId]); // enterChatRoom 제거, currentRoomId 추가
 
   // 현재 채팅방 정보 찾기
   useEffect(() => {
@@ -120,20 +120,41 @@ const PrivateChatPage: React.FC = () => {
     const isMyMessage = msg.senderId === currentMemberId;
     const showReadIndicator = shouldShowReadIndicator(msg);
     
+    // 프로필 이미지 결정
+    let avatar = profile1Img; // 기본값
+    if (isMyMessage) {
+      // 내 메시지인 경우 현재 사용자의 프로필 이미지 사용
+      avatar = currentUser?.profileImageUrl || profile1Img;
+    } else {
+      // 상대방 메시지인 경우 현재 채팅방의 상대방 프로필 이미지 사용
+      if (currentChatRoom?.memberInfo?.profileImageUrl) {
+        avatar = currentChatRoom.memberInfo.profileImageUrl;
+      } else if (currentChatRoom?.memberInfos && currentChatRoom.memberInfos.length > 0) {
+        // memberInfos에서 상대방 찾기
+        const otherMember = currentChatRoom.memberInfos.find(
+          member => member.memberId !== currentMemberId
+        );
+        if (otherMember?.profileImageUrl) {
+          avatar = otherMember.profileImageUrl;
+        }
+      }
+    }
+    
     console.log("🔄 메시지 변환:", {
       messageId: msg.messageId,
       senderId: msg.senderId,
       isMyMessage,
       showReadIndicator,
       isRead: msg.isRead,
-      readBy: msg.readBy
+      readBy: msg.readBy,
+      avatar: avatar
     });
     
     return {
       id: msg.messageId.toString(),
       type: isMyMessage ? "me" : "other",
       name: msg.senderName,
-      avatar: profile1Img, // 기본 이미지 사용
+      avatar: avatar, // 실제 프로필 이미지 사용
       text: msg.content,
       time: new Date(msg.timestamp).toLocaleTimeString("ko-KR", {
         hour: "2-digit",
@@ -318,6 +339,41 @@ const PrivateChatPage: React.FC = () => {
       </div>
     );
   }
+
+  // 뒤로가기 이벤트 처리
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (currentRoomId) {
+        console.log("페이지 새로고침/닫기 감지, 채팅방 정리 중...");
+        leaveChatRoom();
+      }
+    };
+
+    const handlePopState = () => {
+      if (currentRoomId) {
+        console.log("뒤로가기 감지, 채팅방 정리 중...");
+        leaveChatRoom();
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [currentRoomId, leaveChatRoom]);
+
+  // 컴포넌트 언마운트 시 채팅방 정리
+  useEffect(() => {
+    return () => {
+      console.log("PrivateChatPage 언마운트, 채팅방 정리 중...");
+      if (currentRoomId) {
+        leaveChatRoom();
+      }
+    };
+  }, [currentRoomId, leaveChatRoom]);
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#121212]">

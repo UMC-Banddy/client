@@ -11,7 +11,7 @@ import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
 import { useChat } from "./hooks/useChat";
 import { useWebSocket } from "./hooks/useWebSocket";
-import { authStore } from "@/store/authStore";
+// import { authStore } from "@/store/authStore"; // eslint 에러로 인해 임시 주석
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -175,7 +175,7 @@ export default function ChatPage() {
       // 상대방 정보 찾기 (현재 사용자 제외)
       // TODO: 현재 사용자 ID를 가져오는 방법 구현 필요
       // const currentUserId = authStore.user?.memberId;
-      const otherMember = members.find((member: any) => member.memberId !== 0); // 임시로 0 제외
+      const otherMember = members.find((member: { memberId: number }) => member.memberId !== 0); // 임시로 0 제외
 
       if (otherMember) {
         const name = otherMember.nickname || "알 수 없음";

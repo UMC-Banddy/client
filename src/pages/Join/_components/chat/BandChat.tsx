@@ -17,11 +17,12 @@ const BandChat = ({
   thumbnail,
   unreadCount,
   isHost = false,
-  roomId,
-  roomType,
+  // roomId, // eslint 에러로 인해 임시 주석
+  // roomType, // eslint 에러로 인해 임시 주석
 }: BandChatProps) => {
   const navigate = useNavigate();
 
+  /* eslint로 인해 임시 비활성화
   const handleClick = () => {
     if (isHost) {
       // 밴드 관리자인 경우 밴드 모집 페이지로 이동
@@ -31,6 +32,7 @@ const BandChat = ({
       navigate(`/home/chat?roomId=${roomId}&roomType=${roomType}`);
     }
   };
+  */
 
   return (
     <button

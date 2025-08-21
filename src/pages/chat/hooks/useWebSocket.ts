@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, 
+  // useEffect, // eslint 에러로 인해 임시 주석
+  useCallback, useRef } from "react";
 import { useSnapshot } from "valtio";
 import { chatStore, chatActions } from "@/store/chatStore";
 import webSocketService from "@/services/WebSocketService";
@@ -15,10 +17,13 @@ interface UnreadPayload {
 export const useWebSocket = () => {
   const snap = useSnapshot(chatStore);
   const authSnap = useVSnapshot(authStore);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [
+    isConnecting, 
+    // setIsConnecting // eslint 에러로 인해 임시 주석
+  ] = useState(false);
 
   // 핵심: ref로 상태 관리하여 불필요한 리렌더 방지
-  const mountedOnceRef = useRef(false); // StrictMode 이중 마운트 방지
+  // const mountedOnceRef = useRef(false); // StrictMode 이중 마운트 방지 // eslint 에러로 인해 임시 주석
   const joinedRoomsRef = useRef<Set<string>>(new Set()); // join 한번만
   const subscribedRoomIdRef = useRef<string | null>(null);
   const isJoiningRef = useRef(false);
@@ -225,9 +230,9 @@ export const useWebSocket = () => {
         subscribedRoomIdRef.current = roomId;
 
         console.log(`채팅방 ${roomId} 입장 성공 (타입: ${roomType})`);
-        console.log(`chatStore.currentRoomId 설정됨:`, roomId);
+        console.log("chatStore.currentRoomId 설정됨:", roomId);
         console.log(
-          `subscribedRoomIdRef.current 설정됨:`,
+          "subscribedRoomIdRef.current 설정됨:",
           subscribedRoomIdRef.current
         );
       } catch (error) {

@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNotifications } from "@/features/notification/hooks/useNotifications";
 import { useOtherProfile } from "@/features/profile/hooks/useOtherProfile";
 import { useMarkNotificationAsRead } from "@/features/notification/hooks/useMarkNotificationAsRead";
@@ -15,6 +16,7 @@ import CommonBtn from "@/shared/components/CommonBtn";
 export default function NotificationDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const queryClient = useQueryClient();
   const [showToast, setShowToast] = useState(false);
   const { notifications, isLoading, error } = useNotifications();
   
@@ -61,15 +63,20 @@ export default function NotificationDetailPage() {
       
       console.log("✅ 채팅방 생성 성공:", response);
       
+      // 채팅방 목록 캐시 무효화 (양쪽 사용자 모두에게 채팅방이 보이도록)
+      await queryClient.invalidateQueries({ queryKey: ["chatRooms"] });
+      
+      // 채팅방 목록이 업데이트될 때까지 대기
+      await queryClient.refetchQueries({ queryKey: ["chatRooms"] });
+      
       // 성공 토스트 표시
       setChatToast({ message: "채팅방이 생성되었습니다.", visible: true });
       
-      // 2초 후 채팅방으로 이동
+      // 1초 후 채팅방으로 이동
       setTimeout(() => {
         setChatToast({ message: "", visible: false });
-        // navigate(`/home/private-chat?roomId=${response.roomId}&receiverId=${notification.senderId}`);
-        navigate("/home/private-chat");
-      }, 2000);
+        navigate(`/home/private-chat?roomId=${response.roomId}&roomType=PRIVATE`); // PrivateChatPage로 라우팅
+      }, 1000); // 1초로 단축
       
     } catch (error) {
       console.error("❌ 채팅 요청 수락 실패:", error);

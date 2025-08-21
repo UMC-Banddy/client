@@ -5,7 +5,10 @@ import { authStore } from "@/store/authStore";
 
 import { chatActions } from "@/store/chatStore";
 import { API_ENDPOINTS } from "@/constants";
-import type { WebSocketMessage, WebSocketSendMessage } from "@/types/chat";
+import type { 
+  WebSocketMessage, 
+  // WebSocketSendMessage // eslint로 인해 임시 주석
+} from "@/types/chat";
 
 interface StompFrame {
   command: string;
@@ -376,7 +379,7 @@ class WebSocketService {
       this.subscriptions.set(roomId, subscription);
       console.log(`그룹 채팅방 ${roomId} 구독 완료 (${destination})`);
       console.log(
-        `현재 구독 중인 방 목록:`,
+        "현재 구독 중인 방 목록:",
         Array.from(this.subscriptions.keys())
       );
     } catch (error) {
@@ -441,7 +444,7 @@ class WebSocketService {
       this.subscriptions.set(roomId, subscription);
       console.log(`개인 채팅방 ${roomId} 구독 완료 (${destination})`);
       console.log(
-        `현재 구독 중인 방 목록:`,
+        "현재 구독 중인 방 목록:",
         Array.from(this.subscriptions.keys())
       );
     } catch (error) {

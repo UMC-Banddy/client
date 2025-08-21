@@ -93,7 +93,7 @@ const NormalChat = ({
     }
 
     if (roomType === "PRIVATE") {
-      navigate(`/home/chat?roomId=${roomId}&roomType=PRIVATE`);
+      navigate(`/home/private-chat?roomId=${roomId}&roomType=PRIVATE`); // PrivateChatPage로 라우팅
       return;
     }
     if (roomType === "GROUP") {

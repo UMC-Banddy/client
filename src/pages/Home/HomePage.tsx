@@ -12,8 +12,8 @@ import type {} from "@/types/band";
 import { createGroupChat } from "@/store/chatApi";
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
-import { useSnapshot } from "valtio";
-import { authStore } from "@/store/authStore";
+// import { useSnapshot } from "valtio"; // eslint 에러로 인해 임시 주석
+// import { authStore } from "@/store/authStore"; // eslint 에러로 인해 임시 주석
 import { useWebSocketConnection } from "./hooks/useWebSocketConnection";
 
 // 이미지 import
@@ -99,7 +99,7 @@ const cleanSessionName = (sessionName: string): string => {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const authSnap = useSnapshot(authStore);
+  // const authSnap = useSnapshot(authStore); // eslint 에러로 인해 임시 주석
   const [myBands, setMyBands] = useState<Band[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedBand, setSelectedBand] = useState<Band | null>(null);

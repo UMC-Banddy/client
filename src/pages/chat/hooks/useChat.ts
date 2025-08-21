@@ -19,7 +19,7 @@ export const useChat = () => {
   const {
     isConnected,
     currentRoomId,
-    connect,
+    // connect, // eslint 에러로 인해 임시 주석
     joinRoom,
     leaveRoom,
     sendMessage: sendWebSocketMessage,
