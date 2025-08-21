@@ -23,7 +23,11 @@ const BandChat = ({
       className="flex justify-between items-center w-full bg-transparent border-none cursor-pointer"
       onClick={() => {
         if (isHost) {
+          // 채팅 선택 페이지 이동
           navigate(`/join/band-recruit/${id}`);
+        } else {
+          // 밴드 채팅방 이동
+          navigate(`/home/private-chat?roomId=${id}&roomType=BAND-APPLICANT`);
         }
       }}
     >

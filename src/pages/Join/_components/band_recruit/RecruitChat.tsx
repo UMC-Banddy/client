@@ -1,7 +1,9 @@
 import clsx from "clsx";
 import CheckBox from "./CheckBox";
+import { useNavigate } from "react-router-dom";
 
 interface RecruitChatProps {
+  roomId?: number;
   enableCheck?: boolean;
   checked?: boolean;
   onCheck?: () => void;
@@ -19,6 +21,7 @@ interface RecruitChatProps {
  * @returns
  */
 const RecruitChat = ({
+  roomId,
   enableCheck = false,
   checked = false,
   onCheck,
@@ -29,6 +32,8 @@ const RecruitChat = ({
   passFail,
   isOnlyName = false,
 }: RecruitChatProps) => {
+  const navigate = useNavigate();
+
   const renderPassFail = () => {
     let text = "";
     if (passFail === "PASS") {
@@ -53,7 +58,14 @@ const RecruitChat = ({
   };
 
   return (
-    <div className="flex items-center w-full">
+    <button
+      className="flex items-center w-full"
+      onClick={() => {
+        if (!isOnlyName) {
+          navigate(`/home/private-chat?roomId=${roomId}&roomType=BAND-MANAGER`);
+        }
+      }}
+    >
       <div className="flex justify-between w-full">
         <div className="flex items-center gap-[12px]">
           <div
@@ -78,7 +90,7 @@ const RecruitChat = ({
           <p className="text-hakgyo-r-14 text-[#959595]">{lastMessageAt}</p>
         )}
       </div>
-    </div>
+    </button>
   );
 };
 
