@@ -35,20 +35,26 @@ export default function ChatPage() {
   // Initialize current room and messages
   useEffect(() => {
     const roomId = searchParams.get("roomId");
-    const roomTypeParam = (searchParams.get("roomType") || "GROUP") as
+    const roomTypeParam = searchParams.get("roomType") as
       | "PRIVATE"
       | "GROUP"
       | "BAND-APPLICANT"
-      | "BAND-MANAGER";
-    if (roomId) {
+      | "BAND-MANAGER"
+      | null;
+    if (roomId && roomTypeParam) {
       // REST join + WS subscribe + 메시지 로드
       enterChatRoom(roomId, roomTypeParam);
     }
 
-    // 컴포넌트 언마운트 시 정리
+    // 컴포넌트 언마운트 시 정리 (더 안전하게)
     return () => {
       console.log("ChatPage 언마운트, 채팅방 정리 중...");
-      exitChatRoom();
+      // 비동기 함수를 동기적으로 처리
+      try {
+        exitChatRoom();
+      } catch (error) {
+        console.warn("ChatPage cleanup 중 오류:", error);
+      }
     };
   }, [searchParams, enterChatRoom, exitChatRoom]);
 
@@ -56,12 +62,20 @@ export default function ChatPage() {
   useEffect(() => {
     const handleBeforeUnload = () => {
       console.log("페이지 새로고침/닫기, 채팅방 정리 중...");
-      exitChatRoom();
+      try {
+        exitChatRoom();
+      } catch (error) {
+        console.warn("beforeunload cleanup 중 오류:", error);
+      }
     };
 
     const handlePopState = () => {
       console.log("뒤로가기 감지, 채팅방 정리 중...");
-      exitChatRoom();
+      try {
+        exitChatRoom();
+      } catch (error) {
+        console.warn("popstate cleanup 중 오류:", error);
+      }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
