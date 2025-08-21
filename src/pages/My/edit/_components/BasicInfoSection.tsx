@@ -56,7 +56,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
                 onKeyDown={handleKeyPress}
-                className="w-full bg-transparent text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white border-none outline-none"
+                className="w-full bg-transparent text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-white border-none outline-none"
                 autoFocus
               />
               <div className="flex gap-2 mt-2">
@@ -104,7 +104,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 type="text"
                 value={name}
                 onChange={(e) => onNameChange?.(e.target.value)}
-                className="w-full bg-transparent text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold text-white border-none outline-none"
+                className="w-full bg-transparent text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-white border-none outline-none"
                 placeholder="이름을 입력하세요"
               />
             </>
@@ -133,7 +133,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
       <div className="flex items-center justify-start">
         <div className="flex items-center h-8 sm:h-10 md:h-12 lg:h-14 xl:h-16 2xl:h-18">
           <div
-            className="bg-transparent text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl text-white border-none outline-none w-8 sm:w-10 md:w-12 lg:w-14 xl:w-16 2xl:w-18 p-0 m-0 text-left cursor-text flex items-center"
+            className="bg-transparent text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-white border-none outline-none w-7 sm:w-8 md:w-10 lg:w-12 xl:w-14 2xl:w-16 p-0 m-0 text-left cursor-text flex items-center"
             contentEditable
             suppressContentEditableWarning
             onBlur={(e) => onAgeChange?.(e.currentTarget.textContent + "세")}
@@ -148,16 +148,16 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           >
             {age.replace("세", "")}
           </div>
-          <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl text-white flex items-center">
+          <span className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-white flex items-center">
             세
           </span>
-          <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl text-white mx-2 flex items-center">
+          <span className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-white mx-2 flex items-center">
             |
           </span>
           <select
             value={gender}
             onChange={(e) => onGenderChange?.(e.target.value)}
-            className="bg-transparent text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl text-white border-none outline-none cursor-pointer flex items-center"
+            className="bg-transparent text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl text-white border-none outline-none cursor-pointer flex items-center"
             style={{
               padding: 0,
               margin: 0,
