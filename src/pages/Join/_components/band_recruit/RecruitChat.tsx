@@ -1,7 +1,9 @@
 import clsx from "clsx";
 import CheckBox from "./CheckBox";
+import { useNavigate } from "react-router-dom";
 
 interface RecruitChatProps {
+  roomId?: number;
   enableCheck?: boolean;
   checked?: boolean;
   onCheck?: () => void;
@@ -19,6 +21,7 @@ interface RecruitChatProps {
  * @returns
  */
 const RecruitChat = ({
+  roomId,
   enableCheck = false,
   checked = false,
   onCheck,
@@ -29,6 +32,8 @@ const RecruitChat = ({
   passFail,
   isOnlyName = false,
 }: RecruitChatProps) => {
+  const navigate = useNavigate();
+
   const renderPassFail = () => {
     let text = "";
     if (passFail === "PASS") {
@@ -52,8 +57,32 @@ const RecruitChat = ({
     );
   };
 
+  const parseLastMessageAt = (lastMessageAt: string) => {
+    // 오늘이면 시간만 00:00으로, 이외의 경우 날짜를 00.00 형식으로
+    const today = new Date();
+    const lastMessageAtDate = new Date(lastMessageAt);
+    if (today.toDateString() === lastMessageAtDate.toDateString()) {
+      return lastMessageAtDate.toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    }
+    return lastMessageAtDate.toLocaleDateString("ko-KR", {
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
   return (
-    <div className="flex items-center w-full">
+    <button
+      className="flex items-center w-full"
+      onClick={() => {
+        if (!isOnlyName) {
+          navigate(`/home/private-chat?roomId=${roomId}&roomType=BAND-MANAGER`);
+        }
+      }}
+    >
       <div className="flex justify-between w-full">
         <div className="flex items-center gap-[12px]">
           <div
@@ -75,10 +104,12 @@ const RecruitChat = ({
         {enableCheck ? (
           <CheckBox checked={checked} onClick={onCheck!} />
         ) : (
-          <p className="text-hakgyo-r-14 text-[#959595]">{lastMessageAt}</p>
+          <p className="text-hakgyo-r-14 text-[#959595]">
+            {parseLastMessageAt(lastMessageAt!)}
+          </p>
         )}
       </div>
-    </div>
+    </button>
   );
 };
 
