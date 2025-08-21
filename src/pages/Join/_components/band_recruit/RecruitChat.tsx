@@ -57,6 +57,23 @@ const RecruitChat = ({
     );
   };
 
+  const parseLastMessageAt = (lastMessageAt: string) => {
+    // 오늘이면 시간만 00:00으로, 이외의 경우 날짜를 00.00 형식으로
+    const today = new Date();
+    const lastMessageAtDate = new Date(lastMessageAt);
+    if (today.toDateString() === lastMessageAtDate.toDateString()) {
+      return lastMessageAtDate.toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    }
+    return lastMessageAtDate.toLocaleDateString("ko-KR", {
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
   return (
     <button
       className="flex items-center w-full"
@@ -87,7 +104,9 @@ const RecruitChat = ({
         {enableCheck ? (
           <CheckBox checked={checked} onClick={onCheck!} />
         ) : (
-          <p className="text-hakgyo-r-14 text-[#959595]">{lastMessageAt}</p>
+          <p className="text-hakgyo-r-14 text-[#959595]">
+            {parseLastMessageAt(lastMessageAt!)}
+          </p>
         )}
       </div>
     </button>
