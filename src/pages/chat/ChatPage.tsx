@@ -97,9 +97,7 @@ export default function ChatPage() {
       console.log("뒤로가기 감지, 구독만 해제 중...");
       try {
         // 뒤로가기 시에는 구독만 해제하고 채팅방을 나가지 않음
-        if (leaveRoom) {
-          leaveRoom();
-        }
+        leaveRoom();
       } catch (error) {
         console.warn("popstate 구독 해제 중 오류:", error);
       }
@@ -175,7 +173,9 @@ export default function ChatPage() {
       // 상대방 정보 찾기 (현재 사용자 제외)
       // TODO: 현재 사용자 ID를 가져오는 방법 구현 필요
       // const currentUserId = authStore.user?.memberId;
-      const otherMember = members.find((member: { memberId: number }) => member.memberId !== 0); // 임시로 0 제외
+      const otherMember = members.find(
+        (member: { memberId: number }) => member.memberId !== 0
+      ); // 임시로 0 제외
 
       if (otherMember) {
         const name = otherMember.nickname || "알 수 없음";
@@ -290,9 +290,15 @@ export default function ChatPage() {
   };
 
   const handleBack = useCallback(() => {
-    exitChatRoom();
-    navigate(-1);
-  }, [navigate, exitChatRoom]);
+    try {
+      leaveRoom(); // WebSocket 구독만 해제
+      console.log("뒤로가기: 채팅방 구독 해제 완료");
+    } catch (error) {
+      console.warn("뒤로가기 구독 해제 중 오류:", error);
+    } finally {
+      navigate(-1); // 이전 화면으로 이동
+    }
+  }, [leaveRoom, navigate]);
 
   const handleReport = useCallback(() => {
     console.log("신고하기");
