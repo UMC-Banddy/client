@@ -101,7 +101,7 @@ const NormalChat = ({
       return;
     }
     if (roomType === "BAND") {
-      navigate(`/home/chat?roomId=${roomId}&roomType=BAND`);
+      navigate(`/home/private-chat?roomId=${roomId}&roomType=BAND`);
       return;
     }
 
@@ -138,7 +138,7 @@ const NormalChat = ({
       <div className="flex items-center gap-[8.92px]">
         {unreadCount && roomType !== "PRIVATE" && (
           <div className="flex justify-center items-center size-[22px] rounded-full bg-[#C7242D] text-[#fff] text-wanted-sb-10">
-            {unreadCount}
+            {/* {unreadCount} */}
           </div>
         )}
         {pinnedAt && (

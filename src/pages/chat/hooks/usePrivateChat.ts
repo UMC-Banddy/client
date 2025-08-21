@@ -44,6 +44,7 @@ export const usePrivateChat = () => {
   const { data: currentUser } = useCurrentUser();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentRoomId, setCurrentRoomId] = useState<number | null>(null);
+  const [currentRoomType, setCurrentRoomType] = useState<"PRIVATE" | "BAND-APPLICANT" | "BAND-MANAGER" | "GROUP" | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const messageEndRef = useRef<HTMLDivElement>(null);
@@ -74,13 +75,13 @@ export const usePrivateChat = () => {
   }, [isConnected]);
 
   // 채팅방 입장
-  const enterChatRoom = useCallback(async (roomId: number) => {
+  const enterChatRoom = useCallback(async (roomId: number, roomType: "PRIVATE" | "BAND-APPLICANT" | "BAND-MANAGER" | "GROUP") => {
     if (currentRoomId === roomId) {
       console.log("이미 같은 채팅방에 있습니다.");
       return;
     }
     
-    console.log("🎯 채팅방 입장:", roomId);
+    console.log("🎯 채팅방 입장:", roomId, "타입:", roomType);
     setIsLoading(true);
     
     try {
@@ -234,6 +235,7 @@ export const usePrivateChat = () => {
       }
 
       setCurrentRoomId(roomId);
+      setCurrentRoomType(roomType);
       console.log("✅ 채팅방 입장 완료:", roomId);
     } catch (error) {
       console.error("❌ 채팅방 입장 실패:", error);
@@ -260,6 +262,7 @@ export const usePrivateChat = () => {
       setMessages([]);
       setParticipants([]);
       setLastSentReadMessageId(0);
+      setCurrentRoomType(null);
       
       console.log("✅ 채팅방 퇴장 완료:", currentRoomId);
     } catch (error) {
@@ -274,7 +277,10 @@ export const usePrivateChat = () => {
       console.log("📋 전송 파라미터:", { roomId, receiverId, content });
       
       try {
-        webSocketService.sendMessage(roomId.toString(), content, "PRIVATE", receiverId);
+        if (!currentRoomType) {
+          throw new Error("채팅방 타입이 설정되지 않았습니다.");
+        }
+        webSocketService.sendMessage(roomId.toString(), content, currentRoomType, receiverId);
         console.log("✅ webSocketService.sendMessage 호출 완료");
         return { roomId, content };
       } catch (error) {
@@ -355,18 +361,21 @@ export const usePrivateChat = () => {
 
     try {
       // WebSocket으로 읽음 상태 전송
-      // 개인 채팅은 PRIVATE 목적지로 전송
+      if (!currentRoomType) {
+        console.error("❌ 채팅방 타입이 설정되지 않아 읽음 상태를 전송할 수 없습니다.");
+        return;
+      }
       webSocketService.sendLastRead(
         targetRoomId.toString(),
         messageId,
-        "PRIVATE"
+        currentRoomType
       );
       setLastSentReadMessageId(messageId);
       console.log("📖 읽음 상태 전송 성공:", messageId, "roomId:", targetRoomId);
     } catch (error) {
       console.error("❌ 읽음 상태 전송 실패:", error);
     }
-  }, [currentRoomId, isConnected, lastSentReadMessageId]);
+  }, [currentRoomId, isConnected, lastSentReadMessageId, currentRoomType]);
 
   // 읽음 상태 수신 처리 함수
   const handleReadMessage = useCallback((readMessage: ReadMessage) => {
