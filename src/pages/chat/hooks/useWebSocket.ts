@@ -181,7 +181,8 @@ export const useWebSocket = () => {
         return;
       }
 
-      if (subscribedRoomIdRef.current === roomId) {
+      // 이미 같은 방에 구독 중인지 더 엄격하게 체크
+      if (subscribedRoomIdRef.current === roomId && webSocketService.isConnected()) {
         console.log(`이미 ${roomId} 방에 구독 중입니다.`);
         return;
       }
@@ -191,17 +192,21 @@ export const useWebSocket = () => {
       try {
         isJoiningRef.current = true;
 
-        // 다른 방에 구독 중이면 해제
+        // 다른 방에 구독 중이면 해제 (더 안전하게)
         if (
           subscribedRoomIdRef.current &&
           subscribedRoomIdRef.current !== roomId
         ) {
           console.log(`기존 방 ${subscribedRoomIdRef.current} 구독 해제 중...`);
-          webSocketService.unsubscribeFromRoom(subscribedRoomIdRef.current);
-          subscribedRoomIdRef.current = null;
-
-          // 구독 해제 후 잠시 대기
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          try {
+            webSocketService.unsubscribeFromRoom(subscribedRoomIdRef.current);
+            subscribedRoomIdRef.current = null;
+            // 구독 해제 후 더 긴 대기 시간
+            await new Promise((resolve) => setTimeout(resolve, 300));
+          } catch (error) {
+            console.warn("구독 해제 중 오류:", error);
+            subscribedRoomIdRef.current = null;
+          }
         }
 
         // WebSocket 연결 상태 확인 및 연결
@@ -209,8 +214,8 @@ export const useWebSocket = () => {
           console.log("WebSocket 연결 시도 중...");
           try {
             await connect();
-            // 연결 후 잠시 대기
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+                      // 연결 후 더 긴 대기 시간
+          await new Promise((resolve) => setTimeout(resolve, 1500));
           } catch (error) {
             console.error("WebSocket 연결 실패:", error);
             return;
@@ -287,7 +292,7 @@ export const useWebSocket = () => {
         | "PRIVATE"
         | "GROUP"
         | "BAND-APPLICANT"
-        | "BAND-MANAGER" = "GROUP"
+        | "BAND-MANAGER"
     ) => {
       if (!isConnected) return;
       try {
