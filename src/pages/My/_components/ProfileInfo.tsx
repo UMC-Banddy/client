@@ -32,7 +32,7 @@ export default function ProfileInfo({
           {showEdit && (
             <button
               className="flex items-center gap-[4px] outline outline-[#959595] bg-[#292929] rounded-full px-[15px] py-[10px] text-wanted-sb-12 text-[#E9E9E9] max-w-[71px] max-h-[34px]"
-              onClick={() => navigate("/pre-test/profile/edit")}
+              onClick={() => navigate("/my/edit")}
             >
               <img src={Pencil} alt="pencil" className="w-[4vw] h-[4vw] max-w-[16px] max-h-[16px]"/>수정
             </button>

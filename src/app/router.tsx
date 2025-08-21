@@ -48,6 +48,7 @@ import ProfileDetailPage from "@/pages/Profile/ProfileDetailPage";
 import ProtectedRoute from "@/shared/components/ProtectedRoute";
 import { Outlet } from "react-router-dom";
 import JoinChangeChatInfo from "@/pages/Join/JoinChangeChatInfo";
+import MyEditPage from "@/pages/My/edit/MyEditPage";
 
 const routes = [
   {
@@ -120,7 +121,7 @@ const routes = [
       {
         path: "/signup/complete",
         element: (
-          <ProtectedRoute requireAuth={false} allowAuthedOnPublic={true}>
+          <ProtectedRoute requireAuth={false}>
             <SignupCompletePage />
           </ProtectedRoute>
         ),
@@ -171,6 +172,14 @@ const routes = [
         element: (
           <ProtectedRoute requireAuth={true}>
             <MyPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/my/edit",
+        element: (
+          <ProtectedRoute requireAuth={true}>
+            <MyEditPage />
           </ProtectedRoute>
         ),
       },
@@ -369,7 +378,7 @@ const routes = [
       {
         path: "/pre-test/artist",
         element: (
-          <ProtectedRoute requireAuth={false} allowAuthedOnPublic={true}>
+          <ProtectedRoute requireAuth={false}>
             <PretestArtistPage />
           </ProtectedRoute>
         ),
@@ -377,7 +386,7 @@ const routes = [
       {
         path: "/pre-test/session",
         element: (
-          <ProtectedRoute requireAuth={false} allowAuthedOnPublic={true}>
+          <ProtectedRoute requireAuth={false}>
             <PretestSessionPage />
           </ProtectedRoute>
         ),
@@ -385,7 +394,7 @@ const routes = [
       {
         path: "/pre-test/profile/complete",
         element: (
-          <ProtectedRoute requireAuth={false} allowAuthedOnPublic={true}>
+          <ProtectedRoute requireAuth={false}>
             <PretestProfileCompletePage />
           </ProtectedRoute>
         ),
@@ -393,7 +402,7 @@ const routes = [
       {
         path: "/pre-test/profile/edit",
         element: (
-          <ProtectedRoute requireAuth={false} allowAuthedOnPublic={true}>
+          <ProtectedRoute requireAuth={false}>
             <PretestProfileEditPage />
           </ProtectedRoute>
         ),

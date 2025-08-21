@@ -328,6 +328,35 @@ export const profileAPI = {
     }
   },
 
+  // 특정 멤버 프로필 조회
+  getMemberProfile: async (memberId: number): Promise<{ isSuccess: boolean; result: unknown }> => {
+    try {
+      const response = await API.get(API_ENDPOINTS.PROFILE.OTHER(memberId.toString()));
+      return response.data;
+    } catch (error: unknown) {
+      console.error("멤버 프로필 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  // 프로필 미디어 업로드 (S3)
+  uploadProfileMedia: async (file: File): Promise<{ isSuccess: boolean; result: { url: string } }> => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await API.post(API_ENDPOINTS.PROFILE.MEDIA_UPLOAD, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error: unknown) {
+      console.error("프로필 미디어 업로드 실패:", error);
+      throw error;
+    }
+  },
+
   // 프로필 수정
   updateProfile: async (profileData: {
     nickname?: string;
