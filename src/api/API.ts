@@ -33,10 +33,16 @@ export interface Genre {
 }
 
 // Survey 제출 데이터 타입 정의
+// 백엔드 사양에 맞춘 사전테스트 제출 스키마
 export interface SurveyData {
-  selectedArtists: string[];
-  profileImage?: File;
-  mediaFile?: File;
+  genreNames: string[];
+  keywords: Record<string, unknown>;
+  artistIds: number[];
+  sessions: Array<{ sessionId: number; level: string; sessionType?: string }>;
+  snsLinks: string[];
+  profileImageUrl: string | null;
+  bio: string | null;
+  mediaUrl: string | null;
 }
 
 // Session 타입 정의 (API 응답)
@@ -399,22 +405,33 @@ export const profileAPI = {
 
         // 최소 전송 규칙: 빈 문자열/빈 배열/undefined/null 제거 + 세션/레벨 정규화
         const sessionTypeMapping: Record<string, string> = {
-          "🎤 보컬 🎤": "vocal",
-          보컬: "vocal",
-          "🎸 일렉 기타 🎸": "electric_guitar",
-          "일렉 기타": "electric_guitar",
-          "🪕 어쿠스틱 기타 🪕": "acoustic_guitar",
-          "어쿠스틱 기타": "acoustic_guitar",
-          "🎵 베이스 🎵": "bass",
-          베이스: "bass",
-          "🥁 드럼 🥁": "drums",
-          드럼: "drums",
-          "🎹 키보드 🎹": "keyboard",
-          키보드: "keyboard",
-          "🎻 바이올린 🎻": "violin",
-          바이올린: "violin",
-          "🎺 트럼펫 🎺": "trumpet",
-          트럼펫: "trumpet",
+          // 한글/이모지 라벨 → 백엔드 enum
+          "🎤 보컬 🎤": "VOCAL",
+          보컬: "VOCAL",
+          "🎸 일렉 기타 🎸": "ELECTRIC_GUITAR",
+          "일렉 기타": "ELECTRIC_GUITAR",
+          "🪕 어쿠스틱 기타 🪕": "ACOUSTIC_GUITAR",
+          "어쿠스틱 기타": "ACOUSTIC_GUITAR",
+          "🎵 베이스 🎵": "BASS",
+          베이스: "BASS",
+          "🥁 드럼 🥁": "DRUM",
+          드럼: "DRUM",
+          "🎹 키보드 🎹": "KEYBOARD",
+          키보드: "KEYBOARD",
+          "🎻 바이올린 🎻": "VIOLIN",
+          바이올린: "VIOLIN",
+          "🎺 트럼펫 🎺": "TRUMPET",
+          트럼펫: "TRUMPET",
+
+          // 영문 키(소문자) → 백엔드 enum
+          vocal: "VOCAL",
+          electric_guitar: "ELECTRIC_GUITAR",
+          acoustic_guitar: "ACOUSTIC_GUITAR",
+          bass: "BASS",
+          drum: "DRUM",
+          keyboard: "KEYBOARD",
+          violin: "VIOLIN",
+          trumpet: "TRUMPET",
         };
 
         type Updatable = typeof jsonData & {
@@ -477,37 +494,30 @@ export const surveyAPI = {
   // Survey 제출 (아이디 기반 저장 지원)
   submitSurvey: async (data: SurveyData, memberId?: string): Promise<void> => {
     try {
-      // memberId가 있으면 아이디 기반 저장, 없으면 토큰 기반 저장
-      const requestData = {
-        selectedArtists: data.selectedArtists,
-        ...(memberId && { memberId }), // memberId가 있으면 포함
+      if (!memberId) {
+        throw new Error("memberId is required for survey submission");
+      }
+      // 백엔드 스키마에 맞춘 JSON 본문 구성
+      const requestData: SurveyData = {
+        genreNames: data.genreNames ?? [],
+        keywords: data.keywords ?? {},
+        artistIds: data.artistIds ?? [],
+        sessions: data.sessions ?? [],
+        snsLinks: data.snsLinks ?? [],
+        profileImageUrl: data.profileImageUrl ?? null,
+        bio: data.bio ?? null,
+        mediaUrl: data.mediaUrl ?? null,
       };
 
-      // API 스펙에 따라 항상 multipart/form-data로 전송
-      const formData = new FormData();
+      console.log("Survey 제출 데이터(JSON):", requestData);
 
-      console.log("Survey 제출 데이터:", requestData);
-      formData.append("request", JSON.stringify(requestData));
-
-      // 파일이 있는 경우에만 추가
-      if (data.profileImage) {
-        formData.append("profileImage", data.profileImage);
-      }
-
-      if (data.mediaFile) {
-        formData.append("mediaFile", data.mediaFile);
-      }
-
-      console.log("FormData 내용:");
-      for (const [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
-
-      const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await API.post(
+        API_ENDPOINTS.SURVEY.SUBMIT(memberId),
+        requestData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       return response.data;
     } catch (error: unknown) {
@@ -565,32 +575,5 @@ export const surveyAPI = {
     }
   },
 
-  // Session 데이터 제출 (아이디 기반 저장 지원)
-  submitSessionData: async (
-    data: SessionData,
-    memberId?: string
-  ): Promise<void> => {
-    try {
-      const formData = new FormData();
-
-      // memberId가 있으면 아이디 기반 저장, 없으면 토큰 기반 저장
-      const requestData = {
-        selectedSessions: data.selectedSessions,
-        ...(memberId && { memberId }), // memberId가 있으면 포함
-      };
-      
-      console.log("Session 제출 데이터:", requestData);
-      formData.append("request", JSON.stringify(requestData));
-
-      const response = await API.post(API_ENDPOINTS.SURVEY.SUBMIT, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Session 데이터 제출 실패:", error);
-      throw error;
-    }
-  },
+  // 단일 제출로 통합되었으므로 별도 세션 제출 API는 사용하지 않음
 };

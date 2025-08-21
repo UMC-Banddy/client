@@ -121,7 +121,7 @@ const routes = [
       {
         path: "/signup/complete",
         element: (
-          <ProtectedRoute requireAuth={false}>
+          <ProtectedRoute requireAuth={false} allowAuthedOnPublic={true}>
             <SignupCompletePage />
           </ProtectedRoute>
         ),
@@ -378,7 +378,7 @@ const routes = [
       {
         path: "/pre-test/artist",
         element: (
-          <ProtectedRoute requireAuth={false}>
+          <ProtectedRoute requireAuth={false} allowAuthedOnPublic={true}>
             <PretestArtistPage />
           </ProtectedRoute>
         ),
@@ -386,7 +386,7 @@ const routes = [
       {
         path: "/pre-test/session",
         element: (
-          <ProtectedRoute requireAuth={false}>
+          <ProtectedRoute requireAuth={false} allowAuthedOnPublic={true}>
             <PretestSessionPage />
           </ProtectedRoute>
         ),
@@ -394,7 +394,7 @@ const routes = [
       {
         path: "/pre-test/profile/complete",
         element: (
-          <ProtectedRoute requireAuth={false}>
+          <ProtectedRoute requireAuth={false} allowAuthedOnPublic={true}>
             <PretestProfileCompletePage />
           </ProtectedRoute>
         ),
@@ -402,7 +402,7 @@ const routes = [
       {
         path: "/pre-test/profile/edit",
         element: (
-          <ProtectedRoute requireAuth={false}>
+          <ProtectedRoute requireAuth={false} allowAuthedOnPublic={true}>
             <PretestProfileEditPage />
           </ProtectedRoute>
         ),
