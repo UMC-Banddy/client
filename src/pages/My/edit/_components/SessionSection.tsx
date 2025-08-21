@@ -188,7 +188,7 @@ const SessionRow: React.FC<SessionRowProps> = ({
   onLevelChange,
 }) => {
   return (
-    <div className="flex flex-row items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-7 2xl:gap-8">
+    <div className="flex flex-row items-center gap-3 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 2xl:gap-6">
       <SessionIcon icon={session.icon} />
       {/* <span className="text-white text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-medium whitespace-nowrap min-w-[60px] sm:min-w-[70px] md:min-w-[80px] lg:min-w-[90px] xl:min-w-[100px] 2xl:min-w-[110px] flex-shrink-0">
         {session.name}
@@ -235,7 +235,7 @@ const LevelButton: React.FC<LevelButtonProps> = ({
   return (
     <button
       onClick={onClick}
-      className="flex flex-row items-center gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-7 transition-colors whitespace-nowrap"
+      className="flex flex-row items-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2 xl:gap-2.5 2xl:gap-3 transition-colors whitespace-nowrap"
     >
       <div
         className={`w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 2xl:w-10 2xl:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
