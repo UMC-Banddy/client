@@ -530,17 +530,26 @@ class WebSocketService {
     
     if (roomType === "PRIVATE" || roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
       // 개인 채팅 형식
+      if (!receiverId) {
+        console.error("개인채팅방에서는 receiverId가 필요합니다:", { roomType, receiverId });
+        throw new Error("개인채팅방에서는 receiverId가 필요합니다.");
+      }
+      
       messageBody = {
         receiverId,
         content,
         roomType: roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER" ? "BAND" : "PRIVATE"
       };
+      
+      console.log("개인채팅 메시지 전송:", { receiverId, content, roomType: messageBody.roomType });
     } else {
       // 그룹 채팅 형식
       messageBody = {
         content,
         roomType: "GROUP"
       };
+      
+      console.log("그룹채팅 메시지 전송:", { content, roomType: "GROUP" });
     }
 
     try {
