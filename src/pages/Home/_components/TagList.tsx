@@ -128,8 +128,13 @@ const TagList: React.FC<{
         let colorClass = "";
 
         if (variant === "home") {
+          // 첫 번째 태그: 빨간색 배경 + 흰 글자
+          if (idx === 0) {
+            colorClass =
+              "!bg-[#B42127] !text-white !border-none before:content-[''] before:inline-block before:mr-2 before:w-2 before:h-2 before:rounded-full before:bg-[#D9D9D9]";
+          }
           // 사용자 세션과 연관된 세션 태그: 빨간색 배경 + 흰 글자
-          if (isUserSession(tag, userSessions)) {
+          else if (isUserSession(tag, userSessions)) {
             colorClass =
               "!bg-[#B42127] !text-white !border-none before:content-[''] before:inline-block before:mr-2 before:w-2 before:h-2 before:rounded-full before:bg-[#D9D9D9]";
           }
