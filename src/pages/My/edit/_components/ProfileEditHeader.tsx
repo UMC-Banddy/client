@@ -11,7 +11,7 @@ const ProfileEditHeader: React.FC<ProfileEditHeaderProps> = ({
 }) => {
   return (
     <div className="flex items-center justify-between px-4 py-4">
-      <button onClick={onBack} className="p-2">
+      <button onClick={onBack} className="p-2 invisible">
         <svg
           className="w-6 h-6 text-white"
           fill="none"

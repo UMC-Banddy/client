@@ -125,7 +125,7 @@ const KeywordSection: React.FC<KeywordSectionProps> = ({
         {/* 키워드 추가 버튼 */}
         <button
           onClick={handleAddKeyword}
-          className="flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-7 px-3 py-1 sm:px-4 sm:py-2 md:px-5 md:py-3 lg:px-6 lg:py-4 xl:px-7 xl:py-5 2xl:px-8 2xl:py-6 bg-gray-600 text-white rounded-full text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl border border-gray-500 hover:bg-gray-700 transition-colors"
+          className="flex items-center gap-2 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6 2xl:gap-7 px-3 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 lg:px-6 lg:py-4 xl:px-7 xl:py-5 2xl:px-8 2xl:py-6 bg-gray-600 text-white rounded-full text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl border border-gray-500 hover:bg-gray-700 transition-colors"
         >
           <span className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl">➕</span>
           <span>키워드 추가</span>

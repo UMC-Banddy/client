@@ -655,7 +655,7 @@ const MyEditPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#292929] text-white">
+    <div className="w-full h-full flex flex-col text-white">
       {/* 숨겨진 파일 입력 */}
       <input
         ref={fileInputRef}
