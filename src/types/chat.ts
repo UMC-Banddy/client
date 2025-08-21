@@ -15,6 +15,7 @@ export interface ChatMessage {
   timestamp?: string; // 서버에서 제공하는 원본 timestamp
   unreadCount?: number;
   showReadIndicator?: boolean; // 읽음 표시 여부
+  isOptimistic?: boolean; // 낙관적 메시지 여부 (로컬에서 임시로 추가된 메시지)
 }
 
 // API 스펙에 맞는 새로운 타입들
