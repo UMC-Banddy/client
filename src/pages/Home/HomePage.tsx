@@ -12,6 +12,9 @@ import type {} from "@/types/band";
 import { createGroupChat } from "@/store/chatApi";
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
+import { useSnapshot } from "valtio";
+import { authStore } from "@/store/authStore";
+import { useWebSocketConnection } from "./hooks/useWebSocketConnection";
 
 // 이미지 import
 import homeAlbum3Img from "@/assets/images/home-album3.png";
@@ -96,6 +99,7 @@ const cleanSessionName = (sessionName: string): string => {
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const authSnap = useSnapshot(authStore);
   const [myBands, setMyBands] = useState<Band[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedBand, setSelectedBand] = useState<Band | null>(null);
@@ -107,6 +111,9 @@ const HomePage = () => {
   );
   // 밴드별 매칭된 roomId 매핑
   const [bandRoomMap, setBandRoomMap] = useState<Record<number, number>>({});
+
+  // WebSocket 연결 관리 - 앱 전체 생명주기 동안 유지
+  useWebSocketConnection();
 
   // 추천 밴드 프로필 조회 API
   const fetchRecommendedBands = async () => {

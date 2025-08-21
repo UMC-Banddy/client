@@ -10,6 +10,8 @@ import profile1Img from "@/assets/images/profile1.png";
 import { API } from "@/api/API";
 import { API_ENDPOINTS } from "@/constants";
 import { useChat } from "./hooks/useChat";
+import { useWebSocket } from "./hooks/useWebSocket";
+import { authStore } from "@/store/authStore";
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -36,6 +38,9 @@ export default function ChatPage() {
     exitChatRoom,
     addBandBotMessage,
   } = useChat();
+
+  // WebSocket 훅에서 leaveRoom 가져오기
+  const { leaveRoom } = useWebSocket();
 
   // Initialize current room and messages - roomId/roomType 변경 시에만 실행
   useEffect(() => {
@@ -89,11 +94,14 @@ export default function ChatPage() {
     };
 
     const handlePopState = () => {
-      console.log("뒤로가기 감지, 채팅방 정리 중...");
+      console.log("뒤로가기 감지, 구독만 해제 중...");
       try {
-        exitChatRoom();
+        // 뒤로가기 시에는 구독만 해제하고 채팅방을 나가지 않음
+        if (leaveRoom) {
+          leaveRoom();
+        }
       } catch (error) {
-        console.warn("popstate cleanup 중 오류:", error);
+        console.warn("popstate 구독 해제 중 오류:", error);
       }
     };
 
@@ -106,7 +114,7 @@ export default function ChatPage() {
     };
   }, []); // 빈 의존성 배열
 
-  // Header용 밴드 정보 로드 + 첫 방문 봇 메시지 (밴드 관련일 때만)
+  // Header용 채팅방 정보 로드 + 첫 방문 봇 메시지
   useEffect(() => {
     const roomTypeParam = searchParams.get("roomType") as
       | "PRIVATE"
@@ -116,84 +124,170 @@ export default function ChatPage() {
       | null;
     const roomId = searchParams.get("roomId");
 
-    // 밴드 관련 채팅방이 아니면 무시
-    if (
-      (roomTypeParam !== "BAND-APPLICANT" &&
-        roomTypeParam !== "BAND-MANAGER") ||
-      !roomId
-    )
-      return;
+    if (!roomId || !roomTypeParam) return;
 
-    // 첫 방문 봇 메시지 표시 (한 번만)
-    if (!hasShownBotMessage && messages.length === 0) {
+    console.log(`채팅방 헤더 정보 로드 시작: ${roomId} (${roomTypeParam})`);
+
+    // 첫 방문 봇 메시지 표시 (밴드 관련일 때만)
+    if (
+      (roomTypeParam === "BAND-APPLICANT" ||
+        roomTypeParam === "BAND-MANAGER") &&
+      !hasShownBotMessage &&
+      messages.length === 0
+    ) {
       setHasShownBotMessage(true);
     }
 
-    // 방 정보에서 bandId를 우선 시도 → 실패 시 모집 상세에서 추정
-    (async () => {
+    // 채팅방 타입별 헤더 정보 로드
+    const loadHeaderInfo = async () => {
       try {
-        const res = await API.get(API_ENDPOINTS.CHAT.ROOM_MEMBERS(roomId));
-        const bandId = res?.data?.result?.bandId ?? res?.data?.bandId;
-        if (bandId) {
-          try {
-            const detail = await API.get(
-              API_ENDPOINTS.BANDS.DETAIL(String(bandId))
-            );
-            const d = detail?.data?.result || detail?.data || {};
-            const name = d?.bandName || d?.name || headerName;
-            const avatar = d?.profileImageUrl || headerAvatar;
-            if (name) setHeaderName(String(name));
-            if (avatar) setHeaderAvatar(String(avatar));
-
-            // 첫 방문 안내 메시지가 필요한 경우(목록이 비어있을 때만 로컬 삽입)
-            if (!hasShownBotMessage && (!messages || messages.length === 0)) {
-              // 밴드방 봇 메시지: 밴드 소유자가 설정한 소개문(없으면 기본 문구)
-              const intro: string =
-                d?.description ||
-                "밴드 채팅방입니다. 밴드 멤버들과 소통해보세요.";
-
-              addBandBotMessage(roomTypeParam, {
-                profileImageUrl: avatar,
-                description: intro,
-              });
-            }
-            return;
-          } catch (error) {
-            console.warn("밴드 상세 정보 조회 실패:", error);
-          }
-        }
-        // 대체: 모집 상세 시도
-        if (bandId) {
-          try {
-            const recruit = await API.get(
-              API_ENDPOINTS.RECRUITMENT.DETAIL(String(bandId))
-            );
-            const r = recruit?.data?.result || {};
-            const name = r?.name || headerName;
-            const avatar = r?.profileImageUrl || headerAvatar;
-            if (name) setHeaderName(String(name));
-            if (avatar) setHeaderAvatar(String(avatar));
-
-            // 첫 방문 안내 메시지가 필요한 경우
-            if (!hasShownBotMessage && (!messages || messages.length === 0)) {
-              const intro: string =
-                r?.description ||
-                "밴드 채팅방입니다. 밴드 멤버들과 소통해보세요.";
-
-              addBandBotMessage(roomTypeParam, {
-                profileImageUrl: avatar,
-                description: intro,
-              });
-            }
-          } catch (error) {
-            console.warn("모집 상세 정보 조회 실패:", error);
-          }
+        if (roomTypeParam === "PRIVATE") {
+          // 개인 채팅방: 상대방 프로필 정보 로드
+          await loadPrivateChatHeader(roomId);
+        } else if (roomTypeParam === "GROUP") {
+          // 그룹 채팅방: 그룹 정보 로드
+          await loadGroupChatHeader(roomId);
+        } else if (
+          roomTypeParam === "BAND-APPLICANT" ||
+          roomTypeParam === "BAND-MANAGER"
+        ) {
+          // 밴드 채팅방: 밴드 정보 로드
+          await loadBandChatHeader(roomId, roomTypeParam);
         }
       } catch (error) {
-        console.warn("밴드 정보 조회 실패:", error);
+        console.error("채팅방 헤더 정보 로드 실패:", error);
       }
-    })();
-  }, [searchParams, hasShownBotMessage]); // messages, addBandBotMessage 제거
+    };
+
+    loadHeaderInfo();
+  }, [searchParams, hasShownBotMessage, messages.length]);
+
+  // 개인 채팅방 헤더 정보 로드
+  const loadPrivateChatHeader = async (roomId: string) => {
+    try {
+      console.log("개인 채팅방 헤더 정보 로드 중...");
+
+      // 채팅방 멤버 정보 조회
+      const res = await API.get(API_ENDPOINTS.CHAT.ROOM_MEMBERS(roomId));
+      const members =
+        res?.data?.result?.memberInfos || res?.data?.memberInfos || [];
+
+      // 상대방 정보 찾기 (현재 사용자 제외)
+      // TODO: 현재 사용자 ID를 가져오는 방법 구현 필요
+      // const currentUserId = authStore.user?.memberId;
+      const otherMember = members.find((member: any) => member.memberId !== 0); // 임시로 0 제외
+
+      if (otherMember) {
+        const name = otherMember.nickname || "알 수 없음";
+        const avatar = otherMember.profileImageUrl || headerAvatar;
+
+        setHeaderName(name);
+        setHeaderAvatar(avatar);
+
+        console.log("개인 채팅방 헤더 설정:", { name, avatar });
+      }
+    } catch (error) {
+      console.warn("개인 채팅방 헤더 정보 조회 실패:", error);
+    }
+  };
+
+  // 그룹 채팅방 헤더 정보 로드
+  const loadGroupChatHeader = async (roomId: string) => {
+    try {
+      console.log("그룹 채팅방 헤더 정보 로드 중...");
+
+      // 그룹 채팅방 정보 조회 (ROOM_MEMBERS 엔드포인트 사용)
+      const res = await API.get(API_ENDPOINTS.CHAT.ROOM_MEMBERS(roomId));
+      const roomInfo = res?.data?.result || res?.data || {};
+
+      const name = roomInfo.chatName || roomInfo.name || "그룹 채팅방";
+      const avatar = roomInfo.imageUrl || headerAvatar;
+
+      setHeaderName(name);
+      setHeaderAvatar(avatar);
+
+      console.log("그룹 채팅방 헤더 설정:", { name, avatar });
+    } catch (error) {
+      console.warn("그룹 채팅방 헤더 정보 조회 실패:", error);
+      // 기본값 설정
+      setHeaderName("그룹 채팅방");
+    }
+  };
+
+  // 밴드 채팅방 헤더 정보 로드
+  const loadBandChatHeader = async (roomId: string, roomType: string) => {
+    try {
+      console.log("밴드 채팅방 헤더 정보 로드 중...");
+
+      // 방 정보에서 bandId를 우선 시도 → 실패 시 모집 상세에서 추정
+      const res = await API.get(API_ENDPOINTS.CHAT.ROOM_MEMBERS(roomId));
+      const bandId = res?.data?.result?.bandId ?? res?.data?.bandId;
+
+      if (bandId) {
+        try {
+          // 밴드 상세 정보 조회
+          const detail = await API.get(
+            API_ENDPOINTS.BANDS.DETAIL(String(bandId))
+          );
+          const d = detail?.data?.result || detail?.data || {};
+          const name = d?.bandName || d?.name || headerName;
+          const avatar = d?.profileImageUrl || headerAvatar;
+
+          if (name) setHeaderName(String(name));
+          if (avatar) setHeaderAvatar(String(avatar));
+
+          // 첫 방문 안내 메시지가 필요한 경우(목록이 비어있을 때만 로컬 삽입)
+          if (!hasShownBotMessage && (!messages || messages.length === 0)) {
+            // 밴드방 봇 메시지: 밴드 소유자가 설정한 소개문(없으면 기본 문구)
+            const intro: string =
+              d?.description ||
+              "밴드 채팅방입니다. 밴드 멤버들과 소통해보세요.";
+
+            addBandBotMessage(roomType, {
+              profileImageUrl: avatar,
+              description: intro,
+            });
+          }
+
+          console.log("밴드 채팅방 헤더 설정:", { name, avatar });
+          return;
+        } catch (error) {
+          console.warn("밴드 상세 정보 조회 실패:", error);
+        }
+
+        // 대체: 모집 상세 시도
+        try {
+          const recruit = await API.get(
+            API_ENDPOINTS.RECRUITMENT.DETAIL(String(bandId))
+          );
+          const r = recruit?.data?.result || {};
+          const name = r?.name || headerName;
+          const avatar = r?.profileImageUrl || headerAvatar;
+
+          if (name) setHeaderName(String(name));
+          if (avatar) setHeaderAvatar(String(avatar));
+
+          // 첫 방문 안내 메시지가 필요한 경우
+          if (!hasShownBotMessage && (!messages || messages.length === 0)) {
+            const intro: string =
+              r?.description ||
+              "밴드 채팅방입니다. 밴드 멤버들과 소통해보세요.";
+
+            addBandBotMessage(roomType, {
+              profileImageUrl: avatar,
+              description: intro,
+            });
+          }
+
+          console.log("모집 상세로 밴드 채팅방 헤더 설정:", { name, avatar });
+        } catch (error) {
+          console.warn("모집 상세 정보 조회 실패:", error);
+        }
+      }
+    } catch (error) {
+      console.warn("밴드 채팅방 헤더 정보 조회 실패:", error);
+    }
+  };
 
   const handleBack = useCallback(() => {
     exitChatRoom();

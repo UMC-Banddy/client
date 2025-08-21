@@ -16,112 +16,80 @@ export const useWebSocket = () => {
   const snap = useSnapshot(chatStore);
   const authSnap = useVSnapshot(authStore);
   const [isConnecting, setIsConnecting] = useState(false);
-  
+
   // 핵심: ref로 상태 관리하여 불필요한 리렌더 방지
-  const mountedOnceRef = useRef(false);           // StrictMode 2회 실행 방지
+  const mountedOnceRef = useRef(false); // StrictMode 이중 마운트 방지
   const joinedRoomsRef = useRef<Set<string>>(new Set()); // join 한번만
   const subscribedRoomIdRef = useRef<string | null>(null);
   const isJoiningRef = useRef(false);
-  const connectionAttemptRef = useRef<number>(0);
-  const lastConnectionAttemptRef = useRef<number>(0);
-  const connectionCooldownRef = useRef<number>(5000); // 5초 쿨다운
 
   // 메시지 핸들러
   const handleMessage = useCallback((message: WebSocketMessage) => {
     console.log("실시간 메시지 수신:", message);
-    // 현재 방만 반영 (다른 방 브로드캐스트로 인한 중복 방지)
+
+    // 1. 기본 유효성 검사
+    if (!message?.messageId || !message?.roomId) {
+      console.warn("유효하지 않은 메시지:", message);
+      return;
+    }
+
+    // 2. 현재 방 메시지인지 확인
     if (
-      message?.roomId &&
       chatStore.currentRoomId &&
       chatStore.currentRoomId.toString() !== message.roomId.toString()
     ) {
+      console.log(
+        `다른 방(${message.roomId}) 메시지 무시, 현재 방: ${chatStore.currentRoomId}`
+      );
       return;
     }
+
+    // 3. 중복 메시지 방지 (messageId 기반)
+    const existingMessage = chatStore.messages.find(
+      (msg) =>
+        msg.id === message.messageId.toString() ||
+        (msg.isOptimistic && msg.text === message.content)
+    );
+
+    if (existingMessage) {
+      console.log(
+        `중복 메시지 무시: ${message.messageId} (${message.content})`
+      );
+
+      // 낙관적 메시지가 있다면 중복으로 처리
+      if (existingMessage.isOptimistic) {
+        console.log("낙관적 메시지와 중복된 서버 메시지 무시");
+      }
+      return;
+    }
+
+    // 4. 메시지 추가
+    console.log("새 메시지 추가:", message.messageId);
     chatActions.addRealtimeMessage(message);
   }, []);
 
-  // WebSocket 연결 상태
+  // WebSocket 연결 상태 - HomePage에서 관리하므로 여기서는 상태만 확인
   const isConnected = snap.webSocketConnected;
   const currentRoomId = snap.currentRoomId;
 
-  // 자동 연결 관리 (토큰이 있을 때만 시도) - StrictMode 이중 마운트 방지
-  useEffect(() => {
-    if (mountedOnceRef.current) return; // dev StrictMode 이중 마운트 방지
-    mountedOnceRef.current = true;
-
-    const connectWebSocket = async () => {
-      if (!authSnap.accessToken) {
-        return;
-      }
-
-      // 쿨다운 체크
-      const now = Date.now();
-      if (
-        now - lastConnectionAttemptRef.current <
-        connectionCooldownRef.current
-      ) {
-        console.log("연결 시도 쿨다운 중...");
-        return;
-      }
-
-      if (!isConnected && !isConnecting) {
-        setIsConnecting(true);
-        lastConnectionAttemptRef.current = now;
-        connectionAttemptRef.current++;
-
-        try {
-          console.log(`WebSocket 연결 시도 ${connectionAttemptRef.current}...`);
-          await webSocketService.connect();
-        } catch (error) {
-          console.error("WebSocket 연결 실패:", error);
-        } finally {
-          setIsConnecting(false);
-        }
-      }
-    };
-
-    // 컴포넌트 마운트 시 자동 연결
-    connectWebSocket();
-
-    // 컴포넌트 언마운트 시 연결 해제
-    return () => {
-      // 컴포넌트 언마운트 시에는 연결을 완전히 해제하지 않고, 구독만 해제
-      if (subscribedRoomIdRef.current) {
-        webSocketService.unsubscribeFromRoom(subscribedRoomIdRef.current);
-        subscribedRoomIdRef.current = null;
-      }
-    };
-  }, []); // 절대 messages/connectionStatus 같은 값 넣지 않기
-
-  // 연결 함수
+  // 연결 함수 - HomePage에서 이미 연결되어 있으므로 상태만 확인
   const connect = useCallback(async () => {
     if (!authSnap.accessToken) return;
 
-    // 쿨다운 체크
-    const now = Date.now();
-    if (
-      now - lastConnectionAttemptRef.current <
-      connectionCooldownRef.current
-    ) {
-      throw new Error("연결 시도 쿨다운 중입니다.");
+    // HomePage에서 이미 연결되어 있는지 확인
+    if (webSocketService.isConnected()) {
+      console.log("WebSocket이 이미 연결되어 있습니다 (HomePage에서 관리)");
+      return;
     }
 
-    if (isConnected || isConnecting) return;
-
-    setIsConnecting(true);
-    lastConnectionAttemptRef.current = now;
-    connectionAttemptRef.current++;
-
-    try {
-      console.log(`WebSocket 연결 시도 ${connectionAttemptRef.current}...`);
-      await webSocketService.connect();
-    } catch (error) {
-      console.error("WebSocket 연결 실패:", error);
-      throw error;
-    } finally {
-      setIsConnecting(false);
-    }
-  }, [isConnected, isConnecting, authSnap.accessToken]);
+    // 연결이 안되어 있다면 HomePage에서 연결을 시도하도록 함
+    console.log(
+      "WebSocket 연결이 안되어 있습니다. HomePage에서 연결을 시도합니다."
+    );
+    throw new Error(
+      "WebSocket 연결이 안되어 있습니다. HomePage에서 연결을 시도합니다."
+    );
+  }, [authSnap.accessToken]);
 
   // 목록 화면에서만 사용할 수 있도록 공개용 함수 제공
   const subscribeUnread = useCallback(() => {
@@ -151,9 +119,16 @@ export const useWebSocket = () => {
     }
   }, []);
 
-  // 연결 해제 함수
+  // 연결 해제 함수 - HomePage에서 관리하므로 여기서는 구독만 해제
   const disconnect = useCallback(() => {
-    webSocketService.disconnect();
+    console.log(
+      "useWebSocket에서 disconnect 호출 - 구독만 해제하고 연결은 유지"
+    );
+    // 연결은 끊지 않고 구독만 해제
+    if (subscribedRoomIdRef.current) {
+      webSocketService.unsubscribeFromRoom(subscribedRoomIdRef.current);
+      subscribedRoomIdRef.current = null;
+    }
   }, []);
 
   // 채팅방 나가기
@@ -186,7 +161,10 @@ export const useWebSocket = () => {
       }
 
       // 이미 같은 방에 구독 중인지 더 엄격하게 체크
-      if (subscribedRoomIdRef.current === roomId && webSocketService.isConnected()) {
+      if (
+        subscribedRoomIdRef.current === roomId &&
+        webSocketService.isConnected()
+      ) {
         console.log(`이미 ${roomId} 방에 구독 중입니다.`);
         return;
       }
@@ -213,21 +191,11 @@ export const useWebSocket = () => {
           }
         }
 
-        // WebSocket 연결 상태 확인 및 연결
-        if (!isConnected) {
-          console.log("WebSocket 연결 시도 중...");
-          try {
-            await connect();
-            // 연결 후 더 긴 대기 시간
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-          } catch (error) {
-            console.error("WebSocket 연결 실패:", error);
-            return;
-          }
-        }
-
+        // WebSocket 연결 상태 확인 (HomePage에서 관리)
         if (!webSocketService.isConnected()) {
-          console.error("WebSocket 연결 실패. 채팅방 입장 불가.");
+          console.error(
+            "WebSocket 연결 실패. HomePage에서 연결을 확인해주세요."
+          );
           return;
         }
 
@@ -258,14 +226,17 @@ export const useWebSocket = () => {
 
         console.log(`채팅방 ${roomId} 입장 성공 (타입: ${roomType})`);
         console.log(`chatStore.currentRoomId 설정됨:`, roomId);
-        console.log(`subscribedRoomIdRef.current 설정됨:`, subscribedRoomIdRef.current);
+        console.log(
+          `subscribedRoomIdRef.current 설정됨:`,
+          subscribedRoomIdRef.current
+        );
       } catch (error) {
         console.error(`채팅방 ${roomId} 입장 실패:`, error);
       } finally {
         isJoiningRef.current = false;
       }
     },
-    [isConnected, connect, handleMessage]
+    [handleMessage]
   );
 
   // 메시지 전송
@@ -301,11 +272,7 @@ export const useWebSocket = () => {
     (
       roomId: string,
       messageId: number,
-      roomType:
-        | "PRIVATE"
-        | "GROUP"
-        | "BAND-APPLICANT"
-        | "BAND-MANAGER"
+      roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER"
     ) => {
       if (!isConnected) return;
       try {

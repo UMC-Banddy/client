@@ -5,6 +5,8 @@ import { useWebSocket } from "./useWebSocket";
 import { getChatMessages, leaveChatRoom } from "@/store/chatApi";
 import type { ChatMessage } from "@/types/chat";
 import webSocketService from "@/services/WebSocketService";
+import { API } from "@/api/API";
+import { API_ENDPOINTS } from "@/constants";
 
 export const useChat = () => {
   const snap = useSnapshot(chatStore);
@@ -124,20 +126,14 @@ export const useChat = () => {
   const enterChatRoom = useCallback(
     async (
       roomId: string,
-      roomType:
-        | "PRIVATE"
-        | "GROUP"
-        | "BAND-APPLICANT"
-        | "BAND-MANAGER"
+      roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER"
     ) => {
+      // HomePage에서 WebSocket 연결을 관리하므로 여기서는 연결 상태만 확인
       if (!isConnected) {
-        console.warn("WebSocket이 연결되지 않았습니다. 연결을 시도합니다.");
-        try {
-          await connect();
-        } catch (error) {
-          console.error("WebSocket 연결 실패:", error);
-          return;
-        }
+        console.warn(
+          "WebSocket이 연결되지 않았습니다. HomePage에서 연결을 확인해주세요."
+        );
+        return;
       }
 
       try {
@@ -155,18 +151,14 @@ export const useChat = () => {
         console.error("채팅방 입장 실패:", error);
       }
     },
-    [isConnected, connect, joinRoom, loadMessages]
+    [isConnected, joinRoom, loadMessages]
   );
 
   // 메시지 전송
   const sendMessage = useCallback(
-    (
+    async (
       text: string,
-      roomType:
-        | "PRIVATE"
-        | "GROUP"
-        | "BAND-APPLICANT"
-        | "BAND-MANAGER",
+      roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER",
       receiverId?: number
     ) => {
       // 디버깅 로그 추가
@@ -174,26 +166,29 @@ export const useChat = () => {
         currentRoomId,
         isConnected,
         roomType,
-        text: text.substring(0, 20) + (text.length > 20 ? "..." : "")
+        text: text.substring(0, 20) + (text.length > 20 ? "..." : ""),
+        receiverId,
       });
-      
+
       // WebSocket 서비스 상태도 확인
       const wsConnected = webSocketService.isConnected();
-      const isSubscribed = currentRoomId ? webSocketService.getSubscriptionStatus(currentRoomId) : false;
-      
+      const isSubscribed = currentRoomId
+        ? webSocketService.getSubscriptionStatus(currentRoomId)
+        : false;
+
       console.log("WebSocket 상세 상태:", {
         storeConnected: isConnected,
         serviceConnected: wsConnected,
         roomSubscribed: isSubscribed,
-        currentRoomId
+        currentRoomId,
       });
-      
+
       if (!currentRoomId || !isConnected) {
         console.error("채팅방에 입장하지 않았거나 WebSocket이 연결되지 않음", {
           currentRoomId,
           isConnected,
           wsConnected,
-          isSubscribed
+          isSubscribed,
         });
         // 추가 디버깅을 위해 WebSocket 상태 출력
         webSocketService.logConnectionStatus();
@@ -201,20 +196,56 @@ export const useChat = () => {
       }
 
       try {
-        sendWebSocketMessage(text, roomType, receiverId);
+        // PRIVATE의 경우 receiverId 자동 추출 (memberInfo.memberId)
+        let resolvedReceiverId: number | undefined = receiverId;
+        if (roomType === "PRIVATE" && !resolvedReceiverId) {
+          try {
+            const res = await API.get(
+              API_ENDPOINTS.CHAT.ROOM_MEMBERS(currentRoomId)
+            );
+            const payload = res?.data?.result ?? res?.data ?? {};
+            const currentUserId = Number(localStorage.getItem("memberId"));
+
+            if (payload?.memberInfo?.memberId) {
+              resolvedReceiverId = Number(payload.memberInfo.memberId);
+            } else if (Array.isArray(payload?.memberInfos)) {
+              const other =
+                payload.memberInfos.find(
+                  (m: { memberId: number }) =>
+                    Number(m.memberId) !== currentUserId
+                ) || payload.memberInfos[0];
+              resolvedReceiverId = other ? Number(other.memberId) : undefined;
+            }
+
+            console.log("PRIVATE receiverId 자동 추출:", resolvedReceiverId);
+          } catch (e) {
+            console.warn(
+              "ROOM_MEMBERS 조회 실패, receiverId 자동 추출 불가",
+              e
+            );
+          }
+        }
+
+        // 전송
+        await sendWebSocketMessage(text, roomType, resolvedReceiverId);
 
         // 밴드 채팅은 서버 브로드캐스트만 사용 (낙관적 추가 없음)
         if (roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
-          // 서버에서 메시지가 브로드캐스트될 때까지 대기
+          console.log("밴드 채팅: 서버 브로드캐스트 대기 중...");
           return;
         }
 
-        // PRIVATE 채팅만 낙관적 추가
+        // PRIVATE 채팅만 낙관적 추가 (중복 방지 로직 포함)
         if (roomType === "PRIVATE") {
+          // 임시 messageId 생성 (서버에서 받은 메시지와 구분하기 위해)
+          const tempMessageId = `temp-${Date.now()}-${Math.random()
+            .toString(36)
+            .substr(2, 9)}`;
+
           const newMessage: ChatMessage = {
-            id: Date.now().toString(),
+            id: tempMessageId,
             type: "me",
-            name: "Beck",
+            name: "Beck", // TODO: 실제 사용자 이름으로 변경
             avatar: "/src/assets/images/profile1.png",
             text,
             time: new Date().toLocaleTimeString("ko-KR", {
@@ -223,8 +254,16 @@ export const useChat = () => {
               hour12: true,
             }),
             unreadCount: 0,
+            isOptimistic: true,
           };
+
+          console.log("개인채팅 낙관적 메시지 추가:", tempMessageId);
           chatActions.addMessage(newMessage);
+        }
+
+        // GROUP 채팅은 서버 브로드캐스트만 사용
+        if (roomType === "GROUP") {
+          console.log("그룹 채팅: 서버 브로드캐스트 대기 중...");
         }
       } catch (error) {
         console.error("메시지 전송 실패:", error);
@@ -266,17 +305,18 @@ export const useChat = () => {
 
   // 메시지 목록이 갱신될 때마다 마지막 메시지를 기준으로 읽음 상태 전송
   useEffect(() => {
-    if (!currentRoomId || snap.messages.length === 0 || !currentRoomTypeRef.current) return;
+    if (
+      !currentRoomId ||
+      snap.messages.length === 0 ||
+      !currentRoomTypeRef.current
+    )
+      return;
     const last = snap.messages[snap.messages.length - 1];
     const lastId = Number(last.id);
     if (!Number.isFinite(lastId)) return;
     if (lastReadSentIdRef.current === lastId) return;
     try {
-      sendLastRead(
-        currentRoomId,
-        lastId,
-        currentRoomTypeRef.current
-      );
+      sendLastRead(currentRoomId, lastId, currentRoomTypeRef.current);
       lastReadSentIdRef.current = lastId;
     } catch {
       // no-op
