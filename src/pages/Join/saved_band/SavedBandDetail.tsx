@@ -22,6 +22,9 @@ import MuiDialog from "@/shared/components/MuiDialog";
 import CommonBtn from "@/shared/components/CommonBtn";
 import star3 from "@/assets/icons/join/saved_band/ic_star_3.svg";
 import { useNavigate } from "react-router-dom";
+import SessionSelectModal from "@/features/bandJoin/components/SessionSelectModal";
+import type { SessionEmoji } from "@/features/bandJoin/types";
+import { postBandJoin } from "@/features/bandJoin/api";
 // import { showMembers } from "../_utils/showMembers";
 
 const SavedBandDetail = () => {
@@ -32,6 +35,8 @@ const SavedBandDetail = () => {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
 
   const [data, setData] = useState<BandDetail>();
+
+  const [openSession, setOpenSession] = useState(false);
 
   const navigate = useNavigate();
   const { isRecruiting = false, memberSummary, soundUrl } = useLocation().state;
@@ -83,7 +88,7 @@ const SavedBandDetail = () => {
   return (
     <main className="relative min-h-screen w-[393px] mx-auto px-[24px] pt-[12px]">
       <div className="flex justify-end ml-[calc(50%_-_50vw)] mr-[calc(50%_-_50vw)] px-[24px] w-screen mb-[24px]">
-        <button 
+        <button
           className="p-[0] bg-transparent border-none cursor-pointer"
           onClick={() => navigate("/join")}
         >
@@ -239,12 +244,57 @@ const SavedBandDetail = () => {
             <CommonBtn color="gray" onClick={() => setShowJoinDialog(false)}>
               아니오
             </CommonBtn>
-            <CommonBtn color="red" onClick={() => setShowJoinDialog(false)}>
+            <CommonBtn
+              color="red"
+              onClick={() => {
+                setOpenSession(true);
+                setShowJoinDialog(false);
+              }}
+            >
               예
             </CommonBtn>
           </div>
         </div>
       </Dialog>
+
+      <SessionSelectModal
+        open={openSession}
+        onClose={() => setOpenSession(false)}
+        onConfirm={async (session: SessionEmoji) => {
+          try {
+            setOpenSession(false);
+
+            // 1) 밴드 ID 안전 변환
+            if (!id) {
+              navigate("/home/chat-demo");
+              return;
+            }
+            const bandIdNum = Number(id);
+            if (!Number.isFinite(bandIdNum)) {
+              navigate("/home/chat-demo");
+              return;
+            }
+
+            // 2) 지원 API 호출
+            const res = await postBandJoin(bandIdNum, session);
+
+            // 3) roomId 파싱 (ButtonSection과 동일한 방식)
+            const roomId: number | undefined =
+              (res as { result?: { roomId?: number } })?.result?.roomId ??
+              (res as { roomId?: number })?.roomId;
+
+            // 4) 채팅방 이동 or 폴백
+            if (typeof roomId === "number" && Number.isFinite(roomId)) {
+              navigate(`/home/chat?roomId=${roomId}&roomType=BAND-APPLICANT`);
+            } else {
+              navigate("/home/chat-demo");
+            }
+          } catch (error) {
+            console.error(error);
+            navigate("/home/chat-demo");
+          }
+        }}
+      />
     </main>
   );
 };
