@@ -12,7 +12,7 @@ interface NormalChatProps {
   members: string[];
   unreadCount: number | null;
   pinnedAt: string | null;
-  roomType?: "PRIVATE" | "GROUP";
+  roomType?: "PRIVATE" | "GROUP" | "BAND";
 }
 
 const NormalChat = ({
@@ -91,12 +91,22 @@ const NormalChat = ({
       isLongPressRef.current = false;
       return;
     }
+
     if (roomType === "PRIVATE") {
-      navigate(`/home/private-chat?roomId=${roomId}&roomType=PRIVATE`);
+      navigate(`/home/chat?roomId=${roomId}&roomType=PRIVATE`);
+      return;
     }
     if (roomType === "GROUP") {
-      navigate(`/home/private-chat?roomId=${roomId}&roomType=GROUP`);
+      navigate(`/home/chat?roomId=${roomId}&roomType=GROUP`);
+      return;
     }
+    if (roomType === "BAND") {
+      navigate(`/home/chat?roomId=${roomId}&roomType=BAND`);
+      return;
+    }
+
+    // 기본값은 GROUP으로 처리
+    navigate(`/home/chat?roomId=${roomId}&roomType=GROUP`);
   };
 
   return (

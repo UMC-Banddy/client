@@ -320,67 +320,137 @@ export const getRecruitingBandSummaries = async (options?: {
   };
 
   try {
-    const res = await API.get(API_ENDPOINTS.BANDS.RECRUIT, {
-      params: { status: "RECRUITING", page, size },
-    });
-    const list = Array.isArray(res?.data)
-      ? res.data
-      : Array.isArray(res?.data?.result)
-      ? res.data.result
-      : [];
+    // 방법 1: /api/recruitments로 전체 목록 조회 시도
+    try {
+      const res = await API.get(API_ENDPOINTS.BANDS.RECRUIT, {
+        params: { page, size },
+      });
+      const list = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.data?.result)
+        ? res.data.result
+        : [];
 
-    // 서버가 GET을 지원하지 않거나 빈 리스트면 폴백
-    if (!Array.isArray(list) || list.length === 0) {
-      // 대체 1순위: /api/bands 전체 목록이 있으면 그중 RECRUITING만 필터
-      try {
-        const allRes = await API.get(API_ENDPOINTS.BANDS.LIST);
-        const raw = Array.isArray(allRes?.data)
-          ? allRes.data
-          : Array.isArray(allRes?.data?.result)
-          ? allRes.data.result
-          : [];
-        if (Array.isArray(raw) && raw.length > 0) {
-          let normalized = raw
-            .map(normalize)
-            .filter((x) => !x.status || x.status === "RECRUITING");
+      if (Array.isArray(list) && list.length > 0) {
+        // 서버에서 전체 목록을 가져온 경우
+        const normalized = list.map(normalize);
 
-          // includeBandIds 상단 합류
-          for (const mustId of includeBandIds) {
-            const exists = normalized.some(
-              (item) => Number(item.bandId) === Number(mustId)
-            );
-            if (!exists) {
-              try {
-                const recruitRes = await getBandRecruitDetail(String(mustId));
-                const recruit = recruitRes?.result;
-                if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
-                  normalized.unshift(normalize({ ...recruit, bandId: mustId }));
-                }
-              } catch {}
-            }
+        // includeBandIds를 서버 결과에 합치기(중복 제거)
+        for (const mustId of includeBandIds) {
+          const exists = normalized.some(
+            (item) => Number(item.bandId) === Number(mustId)
+          );
+          if (!exists) {
+            try {
+              const recruitRes = await getBandRecruitDetail(String(mustId));
+              const recruit = recruitRes?.result;
+              if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
+                normalized.unshift(normalize({ ...recruit, bandId: mustId }));
+              }
+            } catch {}
           }
-
-          normalized = normalized
-            .filter(
-              (v, i, arr) =>
-                i === arr.findIndex((x) => x && x.bandId === v.bandId)
-            )
-            .slice(0, size);
-
-          if (useCache) {
-            recruitingListCache = {
-              expiresAt: Date.now() + cacheMs,
-              data: normalized,
-            };
-          }
-          return normalized;
         }
-      } catch {
-        // ignore and fallback to IDs
+
+        if (useCache) {
+          recruitingListCache = {
+            expiresAt: Date.now() + cacheMs,
+            data: normalized,
+          };
+        }
+        return normalized;
+      }
+    } catch (error: any) {
+      console.warn(
+        "전체 모집 공고 목록 조회 실패:",
+        error?.response?.status,
+        error?.response?.data
+      );
+    }
+
+    // 방법 2: /api/bands로 전체 밴드 목록 조회 시도
+    try {
+      const res = await API.get(API_ENDPOINTS.BANDS.LIST, {
+        params: { page, size },
+      });
+      const list = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.data?.result)
+        ? res.data.result
+        : [];
+
+      if (Array.isArray(list) && list.length > 0) {
+        // 서버에서 전체 밴드 목록을 가져온 경우
+        let normalized = list
+          .map(normalize)
+          .filter((x) => !x.status || x.status === "RECRUITING");
+
+        // includeBandIds 상단 합류
+        for (const mustId of includeBandIds) {
+          const exists = normalized.some(
+            (item) => Number(item.bandId) === Number(mustId)
+          );
+          if (!exists) {
+            try {
+              const recruitRes = await getBandRecruitDetail(String(mustId));
+              const recruit = recruitRes?.result;
+              if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
+                normalized.unshift(normalize({ ...recruit, bandId: mustId }));
+              }
+            } catch {}
+          }
+        }
+
+        normalized = normalized
+          .filter(
+            (v, i, arr) =>
+              i === arr.findIndex((x) => x && x.bandId === v.bandId)
+          )
+          .slice(0, size);
+
+        if (useCache) {
+          recruitingListCache = {
+            expiresAt: Date.now() + cacheMs,
+            data: normalized,
+          };
+        }
+        return normalized;
+      }
+    } catch (error: any) {
+      console.warn(
+        "전체 밴드 목록 조회 실패:",
+        error?.response?.status,
+        error?.response?.data
+      );
+    }
+
+    // 방법 3: includeBandIds가 있으면 해당 밴드들의 상세 정보를 조회
+    if (includeBandIds.length > 0) {
+      const results: any[] = [];
+      for (const bandId of includeBandIds) {
+        try {
+          const recruitRes = await getBandRecruitDetail(String(bandId));
+          const recruit = recruitRes?.result;
+          if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
+            results.push(normalize({ ...recruit, bandId }));
+          }
+        } catch (error) {
+          console.warn(`밴드 ${bandId} 상세 조회 실패:`, error);
+        }
       }
 
-      return await viaIdsFallback();
+      if (results.length > 0) {
+        if (useCache) {
+          recruitingListCache = {
+            expiresAt: Date.now() + cacheMs,
+            data: results,
+          };
+        }
+        return results;
+      }
     }
+
+    // 방법 4: 모든 방법이 실패한 경우 최종 폴백
+    return await viaIdsFallback();
 
     // 서버 목록 + includeBandIds를 합쳐 보장 포함
     const normalized: Array<Record<string, unknown>> = list.map(normalize);
@@ -411,12 +481,22 @@ export const getRecruitingBandSummaries = async (options?: {
     }
     return normalized;
   } catch (error: any) {
-    // 405/404 등은 자연스럽게 폴백
+    // 401(인증 실패), 405(메서드 불허), 404(엔드포인트 없음) 등은 자연스럽게 폴백
     const status = error?.response?.status;
-    if (status === 405 || status === 404) {
-      return await viaIdsFallback();
+    if (status === 401) {
+      console.warn(
+        "리쿠르팅 목록 조회 인증 실패 (401):",
+        error?.response?.data
+      );
+      // 인증 실패 시 사용자에게 알림을 주거나 로그인 페이지로 리다이렉트할 수 있음
+    } else if (status === 405 || status === 404) {
+      console.warn(
+        "리쿠르팅 목록 API 미지원 (405/404):",
+        error?.response?.data
+      );
+    } else {
+      console.warn("리쿠르팅 목록 조회 실패:", error);
     }
-    console.warn("리쿠르팅 목록 조회 실패:", error);
     return await viaIdsFallback();
   }
 };
@@ -590,28 +670,158 @@ export const getRecruitingBandIds = async (): Promise<number[]> => {
       .filter((n) => Number.isFinite(n));
   }
 
-  // 2) 서버 목록 시도 (405 등 에러시 무시)
+  // 2) 서버 목록 시도 - 여러 방법으로 시도
   try {
-    const res = await API.get(API_ENDPOINTS.BANDS.RECRUIT, {
-      params: { status: "RECRUITING", page: 0, size: 1000 },
-    });
-    const list = Array.isArray(res?.data)
-      ? res.data
-      : Array.isArray(res?.data?.result)
-      ? res.data.result
-      : [];
-    const ids = list
-      .map((r: any) => Number(r?.bandId ?? r?.id))
-      .filter((n: number) => Number.isFinite(n));
-    if (ids.length > 0) return Array.from(new Set(ids));
-  } catch {
-    // ignore
+    // 방법 1: /api/recruitments로 전체 목록 조회 시도
+    try {
+      const res = await API.get(API_ENDPOINTS.BANDS.RECRUIT, {
+        params: { page: 0, size: 1000 },
+      });
+      const list = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.data?.result)
+        ? res.data.result
+        : [];
+      const ids = list
+        .map((r: any) => Number(r?.bandId ?? r?.id))
+        .filter((n: number) => Number.isFinite(n));
+      if (ids.length > 0) {
+        console.log("서버에서 전체 모집 공고 목록 조회 성공:", ids);
+        return Array.from(new Set(ids));
+      }
+    } catch (error: any) {
+      console.warn(
+        "전체 모집 공고 목록 조회 실패:",
+        error?.response?.status,
+        error?.response?.data
+      );
+    }
+
+    // 방법 2: /api/bands로 전체 밴드 목록 조회 시도
+    try {
+      const res = await API.get(API_ENDPOINTS.BANDS.LIST, {
+        params: { page: 0, size: 1000 },
+      });
+      const list = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.data?.result)
+        ? res.data.result
+        : [];
+      const ids = list
+        .map((r: any) => Number(r?.bandId ?? r?.id))
+        .filter((n: number) => Number.isFinite(n));
+      if (ids.length > 0) {
+        console.log("서버에서 전체 밴드 목록 조회 성공:", ids);
+        return Array.from(new Set(ids));
+      }
+    } catch (error: any) {
+      console.warn(
+        "전체 밴드 목록 조회 실패:",
+        error?.response?.status,
+        error?.response?.data
+      );
+    }
+
+    // 방법 3: 기존 하드코딩된 ID들로 개별 조회하여 RECRUITING 상태 확인
+    const hardcodedIds = [
+      4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 28, 42, 45, 49, 51, 63, 64, 65, 67,
+      68, 76,
+    ];
+    const recruitingIds: number[] = [];
+
+    // 배치 처리로 API 호출 최적화
+    const batchSize = 5;
+    for (let i = 0; i < hardcodedIds.length; i += batchSize) {
+      const batch = hardcodedIds.slice(i, i + batchSize);
+      const batchPromises = batch.map(async (id) => {
+        try {
+          const recruitRes = await getBandRecruitDetail(String(id));
+          if (
+            recruitRes?.isSuccess &&
+            recruitRes.result?.status === "RECRUITING"
+          ) {
+            return id;
+          }
+        } catch (error) {
+          console.warn(`밴드 ${id} 상태 확인 실패:`, error);
+        }
+        return null;
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+      recruitingIds.push(
+        ...batchResults.filter((id): id is number => id !== null)
+      );
+    }
+
+    if (recruitingIds.length > 0) {
+      console.log("하드코딩된 ID로 확인된 리쿠르팅 밴드들:", recruitingIds);
+      return recruitingIds;
+    }
+
+    // 방법 4: 범위별 점진적 조회 (1~20, 21~40, 41~60, 61~80 등)
+    try {
+      const rangeSize = 20;
+      const maxRange = 100; // 최대 100까지 시도
+
+      for (let start = 1; start <= maxRange; start += rangeSize) {
+        const end = start + rangeSize - 1;
+        const rangeIds = Array.from({ length: rangeSize }, (_, i) => start + i);
+
+        console.log(`범위 ${start}-${end} 조회 시도...`);
+
+        const batchPromises = rangeIds.map(async (id) => {
+          try {
+            const recruitRes = await getBandRecruitDetail(String(id));
+            if (
+              recruitRes?.isSuccess &&
+              recruitRes.result?.status === "RECRUITING"
+            ) {
+              return id;
+            }
+          } catch (error) {
+            // 에러가 발생하면 해당 범위는 건너뛰기
+            if (error?.response?.status === 404) {
+              return null; // 404는 정상적인 상황 (존재하지 않는 밴드)
+            }
+            console.warn(`밴드 ${id} 조회 중 에러:`, error?.response?.status);
+          }
+          return null;
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+        const validIds = batchResults.filter((id): id is number => id !== null);
+
+        if (validIds.length > 0) {
+          recruitingIds.push(...validIds);
+          console.log(
+            `범위 ${start}-${end}에서 ${validIds.length}개 밴드 발견:`,
+            validIds
+          );
+        }
+
+        // 연속으로 3개 범위에서 아무것도 찾지 못하면 중단
+        if (validIds.length === 0) {
+          const emptyRanges = (start - 1) / rangeSize;
+          if (emptyRanges >= 3) {
+            console.log(
+              `연속 ${emptyRanges}개 범위에서 밴드를 찾지 못함. 조회 중단.`
+            );
+            break;
+          }
+        }
+      }
+    } catch (error: any) {
+      console.warn("범위별 조회 중 에러 발생:", error);
+    }
+  } catch (error: any) {
+    console.warn("서버 리쿠르팅 밴드 ID 조회 실패:", error);
   }
 
   // 3) 임시 하드코딩 (운영 API 준비 전까지만 사용)
   return [
     4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 28, 42, 45, 49, 51, 63, 64, 65, 67,
-    68,
+    68, 76,
   ];
 };
 

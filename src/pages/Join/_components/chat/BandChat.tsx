@@ -7,6 +7,8 @@ interface BandChatProps {
   thumbnail: string | null;
   unreadCount: number | null;
   isHost?: boolean;
+  roomId?: number;
+  roomType?: "BAND";
 }
 
 const BandChat = ({
@@ -15,17 +17,25 @@ const BandChat = ({
   thumbnail,
   unreadCount,
   isHost = false,
+  roomId,
+  roomType,
 }: BandChatProps) => {
   const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (isHost) {
+      // 밴드 관리자인 경우 밴드 모집 페이지로 이동
+      navigate(`/join/band-recruit/${id}`);
+    } else if (roomId && roomType) {
+      // 밴드 지원자인 경우 채팅방으로 이동
+      navigate(`/home/chat?roomId=${roomId}&roomType=${roomType}`);
+    }
+  };
 
   return (
     <button
       className="flex justify-between items-center w-full bg-transparent border-none cursor-pointer"
-      onClick={() => {
-        if (isHost) {
-          navigate(`/join/band-recruit/${id}`);
-        }
-      }}
+      onClick={handleClick}
     >
       <div className="flex items-center gap-[12px]">
         <div

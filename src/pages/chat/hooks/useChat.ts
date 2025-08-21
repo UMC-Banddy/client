@@ -15,15 +15,19 @@ export const useChat = () => {
   // WebSocket 훅 사용
   const {
     isConnected,
+    isConnecting,
     currentRoomId,
+    connect,
+    disconnect,
     joinRoom,
     leaveRoom,
     sendMessage: sendWebSocketMessage,
-    error: webSocketError,
     sendLastRead,
   } = useWebSocket();
   // 현재 방 타입과 마지막으로 전송한 읽음 메시지 ID를 저장
-  const currentRoomTypeRef = useRef<"PRIVATE" | "GROUP" | "BAND">("GROUP");
+  const currentRoomTypeRef = useRef<"PRIVATE" | "GROUP" | "BAND-APPLICANT">(
+    "GROUP"
+  );
   const lastReadSentIdRef = useRef<number | null>(null);
 
   // Auto scroll to bottom when new messages arrive
@@ -122,31 +126,32 @@ export const useChat = () => {
       roomId: string,
       roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP"
     ) => {
-      // 현재 방 아이디를 먼저 설정하여 sendMessage 가드 통과
-      chatActions.setCurrentRoomId(roomId);
-      currentRoomTypeRef.current = roomType;
-      lastReadSentIdRef.current = null;
-      try {
-        // REST join 시도(이미 참가자 등록 시 실패 가능) → 실패해도 WS 진행
-        await joinChatRoom(roomId);
-      } catch (error) {
-        console.warn("REST join 실패, WS로 우회 진행:", error);
+      if (!isConnected) {
+        console.warn("WebSocket이 연결되지 않았습니다. 연결을 시도합니다.");
+        try {
+          await connect();
+        } catch (error) {
+          console.error("WebSocket 연결 실패:", error);
+          return;
+        }
       }
 
       try {
-        // WebSocket 구독
-        joinRoom(roomId, roomType);
+        // WebSocket 채팅방 입장
+        await joinRoom(roomId, roomType);
+
+        // 채팅방 ID 설정
+        chatActions.setCurrentRoomId(roomId);
 
         // 기존 메시지 로드
         await loadMessages(roomId);
 
-        console.log(`채팅방 ${roomId} 입장 완료`);
+        console.log(`채팅방 ${roomId} 입장 완료 (타입: ${roomType})`);
       } catch (error) {
         console.error("채팅방 입장 실패:", error);
-        throw error;
       }
     },
-    [joinRoom, loadMessages]
+    [isConnected, connect, joinRoom, loadMessages]
   );
 
   // 메시지 전송
@@ -156,38 +161,21 @@ export const useChat = () => {
       roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP",
       receiverId?: number
     ) => {
-      if (!currentRoomId) {
-        console.error("현재 채팅방이 설정되지 않았습니다.");
-        return;
-      }
-
-      if (!isConnected) {
-        console.warn(
-          "WebSocket이 연결되지 않았습니다. 로컬 메시지로 처리합니다."
-        );
-        // WebSocket이 연결되지 않은 경우 로컬 메시지로 처리
-        const newMessage: ChatMessage = {
-          id: Date.now().toString(),
-          type: "me",
-          name: "Beck",
-          avatar: "/src/assets/images/profile1.png",
-          text,
-          time: new Date().toLocaleTimeString("ko-KR", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          unreadCount: 0,
-        };
-        chatActions.addMessage(newMessage);
+      if (!currentRoomId || !isConnected) {
+        console.error("채팅방에 입장하지 않았거나 WebSocket이 연결되지 않음");
         return;
       }
 
       try {
-        // WebSocket으로 메시지 전송
         sendWebSocketMessage(text, roomType, receiverId);
 
-        // 그룹 채팅은 서버 브로드캐스트를 수신하므로 낙관적 추가로 인한 중복(루프백) 방지
+        // 밴드 채팅은 서버 브로드캐스트만 사용 (낙관적 추가 없음)
+        if (roomType === "BAND") {
+          // 서버에서 메시지가 브로드캐스트될 때까지 대기
+          return;
+        }
+
+        // PRIVATE 채팅만 낙관적 추가
         if (roomType === "PRIVATE") {
           const newMessage: ChatMessage = {
             id: Date.now().toString(),
@@ -211,6 +199,29 @@ export const useChat = () => {
     },
     [currentRoomId, isConnected, sendWebSocketMessage]
   );
+
+  // 밴드 채팅방 첫 방문 시 봇 메시지 추가
+  const addBandBotMessage = useCallback((roomType: string, bandInfo?: any) => {
+    if (roomType === "BAND") {
+      const now = new Date();
+      const botMessage: ChatMessage = {
+        id: `bot-${now.getTime()}`,
+        type: "system",
+        name: "Banddy Bot",
+        avatar: bandInfo?.profileImageUrl || "/src/assets/images/profile1.png",
+        text:
+          bandInfo?.description ||
+          "밴드 채팅방입니다. 밴드 멤버들과 소통해보세요.",
+        time: now.toLocaleTimeString("ko-KR", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        unreadCount: 0,
+      };
+      chatActions.addMessage(botMessage);
+    }
+  }, []);
 
   // 메시지 목록이 갱신될 때마다 마지막 메시지를 기준으로 읽음 상태 전송
   useEffect(() => {
@@ -296,6 +307,22 @@ export const useChat = () => {
     chatActions.markAsRead(messageId);
   }, []);
 
+  // 데모용 단방향 메시지 전송
+  const handleSendMessage = useCallback(
+    (text: string) => {
+      if (!text.trim()) return;
+      const roomTypeParam = (searchParams.get("roomType") || "GROUP") as
+        | "PRIVATE"
+        | "GROUP"
+        | "BAND";
+      const receiverIdParam = searchParams.get("receiverId");
+      const receiverId = receiverIdParam ? Number(receiverIdParam) : undefined;
+      // 훅을 통해 WS 전송 + 낙관적 추가는 훅 내부 처리
+      sendMessage(text, roomTypeParam, receiverId);
+    },
+    [searchParams, sendMessage]
+  );
+
   return {
     // 상태
     messages: snap.messages,
@@ -305,7 +332,7 @@ export const useChat = () => {
     playingAudioId: snap.playingAudioId,
     isConnected,
     currentRoomId,
-    error: snap.error || webSocketError,
+    error: snap.error,
     hasMoreMessages,
 
     // refs
@@ -325,5 +352,6 @@ export const useChat = () => {
     sendImage,
     sendCalendar,
     handleAudioPlay,
+    addBandBotMessage,
   };
 };

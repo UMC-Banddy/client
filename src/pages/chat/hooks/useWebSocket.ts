@@ -142,9 +142,14 @@ export const useWebSocket = () => {
 
       if (!isConnected) {
         console.warn("WebSocket이 연결되지 않음. 연결 시도 중...");
-        await connect();
-        // 연결 후 잠시 대기
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        try {
+          await connect();
+          // 연결 후 잠시 대기
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        } catch (error) {
+          console.error("WebSocket 연결 실패:", error);
+          return;
+        }
       }
 
       if (!isConnected) {
@@ -166,7 +171,7 @@ export const useWebSocket = () => {
         }
 
         // 새로운 방 구독
-        if (roomType === "PRIVATE") {
+        if (roomType === "PRIVATE" || roomType === "BAND") {
           webSocketService.subscribeToPrivateRoom(roomId, handleMessage);
         } else {
           webSocketService.subscribeToGroupRoom(roomId, handleMessage);

@@ -33,16 +33,31 @@ class WebSocketService {
   }
 
   private initClient() {
-    // WS URL 결정: VITE_WS_URL 우선 → VITE_API_BASE_URL + /ws → 상대경로 /ws
-    const explicitWsUrl = import.meta.env.VITE_WS_URL as string | undefined;
-    const baseUrl =
-      import.meta.env.VITE_API_BASE_URL || "https://api.banddy.co.kr";
-    const wsUrl =
-      explicitWsUrl && explicitWsUrl.length > 0
-        ? explicitWsUrl
-        : `${baseUrl}/ws`;
+    // WS URL 결정: 로컬 개발 환경에서는 상대 경로 사용, 프로덕션에서는 전체 URL 사용
+    const isLocalDev =
+      import.meta.env.DEV && window.location.hostname === "localhost";
 
-    console.log("WebSocket 연결 URL:", wsUrl);
+    let wsUrl: string;
+    if (isLocalDev) {
+      // 로컬 개발 환경: Vite 프록시를 통해 연결
+      wsUrl = "/ws";
+    } else {
+      // 프로덕션 환경: 명시적 WS URL 또는 API BASE + /ws
+      const explicitWsUrl = import.meta.env.VITE_WS_URL as string | undefined;
+      const baseUrl =
+        import.meta.env.VITE_API_BASE_URL || "https://api.banddy.co.kr";
+      wsUrl =
+        explicitWsUrl && explicitWsUrl.length > 0
+          ? explicitWsUrl
+          : `${baseUrl}/ws`;
+    }
+
+    console.log(
+      "WebSocket 연결 URL:",
+      wsUrl,
+      "환경:",
+      isLocalDev ? "로컬 개발" : "프로덕션"
+    );
 
     this.stompClient = new Client({
       webSocketFactory: () =>
@@ -294,7 +309,7 @@ class WebSocketService {
     console.log(`그룹 채팅방 ${roomId} 구독 완료 (${destination})`);
   }
 
-  // 개인 채팅방(queue) 구독
+  // 개인 채팅방(queue) 구독 (밴드 지원자/관리자 포함)
   subscribeToPrivateRoom(
     roomId: string,
     onMessage: (message: WebSocketMessage) => void
@@ -309,29 +324,34 @@ class WebSocketService {
 
     const destination = API_ENDPOINTS.WEBSOCKET.SUBSCRIBE_PRIVATE(roomId);
 
-    const subscription = this.stompClient.subscribe(
-      destination,
-      (frame: StompFrame) => {
-        try {
-          const parsed = JSON.parse(frame.body || "");
-          const payload: WebSocketMessage =
-            parsed && typeof parsed === "object" && "data" in parsed
-              ? (parsed.data as WebSocketMessage)
-              : (parsed as WebSocketMessage);
-          if (!payload || payload.messageId === undefined) {
-            console.warn("유효하지 않은 메시지 payload:", parsed);
-            return;
+    try {
+      const subscription = this.stompClient.subscribe(
+        destination,
+        (frame: StompFrame) => {
+          try {
+            const parsed = JSON.parse(frame.body || "");
+            const payload: WebSocketMessage =
+              parsed && typeof parsed === "object" && "data" in parsed
+                ? (parsed.data as WebSocketMessage)
+                : (parsed as WebSocketMessage);
+            if (!payload || payload.messageId === undefined) {
+              console.warn("유효하지 않은 메시지 payload:", parsed);
+              return;
+            }
+            console.log("실시간 메시지 수신:", payload);
+            onMessage(payload);
+          } catch (error) {
+            console.error("메시지 파싱 에러:", error);
           }
-          console.log("실시간 메시지 수신:", payload);
-          onMessage(payload);
-        } catch (error) {
-          console.error("메시지 파싱 에러:", error);
         }
-      }
-    );
+      );
 
-    this.subscriptions.set(roomId, subscription);
-    console.log(`개인 채팅방 ${roomId} 구독 완료 (${destination})`);
+      this.subscriptions.set(roomId, subscription);
+      console.log(`개인 채팅방 ${roomId} 구독 완료 (${destination})`);
+    } catch (error) {
+      console.error(`개인 채팅방 ${roomId} 구독 실패:`, error);
+      throw error;
+    }
   }
 
   // 안읽은 메시지(queue) 구독
@@ -396,6 +416,7 @@ class WebSocketService {
     this.subscriptions.clear();
   }
 
+  // 메시지 전송
   sendMessage(
     roomId: string,
     content: string,
@@ -407,25 +428,34 @@ class WebSocketService {
       return;
     }
 
-    const destination =
-      roomType === "PRIVATE"
-        ? API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_PRIVATE(roomId)
-        : API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_GROUP(roomId);
+    let destination: string;
+    if (roomType === "PRIVATE" || roomType === "BAND") {
+      destination = API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_PRIVATE(roomId);
+    } else {
+      destination = API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_GROUP(roomId);
+    }
+
     const message: WebSocketSendMessage = {
       content,
       roomId: parseInt(roomId, 10),
       roomType,
-      receiverId: roomType === "PRIVATE" ? receiverId : undefined,
+      receiverId:
+        roomType === "PRIVATE" || roomType === "BAND" ? receiverId : undefined,
     };
 
-    this.stompClient.publish({
-      destination,
-      body: JSON.stringify(message),
-      headers: {
-        "content-type": "application/json;charset=UTF-8",
-      },
-    });
-    console.log("메시지 전송:", message);
+    try {
+      this.stompClient.publish({
+        destination,
+        body: JSON.stringify(message),
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+        },
+      });
+      console.log("메시지 전송:", message);
+    } catch (error) {
+      console.error("메시지 전송 중 오류:", error);
+      throw error;
+    }
   }
 
   // 읽음 상태 전송 함수 (roomType에 따라 목적지 분기)
@@ -439,19 +469,25 @@ class WebSocketService {
       return;
     }
 
-    const destination =
-      roomType === "PRIVATE"
-        ? `/app/chat/private.lastRead/${roomId}`
-        : `/app/chat/group.lastRead/${roomId}`;
+    let destination: string;
+    if (roomType === "PRIVATE" || roomType === "BAND") {
+      destination = `/app/chat/private.lastRead/${roomId}`;
+    } else {
+      destination = `/app/chat/group.lastRead/${roomId}`;
+    }
 
-    this.stompClient.publish({
-      destination,
-      body: messageId.toString(),
-      headers: {
-        "content-type": "text/plain;charset=UTF-8",
-      },
-    });
-    console.log("마지막 읽음 전송:", { roomId, messageId, roomType });
+    try {
+      this.stompClient.publish({
+        destination,
+        body: messageId.toString(),
+        headers: {
+          "content-type": "text/plain;charset=UTF-8",
+        },
+      });
+      console.log("마지막 읽음 전송:", { roomId, messageId, roomType });
+    } catch (error) {
+      console.error("읽음 상태 전송 중 오류:", error);
+    }
   }
 
   // 읽음 상태 전송 함수 (usePrivateChat에서 사용)
