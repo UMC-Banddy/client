@@ -73,7 +73,6 @@ const MyEditPage: React.FC = () => {
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [isEditingArtists, setIsEditingArtists] = useState(false);
-  const [isEditingGenres, setIsEditingGenres] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -615,11 +614,6 @@ const MyEditPage: React.FC = () => {
     setIsEditingArtists(!isEditingArtists);
   };
 
-  const handleEditGenre = () => {
-    // 장르 편집 모드 토글
-    setIsEditingGenres(!isEditingGenres);
-  };
-
   const handleRemoveGenre = (genreId: string) => {
     // 장르 제거 로직
     console.log("장르 제거:", genreId);
@@ -771,12 +765,10 @@ const MyEditPage: React.FC = () => {
               {/* 관심 장르 */}
               <GenreSection
                 genres={genres}
-                onEdit={handleEditGenre}
                 onRemoveGenre={handleRemoveGenre}
                 onAddGenre={(newGenre) => {
                   setGenres(prev => [...prev, newGenre]);
                 }}
-                isEditing={isEditingGenres}
               />
 
               {/* 관심 아티스트 */}

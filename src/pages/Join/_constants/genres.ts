@@ -1,7 +1,7 @@
 export const genres = [
   {
     id: 0,
-    content: "⚡Metal",
+    content: "⚡",
     text: "Metal",
   },
   {
