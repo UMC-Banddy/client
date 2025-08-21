@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import profileImage from "@/assets/images/profile1.png";
-import pencilIcon from "@/assets/icons/pencil.svg";
 import ProfileTag from "./_components/ProfileTag";
 import SessionIcon from "./_components/SessionIcon";
 import { profileAPI } from "@/api/API";
@@ -13,49 +12,11 @@ const PretestProfileCompletePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 프로필 데이터 로드 및 아이디 기반 저장 데이터 처리
+  // 프로필 데이터 로드
   useEffect(() => {
     const loadProfile = async () => {
       try {
         setLoading(true);
-
-        // memberId가 있으면 아이디 기반 저장 데이터 처리
-        const memberId = localStorage.getItem("memberId");
-        if (memberId) {
-          console.log("아이디 기반 저장 데이터 처리:", memberId);
-
-          // localStorage에서 임시 저장된 데이터 가져오기
-          const pendingArtists = localStorage.getItem("pendingArtists");
-          const pendingSessions = localStorage.getItem("pendingSessions");
-
-          if (pendingArtists || pendingSessions) {
-            console.log("임시 저장된 데이터:", {
-              pendingArtists,
-              pendingSessions,
-            });
-
-            // 백엔드로 아이디 기반 저장 데이터 전송
-            try {
-              // 아티스트 데이터가 있으면 전송
-              if (pendingArtists) {
-                const artistData = JSON.parse(pendingArtists);
-                // TODO: 백엔드 API 호출하여 아이디 기반으로 아티스트 저장
-                console.log("아이디 기반 아티스트 저장:", artistData);
-                localStorage.removeItem("pendingArtists");
-              }
-
-              // 세션 데이터가 있으면 전송
-              if (pendingSessions) {
-                const sessionData = JSON.parse(pendingSessions);
-                // TODO: 백엔드 API 호출하여 아이디 기반으로 세션 저장
-                console.log("아이디 기반 세션 저장:", sessionData);
-                localStorage.removeItem("pendingSessions");
-              }
-            } catch (saveError) {
-              console.error("아이디 기반 저장 실패:", saveError);
-            }
-          }
-        }
 
         // 프로필 데이터 로드 (토큰 기반)
         try {
@@ -90,9 +51,7 @@ const PretestProfileCompletePage: React.FC = () => {
     navigate("/");
   };
 
-  const handleEdit = () => {
-    navigate("/pre-test/profile/edit");
-  };
+  // 편집 제거 (요구사항)
 
   // 세션 타입에 따른 아이콘 반환
   // const getSessionIcon = (sessionType: string) => {
@@ -147,17 +106,7 @@ const PretestProfileCompletePage: React.FC = () => {
           {/* 프로필 카드 */}
           {!loading && (
             <div className="bg-gray-200 rounded-2xl sm:rounded-3xl md:rounded-4xl lg:rounded-5xl xl:rounded-6xl 2xl:rounded-7xl p-6 sm:p-8 md:p-10 lg:p-12 xl:p-14 2xl:p-16 relative">
-              {/* 수정 아이콘 - 우측 상단 */}
-              <button
-                onClick={handleEdit}
-                className="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 lg:top-10 lg:right-10 xl:top-12 xl:right-12 2xl:top-14 2xl:right-14 p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6 2xl:p-7"
-              >
-                <img
-                  src={pencilIcon}
-                  alt="수정"
-                  className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 2xl:w-13 2xl:h-13"
-                />
-              </button>
+              {/* 편집 버튼 제거됨 */}
 
               {/* 프로필 이미지 및 기본 정보 */}
               <div className="flex flex-col items-center gap-4 sm:gap-5 md:gap-6 lg:gap-8 xl:gap-10 2xl:gap-12 mb-6 sm:mb-8 md:mb-10 lg:mb-12">
@@ -219,12 +168,6 @@ const PretestProfileCompletePage: React.FC = () => {
                   <h3 className="inline-block bg-black text-white px-4 py-2 sm:px-5 sm:py-3 md:px-6 md:py-4 lg:px-8 lg:py-5 xl:px-10 xl:py-6 2xl:px-12 2xl:py-7 text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-medium">
                     관심 아티스트
                   </h3>
-                  <button
-                    onClick={() => navigate("/pre-test/profile/edit")}
-                    className="text-[#B71C1C] text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-medium hover:text-red-400 transition-colors"
-                  >
-                    수정
-                  </button>
                 </div>
                 <div className="flex gap-6 sm:gap-7 md:gap-8 lg:gap-9 xl:gap-10 2xl:gap-11 overflow-x-auto scrollbar-hide">
                   {profileData?.savedTracks?.length > 0 ? (

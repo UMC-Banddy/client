@@ -217,65 +217,53 @@ const PretestArtistPage = () => {
 
   // 다음 단계 처리
   const handleNext = async () => {
-    if (selectedArtists.length > 0) {
-      try {
-        setSubmitting(true);
+    if (selectedArtists.length === 0) {
+      toast.error("아티스트를 한 명 이상 선택해주세요.");
+      return;
+    }
+    try {
+      setSubmitting(true);
 
-        // 선택된 아티스트 정보 가져오기
-        const selectedArtistData = selectedArtists.map((id) => {
-          // 검색 결과에서 찾기
-          const searchResult = searchResults.find(
-            (artist) => artist.id.toString() === id
-          );
-          if (searchResult) {
-            return searchResult.spotifyId;
-          }
-          // 기본 아티스트 목록에서 찾기
-          const artist = artists.find((artist) => artist.id.toString() === id);
-          return artist ? artist.spotifyId : id;
-        });
+      // 선택된 아티스트를 백엔드 artistId(number) 배열로 변환
+      const artistIds: number[] = selectedArtists
+        .map((selId) => {
+          // 1) 기본 목록(백엔드 제공)에서 id 직접 매칭
+          const base = artists.find((a) => a.id.toString() === selId);
+          if (base) return base.id;
 
-        console.log("전송할 아티스트 데이터:", selectedArtistData);
-
-        // 선택된 아티스트 정보를 localStorage에 저장 (세션 페이지에서 사용)
-        localStorage.setItem(
-          "selectedArtists",
-          JSON.stringify(selectedArtistData)
-        );
-
-        try {
-          // survey API는 spotifyId 목록을 요구하므로 selectedArtistData 사용
-          const payload = { selectedArtists: selectedArtistData };
-
-          if (memberId) {
-            // 아이디 기반 저장 (토큰 없이 가능)
-            await surveyAPI.submitSurvey(payload, memberId);
-          } else {
-            // memberId가 없으면 저장은 스킵하고 안내
-            console.warn("memberId가 없어 저장을 스킵합니다.");
-            toast("임시 저장 상태로 다음 단계로 이동합니다.");
+          // 2) 검색 결과에서 spotifyId를 찾고, 기본 목록에서 spotifyId로 역매핑
+          const search = searchResults.find((s) => s.id.toString() === selId);
+          if (search) {
+            const matched = artists.find((a) => a.spotifyId === search.spotifyId);
+            if (matched) return matched.id;
           }
 
-          // 다음 단계로 이동 (state 전달 없이)
-          navigate("/pre-test/session");
-        } catch (error) {
-          console.error("아티스트 저장 실패:", error);
-          // 에러가 발생해도 다음 페이지로 이동
-          navigate("/pre-test/session");
-        } finally {
-          setSubmitting(false);
-        }
-      } catch (error) {
-        console.error("아티스트 저장 실패:", error);
-        // 에러가 발생해도 다음 페이지로 이동 (선택사항)
-        navigate("/pre-test/session");
-        setSubmitting(false);
+          // 3) 숫자로 파싱 가능한 경우(이미 백엔드 id가 문자열로 들어온 경우)
+          const asNum = Number(selId);
+          return Number.isFinite(asNum) ? asNum : NaN;
+        })
+        .filter((n) => Number.isFinite(n)) as number[];
+
+      if (artistIds.length === 0) {
+        toast.error("선택된 아티스트의 백엔드 ID를 찾지 못했습니다.");
+        return;
       }
+
+      // 선택된 아티스트 ID를 localStorage에 저장 (세션 페이지에서 단일 제출에 사용)
+      localStorage.setItem("artistIds", JSON.stringify(artistIds));
+
+      // 세션 선택 페이지로 이동 (memberId를 넘겨 유지)
+      navigate("/pre-test/session", { state: { memberId } });
+    } catch (error) {
+      console.error(error);
+      toast.error("진행 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="w-full h-full flex flex-col text-white font-inherit">
+    <div className="flex flex-col h-screen">
       {/* 헤더 */}
       <PretestHeader
         onSkip={handleSkip}

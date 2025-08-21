@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import PretestHeader from "../artist/_components/PretestHeader";
 import SessionList from "./_components/SessionList";
 import SkillGuideModal from "./_components/SkillGuideModal";
-import { artistSaveAPI, profileAPI } from "@/api/API";
+import { surveyAPI } from "@/api/API";
 import { SESSIONS } from "./_components/sessionData";
 import { useSurveySessions } from "@/features/pretest/hooks/useSurveyData";
+import toast from "react-hot-toast";
 
 // 임시로 만들었습니다.. (타입 정의)
 interface ProfileData {
@@ -80,161 +81,140 @@ const PretestSessionPage = () => {
     if (Object.keys(selectedSessions).length > 0) {
       try {
         setSubmitting(true);
+        // 1) 세션 데이터 변환: { sessionId: number, level: string }
+        const sessionsPayload = Object.entries(selectedSessions).map(
+          ([sessionId, levelId]) => {
+            const numericId = Number(sessionId);
+            // 백엔드 enum(Level)과 일치하도록 정규화
+            const rawLevel = (levelId || "").toLowerCase();
+            const levelMap: Record<string, "BEGINNER" | "INTERMEDIATE" | "ADVANCED"> = {
+              beginner: "BEGINNER",
+              novice: "BEGINNER",
+              entry: "BEGINNER",
+              intermediate: "INTERMEDIATE",
+              middle: "INTERMEDIATE",
+              advanced: "ADVANCED",
+              expert: "ADVANCED",
+              pro: "ADVANCED",
+            };
+            const level = levelMap[rawLevel] ?? "BEGINNER";
 
-        // 1. 아티스트 저장 처리
-        // localStorage에서 선택된 아티스트 정보 가져오기
-        const savedArtistData = localStorage.getItem("selectedArtists");
-        if (savedArtistData) {
-          try {
-            const artistSpotifyIds = JSON.parse(savedArtistData);
-            console.log("저장된 아티스트 데이터:", artistSpotifyIds);
+            // 세션 타입을 백엔드 enum(SessionType)으로 정규화
+            const sessionObj = sessions.find(
+              (s) => Number((s as any).id) === numericId
+            );
+            const rawName = (sessionObj?.name || "").trim();
+            // 이모지/특수문자 제거, 연속 공백 축소 후 소문자화
+            const normalized = rawName
+              .replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}]/gu, "")
+              .replace(/[^\p{L}\p{N}\s_]/gu, "")
+              .replace(/\s+/g, " ")
+              .trim()
+              .toLowerCase();
 
-            // memberId가 있으면 아이디 기반 저장, 없으면 토큰 기반 저장
-            const memberId = localStorage.getItem("memberId");
-            
-            if (memberId) {
-              // 아이디 기반 저장 (토큰 없이도 가능)
-              console.log("아이디 기반 저장 사용:", memberId);
-              
-              // 아티스트 데이터를 localStorage에 임시 저장 (백엔드에서 처리)
-              localStorage.setItem("pendingArtists", savedArtistData);
-            } else {
-              // 토큰 기반 저장 (기존 방식)
-              console.log("토큰 기반 저장 사용");
-              
-              // 각 아티스트를 개별적으로 저장
-              const artistSavePromises = artistSpotifyIds.map(
-                async (spotifyId: string) => {
-                  try {
-                    const result = await artistSaveAPI.saveArtist(spotifyId);
-                    console.log(`아티스트 ${spotifyId} 저장 성공:`, result);
-                    return result;
-                  } catch (error) {
-                    console.error(`아티스트 ${spotifyId} 저장 실패:`, error);
-                    throw error;
-                  }
-                }
-              );
+            const typeMap: Record<string, string> = {
+              // 한글 라벨
+              "보컬": "VOCAL",
+              "일렉 기타": "ELECTRIC_GUITAR",
+              "어쿠스틱 기타": "ACOUSTIC_GUITAR",
+              "베이스": "BASS",
+              "드럼": "DRUM",
+              "키보드": "KEYBOARD",
+              "바이올린": "VIOLIN",
+              "트럼펫": "TRUMPET",
+              // 이모지 포함 라벨 (원본 매칭 용)
+              "🎤 보컬 🎤": "VOCAL",
+              "🎸 일렉 기타 🎸": "ELECTRIC_GUITAR",
+              "🪕 어쿠스틱 기타 🪕": "ACOUSTIC_GUITAR",
+              "🎵 베이스 🎵": "BASS",
+              "🥁 드럼 🥁": "DRUM",
+              "🎹 키보드 🎹": "KEYBOARD",
+              "🎻 바이올린 🎻": "VIOLIN",
+              "🎺 트럼펫 🎺": "TRUMPET",
+              // 영문 키 대비
+              vocal: "VOCAL",
+              electric_guitar: "ELECTRIC_GUITAR",
+              acoustic_guitar: "ACOUSTIC_GUITAR",
+              bass: "BASS",
+              drum: "DRUM",
+              keyboard: "KEYBOARD",
+              violin: "VIOLIN",
+              trumpet: "TRUMPET",
+            };
 
-              await Promise.all(artistSavePromises);
-              console.log("모든 아티스트 저장 완료");
+            // 1차: 원본 한글/이모지 직매칭 → 2차: 정규화 키 매칭 → 3차: 포함어 매칭
+            let sessionType = typeMap[rawName] || typeMap[normalized];
+            if (!sessionType) {
+              if (normalized.includes("보컬")) sessionType = "VOCAL";
+              else if (normalized.includes("일렉") || normalized.includes("electric")) sessionType = "ELECTRIC_GUITAR";
+              else if (normalized.includes("어쿠스틱") || normalized.includes("acoustic")) sessionType = "ACOUSTIC_GUITAR";
+              else if (normalized.includes("베이스") || normalized.includes("bass")) sessionType = "BASS";
+              else if (normalized.includes("드럼") || normalized.includes("drum")) sessionType = "DRUM";
+              else if (normalized.includes("키보드") || normalized.includes("keyboard")) sessionType = "KEYBOARD";
+              else if (normalized.includes("바이올린") || normalized.includes("violin")) sessionType = "VIOLIN";
+              else if (normalized.includes("트럼펫") || normalized.includes("trumpet")) sessionType = "TRUMPET";
             }
 
-            // 저장 완료 후 localStorage에서 제거
-            localStorage.removeItem("selectedArtists");
-          } catch (artistError) {
-            console.error("아티스트 저장 중 오류:", artistError);
-            // 아티스트 저장 실패해도 세션 저장은 계속 진행
-          }
-        }
-
-        // 2. 세션 데이터 처리
-        // selectedSessions를 availableSessions 형식으로 변환
-        const availableSessions = Object.entries(selectedSessions).map(
-          ([sessionId, levelId]) => {
-            // sessionId를 실제 세션 정보에서 찾아서 올바른 sessionType으로 변환
-            const session = sessions.find((s) => s.id === sessionId);
-
-            // 서버에서 가져온 세션 데이터를 기반으로 sessionType 결정
-            // 서버가 제공한 session.name을 그대로 사용 (이미 올바른 형식)
-            let sessionType = session ? session.name : sessionId;
-
-            // 디버깅을 위한 로그
-            console.log("원본 세션 이름:", session?.name);
-            console.log("변환 전 sessionType:", sessionType);
-
-            // 서버가 기대하는 영문 세션 타입으로 변환 (이모지/한글명 모두 대응)
-            const sessionTypeMapping: Record<string, string> = {
-              "🎤 보컬 🎤": "vocal",
-              보컬: "vocal",
-              "🎸 일렉 기타 🎸": "electric_guitar",
-              "일렉 기타": "electric_guitar",
-              "🪕 어쿠스틱 기타 🪕": "acoustic_guitar",
-              "어쿠스틱 기타": "acoustic_guitar",
-              "🎵 베이스 🎵": "bass",
-              베이스: "bass",
-              "🪕 베이스 🪕": "bass",
-              "🥁 드럼 🥁": "drums",
-              드럼: "drums",
-              "🎹 키보드 🎹": "keyboard",
-              키보드: "keyboard",
-              "🎻 바이올린 🎻": "violin",
-              바이올린: "violin",
-              "🎺 트럼펫 🎺": "trumpet",
-              트럼펫: "trumpet",
-            };
-
-            sessionType = sessionTypeMapping[sessionType] || sessionType;
-            console.log("변환 후 sessionType:", sessionType);
-
-            // levelId를 서버 기대 형식으로 변환 (예: beginner -> BEGINNER)
-            const level = (levelId || "").toUpperCase();
+            if (!sessionType) {
+              console.warn(
+                `세션 타입 매핑 실패: id=${numericId}, name='${rawName}'. 기본값 미지정.`
+              );
+            }
 
             console.log(
-              `세션 변환: ${sessionId} -> ${sessionType}, 레벨: ${level}`
+              `세션 변환: ${sessionId} -> ${numericId}, 타입: ${sessionType}, 레벨: ${level}`
             );
-
-            return {
-              sessionType,
-              level,
+            return { sessionId: numericId, level, sessionType } as {
+              sessionId: number;
+              level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+              sessionType?: string;
             };
           }
         );
 
-        console.log("전송할 세션 데이터:", availableSessions);
+        console.log("전송할 세션 데이터:", sessionsPayload);
         console.log(
           "전송할 세션 데이터 (JSON):",
-          JSON.stringify(availableSessions, null, 2)
+          JSON.stringify(sessionsPayload, null, 2)
+        );
+        
+        // 2) 단일 제출: 아티스트 + 세션 묶어서 한 번만 호출
+        const memberId = localStorage.getItem("memberId");
+        const savedArtistIds = localStorage.getItem("artistIds");
+        const artistIds: number[] = savedArtistIds
+          ? JSON.parse(savedArtistIds)
+          : [];
+
+        if (!memberId) {
+          throw new Error("로그인이 필요합니다. memberId가 없습니다.");
+        }
+        if (artistIds.length === 0) {
+          throw new Error("선택된 아티스트가 없습니다.");
+        }
+
+        await surveyAPI.submitSurvey(
+          {
+            genreNames: [],
+            keywords: {},
+            artistIds,
+            sessions: sessionsPayload,
+            snsLinks: [],
+            profileImageUrl: null,
+            bio: null,
+            mediaUrl: null,
+          },
+          memberId
         );
 
-        // memberId가 있으면 아이디 기반 저장, 없으면 토큰 기반 저장
-        const memberId = localStorage.getItem("memberId");
-        
-        if (memberId) {
-          // 아이디 기반 저장 (토큰 없이도 가능)
-          console.log("아이디 기반 저장 사용:", memberId);
-          
-          // 세션 데이터를 localStorage에 임시 저장 (백엔드에서 처리)
-          localStorage.setItem("pendingSessions", JSON.stringify(availableSessions));
-          
-          // 다음 페이지로 이동 (아이디 기반 저장은 백엔드에서 처리)
-          navigate("/pre-test/profile/complete");
-        } else {
-          // 토큰 기반 저장 (기존 방식)
-          console.log("토큰 기반 저장 사용");
-          
-          // 기존 프로필 정보를 가져와서 availableSessions만 업데이트
-          try {
-            const currentProfile = await profileAPI.getProfile();
-            console.log("현재 프로필 정보:", currentProfile);
-
-            // 기존 프로필 정보와 새로운 세션 정보를 병합
-            const updatedProfile = {
-              // ...currentProfile.result, // 기존 프로필 정보 유지
-              ...(currentProfile.result as ProfileData), // 기존 프로필 정보 유지
-              availableSessions: availableSessions, // 세션 정보만 업데이트
-            };
-
-            console.log("업데이트할 프로필 정보:", updatedProfile);
-
-            // 프로필 API로 세션 데이터 저장
-            await profileAPI.updateProfile(updatedProfile);
-          } catch (profileError) {
-            console.error("프로필 조회 실패, 기본값으로 저장:", profileError);
-
-            // 프로필 조회 실패 시 최소 필드만 전송 (서버 유효성 검사를 피하기 위함)
-            await profileAPI.updateProfile({
-              availableSessions: availableSessions,
-            });
-          }
+        // 제출 후 임시 저장 데이터 정리
+        localStorage.removeItem("artistIds");
 
         // 성공 시 다음 페이지로 이동
         navigate("/pre-test/profile/complete");
-        }
       } catch (error) {
         console.error("세션 데이터 제출 실패:", error);
-        // 에러가 발생해도 다음 페이지로 이동 (선택사항)
-        navigate("/pre-test/profile/complete");
+        // 에러 시 이동하지 않고 오류 안내
+        toast.error("사전테스트 저장에 실패했습니다. 잠시 후 다시 시도해주세요.");
       } finally {
         setSubmitting(false);
       }

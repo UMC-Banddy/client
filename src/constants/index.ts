@@ -11,7 +11,7 @@ export const API_ENDPOINTS = {
   },
 
   SURVEY: {
-    SUBMIT: "/member/survey",
+    SUBMIT: (memberId: string) => `/member/survey/${memberId}`,
     KEYWORD: "/member/survey/keyword",
     ARTIST: "/member/survey/artist",
     ARTIST_SEARCH: "/member/survey/artists/search",
