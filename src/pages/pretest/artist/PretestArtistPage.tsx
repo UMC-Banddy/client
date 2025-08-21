@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import PretestHeader from "./_components/PretestHeader";
 import SearchBar from "./_components/SearchBar";
 import ArtistGrid from "./_components/ArtistGrid";
-import { surveyAPI, musicAPI } from "@/api/API";
+import { musicAPI } from "@/api/API";
 import {
   useSurveyArtists,
   useSearchArtists,
