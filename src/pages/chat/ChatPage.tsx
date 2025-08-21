@@ -38,7 +38,8 @@ export default function ChatPage() {
     const roomTypeParam = (searchParams.get("roomType") || "GROUP") as
       | "PRIVATE"
       | "GROUP"
-      | "BAND";
+      | "BAND-APPLICANT"
+      | "BAND-MANAGER";
     if (roomId) {
       // REST join + WS subscribe + 메시지 로드
       enterChatRoom(roomId, roomTypeParam);
@@ -57,7 +58,7 @@ export default function ChatPage() {
     const roomId = searchParams.get("roomId");
 
     // 밴드 관련 채팅방이 아니면 무시
-    if (roomTypeParam !== "BAND" || !roomId) return;
+    if ((roomTypeParam !== "BAND-APPLICANT" && roomTypeParam !== "BAND-MANAGER") || !roomId) return;
 
     // 첫 방문 봇 메시지 표시 (한 번만)
     if (!hasShownBotMessage && messages.length === 0) {
@@ -159,7 +160,8 @@ export default function ChatPage() {
       const roomTypeParam = (searchParams.get("roomType") || "GROUP") as
         | "PRIVATE"
         | "GROUP"
-        | "BAND";
+        | "BAND-APPLICANT"
+        | "BAND-MANAGER";
       const receiverIdParam = searchParams.get("receiverId");
       const receiverId = receiverIdParam ? Number(receiverIdParam) : undefined;
       // 훅을 통해 WS 전송 + 낙관적 추가는 훅 내부 처리

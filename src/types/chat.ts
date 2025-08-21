@@ -41,6 +41,51 @@ export interface ChatRoomInfo {
   pinnedAt?: string | null;
 }
 
+// 밴드 지원자 채팅방 정보 (BAND-APPLICANT)
+export interface BandApplicantRoomInfo {
+  roomType: "BAND-APPLICANT";
+  roomId: number;
+  bandId: number;
+  bandName: string;
+  profileImageUrl: string | null;
+  memberInfo: {
+    memberId: number;
+    nickname: string;
+    profileImageUrl: string | null;
+    lastReadMessageId: number;
+    session: string;
+    passFail: "PENDING" | "PASS" | "FAIL";
+  };
+  unreadCount: number | null;
+  lastMessageAt: string | null;
+  pinnedAt?: string | null;
+}
+
+// 밴드 관리자 채팅방 정보 (BAND-MANAGER)
+export interface BandManagerRoomInfo {
+  roomType: "BAND-MANAGER";
+  roomId: number;
+  bandId: number;
+  bandName: string;
+  profileImageUrl: string | null;
+  status: "RECRUITING" | "ACTIVE";
+  bandSessionList: string[];
+  chatRoomInfo: {
+    roomId: number;
+    memberInfo: {
+      memberId: number;
+      nickname: string;
+      profileImageUrl: string | null;
+      lastReadMessageId: number;
+    };
+    session: string;
+    passFail: "PENDING" | "PASS" | "FAIL";
+    lastMessageAt: string | null;
+    pinnedAt?: string | null;
+    unreadCount: number | null;
+  }[];
+}
+
 export interface RoomMemberInfo {
   memberId: number;
   profileImageUrl: string;

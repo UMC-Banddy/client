@@ -420,7 +420,7 @@ class WebSocketService {
   sendMessage(
     roomId: string,
     content: string,
-    roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP",
+    roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER" = "GROUP",
     receiverId?: number
   ): void {
     if (!this.stompClient || !this.stompClient.connected) {
@@ -429,7 +429,7 @@ class WebSocketService {
     }
 
     let destination: string;
-    if (roomType === "PRIVATE" || roomType === "BAND") {
+    if (roomType === "PRIVATE" || roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
       destination = API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_PRIVATE(roomId);
     } else {
       destination = API_ENDPOINTS.WEBSOCKET.SEND_MESSAGE_GROUP(roomId);
@@ -438,9 +438,9 @@ class WebSocketService {
     const message: WebSocketSendMessage = {
       content,
       roomId: parseInt(roomId, 10),
-      roomType,
+      roomType: roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER" ? "BAND" : roomType,
       receiverId:
-        roomType === "PRIVATE" || roomType === "BAND" ? receiverId : undefined,
+        roomType === "PRIVATE" || roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER" ? receiverId : undefined,
     };
 
     try {
@@ -470,7 +470,7 @@ class WebSocketService {
     }
 
     let destination: string;
-    if (roomType === "PRIVATE" || roomType === "BAND") {
+    if (roomType === "PRIVATE" || roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
       destination = `/app/chat/private.lastRead/${roomId}`;
     } else {
       destination = `/app/chat/group.lastRead/${roomId}`;

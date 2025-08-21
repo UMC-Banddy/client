@@ -135,7 +135,7 @@ export const useWebSocket = () => {
 
   // 채팅방 입장
   const joinRoom = useCallback(
-    async (roomId: string, roomType: "PRIVATE" | "GROUP" | "BAND") => {
+    async (roomId: string, roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER") => {
       // 동일 방 재입장, 혹은 진행 중이면 무시
       if (isJoiningRef.current) return;
       if (subscribedRoomIdRef.current === roomId) return;
@@ -171,9 +171,11 @@ export const useWebSocket = () => {
         }
 
         // 새로운 방 구독
-        if (roomType === "PRIVATE" || roomType === "BAND") {
+        if (roomType === "PRIVATE" || roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
+          // 개인 채팅방 구독 (/user/queue/room/{roomId})
           webSocketService.subscribeToPrivateRoom(roomId, handleMessage);
-        } else {
+        } else if (roomType === "GROUP") {
+          // 그룹 채팅방 구독 (/topic/room/{roomId})
           webSocketService.subscribeToGroupRoom(roomId, handleMessage);
         }
 
@@ -194,7 +196,7 @@ export const useWebSocket = () => {
   const sendMessage = useCallback(
     async (
       content: string,
-      roomType: "PRIVATE" | "GROUP" | "BAND",
+      roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER",
       receiverId?: number
     ) => {
       if (!isConnected || !currentRoomId) {

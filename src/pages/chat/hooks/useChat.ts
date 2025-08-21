@@ -25,7 +25,7 @@ export const useChat = () => {
     sendLastRead,
   } = useWebSocket();
   // 현재 방 타입과 마지막으로 전송한 읽음 메시지 ID를 저장
-  const currentRoomTypeRef = useRef<"PRIVATE" | "GROUP" | "BAND-APPLICANT">(
+  const currentRoomTypeRef = useRef<"PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER">(
     "GROUP"
   );
   const lastReadSentIdRef = useRef<number | null>(null);
@@ -124,7 +124,7 @@ export const useChat = () => {
   const enterChatRoom = useCallback(
     async (
       roomId: string,
-      roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP"
+      roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER" = "GROUP"
     ) => {
       if (!isConnected) {
         console.warn("WebSocket이 연결되지 않았습니다. 연결을 시도합니다.");
@@ -137,8 +137,9 @@ export const useChat = () => {
       }
 
       try {
-        // WebSocket 채팅방 입장
-        await joinRoom(roomId, roomType);
+        // WebSocket 채팅방 입장 (BAND는 BAND-APPLICANT로 매핑)
+        const mappedRoomType = roomType === "BAND" ? "BAND-APPLICANT" : roomType;
+        await joinRoom(roomId, mappedRoomType);
 
         // 채팅방 ID 설정
         chatActions.setCurrentRoomId(roomId);
@@ -158,7 +159,7 @@ export const useChat = () => {
   const sendMessage = useCallback(
     (
       text: string,
-      roomType: "PRIVATE" | "GROUP" | "BAND" = "GROUP",
+      roomType: "PRIVATE" | "GROUP" | "BAND-APPLICANT" | "BAND-MANAGER" = "GROUP",
       receiverId?: number
     ) => {
       if (!currentRoomId || !isConnected) {
@@ -170,7 +171,7 @@ export const useChat = () => {
         sendWebSocketMessage(text, roomType, receiverId);
 
         // 밴드 채팅은 서버 브로드캐스트만 사용 (낙관적 추가 없음)
-        if (roomType === "BAND") {
+        if (roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
           // 서버에서 메시지가 브로드캐스트될 때까지 대기
           return;
         }
@@ -202,7 +203,7 @@ export const useChat = () => {
 
   // 밴드 채팅방 첫 방문 시 봇 메시지 추가
   const addBandBotMessage = useCallback((roomType: string, bandInfo?: any) => {
-    if (roomType === "BAND") {
+    if (roomType === "BAND-APPLICANT" || roomType === "BAND-MANAGER") {
       const now = new Date();
       const botMessage: ChatMessage = {
         id: `bot-${now.getTime()}`,

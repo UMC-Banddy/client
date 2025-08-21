@@ -106,9 +106,7 @@ export const API_ENDPOINTS = {
       `/app/chat/group.sendMessage/${roomId}`,
     SEND_MESSAGE_PRIVATE: (roomId: string | number) =>
       `/app/chat/private.sendMessage/${roomId}`,
-    SEND_MESSAGE_BAND_APPLICANT: (roomId: string | number) =>
-      `/app/chat/private.sendMessage/${roomId}`,
-    SEND_MESSAGE_BAND_MANAGER: (roomId: string | number) =>
+    SEND_MESSAGE_BAND: (roomId: string | number) =>
       `/app/chat/private.sendMessage/${roomId}`,
     BASE: "ws",
   },
