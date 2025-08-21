@@ -24,7 +24,8 @@ export const useCurrentUser = () => {
       return response.data.result;
     },
     enabled: !!authStore.accessToken,
-    staleTime: 5 * 60 * 1000, // 5분간 캐시
-    gcTime: 10 * 60 * 1000, // 10분간 캐시
+    staleTime: 10 * 60 * 1000, // 10분으로 증가 (기존 5분)
+    gcTime: 20 * 60 * 1000, // 20분으로 증가 (기존 10분)
+    refetchOnWindowFocus: false, // 윈도우 포커스 시 자동 refetch 비활성화
   });
 };

@@ -10,7 +10,7 @@ export const useProfile = () => {
       try {
         const response = await API.get(API_ENDPOINTS.PROFILE.SELF);
         console.log("프로필 API 응답:", response.data);
-        
+
         // 응답 구조 확인 및 안전한 처리
         if (response.data?.result) {
           return response.data.result;
@@ -30,8 +30,8 @@ export const useProfile = () => {
     enabled: !!authStore.accessToken,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    staleTime: 1 * 60 * 1000, // 1분간 캐시 (더 자주 업데이트)
-    gcTime: 5 * 60 * 1000, // 5분간 캐시 (React Query v5)
-    refetchOnWindowFocus: true, // 윈도우 포커스 시 자동 refetch
+    staleTime: 5 * 60 * 1000, // 5분으로 증가 (기존 1분)
+    gcTime: 10 * 60 * 1000, // 10분으로 증가 (기존 5분)
+    refetchOnWindowFocus: false, // 윈도우 포커스 시 자동 refetch 비활성화
   });
 };

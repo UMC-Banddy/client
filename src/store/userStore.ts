@@ -253,7 +253,7 @@ export const getRecruitingBandSummaries = async (options?: {
   const page = options?.page ?? 0;
   const size = options?.size ?? 40;
   const useCache = options?.useCache !== false;
-  const cacheMs = options?.cacheMs ?? 60 * 1000;
+  const cacheMs = options?.cacheMs ?? 5 * 60 * 1000; // 5분으로 증가 (기존 1분)
   const includeBandIds = Array.isArray(options?.includeBandIds)
     ? Array.from(new Set(options!.includeBandIds!))
     : [];
@@ -272,6 +272,9 @@ export const getRecruitingBandSummaries = async (options?: {
     description: item?.description ?? undefined,
     profileImageUrl: item?.profileImageUrl ?? item?.imageUrl ?? undefined,
     sessions: Array.isArray(item?.sessions) ? (item.sessions as string[]) : [],
+    currentSessions: Array.isArray(item?.currentSessions)
+      ? (item.currentSessions as string[])
+      : [],
     artists: Array.isArray(item?.artists)
       ? (item.artists as Record<string, unknown>[])
       : [],
@@ -279,6 +282,7 @@ export const getRecruitingBandSummaries = async (options?: {
       ? (item.tracks as Record<string, unknown>[])
       : [],
     jobs: Array.isArray(item?.jobs) ? (item.jobs as string[]) : [],
+    genres: Array.isArray(item?.genres) ? (item.genres as string[]) : [],
     averageAge: item?.averageAge,
     maleCount: item?.maleCount,
     femaleCount: item?.femaleCount,
@@ -328,53 +332,45 @@ export const getRecruitingBandSummaries = async (options?: {
   };
 
   try {
-    // 방법 1: /api/recruitments로 전체 목록 조회 시도
+    // 방법 1: /api/recruitments/recruiting으로 모집중인 밴드만 조회 시도
     try {
-      const res = await API.get(API_ENDPOINTS.BANDS.RECRUIT, {
-        params: { page, size },
+      const res = await API.get(API_ENDPOINTS.RECRUITMENT.RECRUITING, {
+        params: { page: 0, size: 1000 },
       });
-      const list = Array.isArray(res?.data)
-        ? res.data
-        : Array.isArray(res?.data?.result)
-        ? res.data.result
-        : [];
 
-      if (Array.isArray(list) && list.length > 0) {
-        // 서버에서 전체 목록을 가져온 경우
-        const normalized = list.map(normalize);
+      // API 응답 구조에 맞게 데이터 추출
+      let list: Array<Record<string, unknown>> = [];
 
-        // includeBandIds를 서버 결과에 합치기(중복 제거)
-        for (const mustId of includeBandIds) {
-          const exists = normalized.some(
-            (item) => Number(item.bandId) === Number(mustId)
-          );
-          if (!exists) {
-            try {
-              const recruitRes = await getBandRecruitDetail(String(mustId));
-              const recruit = recruitRes?.result;
-              if (recruitRes?.isSuccess && recruit?.status === "RECRUITING") {
-                normalized.unshift(normalize({ ...recruit, bandId: mustId }));
-              }
-            } catch (error) {
-              console.warn(`포함 밴드 ${mustId} 조회 실패:`, error);
-            }
-          }
-        }
+      if (
+        res?.data?.result?.bandInquiryList &&
+        Array.isArray(res.data.result.bandInquiryList)
+      ) {
+        // 새로운 API 구조: { result: { bandInquiryList: [...] } }
+        list = res.data.result.bandInquiryList;
+        console.log("새로운 API 구조로 ID 목록 로드:", list.length, "개 밴드");
+      } else if (Array.isArray(res?.data)) {
+        // 기존 구조: { data: [...] }
+        list = res.data;
+        console.log("기존 API 구조로 ID 목록 로드:", list.length, "개 밴드");
+      } else if (Array.isArray(res?.data?.result)) {
+        // 기존 구조: { data: { result: [...] } }
+        list = res.data.result;
+        console.log("기존 API 구조로 ID 목록 로드:", list.length, "개 밴드");
+      }
 
-        if (useCache) {
-          recruitingListCache = {
-            expiresAt: Date.now() + cacheMs,
-            data: normalized,
-          };
-        }
-        return normalized;
+      const ids = list
+        .map((r: Record<string, unknown>) => Number(r?.bandId ?? r?.id))
+        .filter((n: number) => Number.isFinite(n));
+      if (ids.length > 0) {
+        console.log("서버에서 모집중인 밴드 목록 조회 성공:", ids);
+        return Array.from(new Set(ids));
       }
     } catch (error: unknown) {
       const errorResponse = error as {
         response?: { status?: number; data?: unknown };
       };
       console.warn(
-        "전체 모집 공고 목록 조회 실패:",
+        "모집중인 밴드 목록 조회 실패:",
         errorResponse?.response?.status,
         errorResponse?.response?.data
       );
@@ -661,21 +657,37 @@ export const getRecruitingBandIds = async (): Promise<number[]> => {
 
   // 2) 서버 목록 시도 - 여러 방법으로 시도
   try {
-    // 방법 1: /api/recruitments로 전체 목록 조회 시도
+    // 방법 1: /api/recruitments/recruiting으로 모집중인 밴드만 조회 시도
     try {
-      const res = await API.get(API_ENDPOINTS.BANDS.RECRUIT, {
+      const res = await API.get(API_ENDPOINTS.RECRUITMENT.RECRUITING, {
         params: { page: 0, size: 1000 },
       });
-      const list = Array.isArray(res?.data)
-        ? res.data
-        : Array.isArray(res?.data?.result)
-        ? res.data.result
-        : [];
+
+      // API 응답 구조에 맞게 데이터 추출
+      let list: Array<Record<string, unknown>> = [];
+
+      if (
+        res?.data?.result?.bandInquiryList &&
+        Array.isArray(res.data.result.bandInquiryList)
+      ) {
+        // 새로운 API 구조: { result: { bandInquiryList: [...] } }
+        list = res.data.result.bandInquiryList;
+        console.log("새로운 API 구조로 ID 목록 로드:", list.length, "개 밴드");
+      } else if (Array.isArray(res?.data)) {
+        // 기존 구조: { data: [...] }
+        list = res.data;
+        console.log("기존 API 구조로 ID 목록 로드:", list.length, "개 밴드");
+      } else if (Array.isArray(res?.data?.result)) {
+        // 기존 구조: { data: { result: [...] } }
+        list = res.data.result;
+        console.log("기존 API 구조로 ID 목록 로드:", list.length, "개 밴드");
+      }
+
       const ids = list
         .map((r: Record<string, unknown>) => Number(r?.bandId ?? r?.id))
         .filter((n: number) => Number.isFinite(n));
       if (ids.length > 0) {
-        console.log("서버에서 전체 모집 공고 목록 조회 성공:", ids);
+        console.log("서버에서 모집중인 밴드 목록 조회 성공:", ids);
         return Array.from(new Set(ids));
       }
     } catch (error: unknown) {
@@ -683,7 +695,7 @@ export const getRecruitingBandIds = async (): Promise<number[]> => {
         response?: { status?: number; data?: unknown };
       };
       console.warn(
-        "전체 모집 공고 목록 조회 실패:",
+        "모집중인 밴드 목록 조회 실패:",
         errorResponse?.response?.status,
         errorResponse?.response?.data
       );

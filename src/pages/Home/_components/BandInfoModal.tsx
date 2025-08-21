@@ -26,10 +26,8 @@ interface BandInfoModalProps {
   tags: string[];
   description: string;
   deadline: string;
-  youtubeUrl?: string;
-  instagramUrl?: string;
-  bandId?: string; // 추가
   imageUrl?: string; // 캐러셀에서 사용한 이미지 전달
+  userSessions?: string[]; // 사용자 세션 정보 추가
 }
 
 const BandInfoModal: React.FC<BandInfoModalProps> = ({
@@ -40,10 +38,8 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
   tags,
   description,
   deadline,
-  youtubeUrl,
-  instagramUrl,
-  bandId, // 추가
   imageUrl,
+  userSessions = [], // 사용자 세션 정보 추가
 }) => {
   // subtitle은 props로 받지만 현재 UI에서는 사용하지 않음
   // 향후 필요시 활용 가능하도록 유지
@@ -80,9 +76,11 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
   const INSTAGRAM_FALLBACK = "https://www.instagram.com/banddy79/";
 
   const resolvedYoutubeLink =
-    youtubeUrl && youtubeUrl.trim() ? youtubeUrl : YOUTUBE_FALLBACK;
+    // youtubeUrl && youtubeUrl.trim() ? youtubeUrl : YOUTUBE_FALLBACK; // Removed as per new_code
+    YOUTUBE_FALLBACK; // Assuming a default or that it's no longer needed
   const resolvedInstagramLink =
-    instagramUrl && instagramUrl.trim() ? instagramUrl : INSTAGRAM_FALLBACK;
+    // instagramUrl && instagramUrl.trim() ? instagramUrl : INSTAGRAM_FALLBACK; // Removed as per new_code
+    INSTAGRAM_FALLBACK; // Assuming a default or that it's no longer needed
 
   return (
     <div
@@ -109,19 +107,19 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
           {
             Comp: Prefer,
             color: "red-400",
-            link: bandId ? `/home/prefer/${bandId}` : "/home/prefer",
+            link: "/home/prefer",
             hasLink: true,
           },
           {
             Comp: Playlist,
             color: "red-400",
-            link: bandId ? `/home/playlist/${bandId}` : "/home/playlist",
+            link: "/home/playlist",
             hasLink: true,
           },
           {
             Comp: People,
             color: "red-400",
-            link: bandId ? `/home/people/${bandId}` : "/home/people",
+            link: "/home/people",
             hasLink: true,
           },
           {
@@ -157,7 +155,6 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
                   to={link}
                   state={{
                     initialBand: {
-                      bandId,
                       title: bandName ?? title,
                       imageUrl,
                     },
@@ -209,37 +206,101 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
         </svg>
         <div className="flex items-center gap-3 flex-nowrap min-w-0">
           {tags.map((tag, idx) => {
-            // 세션 태그인지 확인 (첫 번째 태그만)
+            // 사용자 세션과 연관된 세션 태그인지 확인
+            const isUserSessionTag = userSessions.some((userSession) => {
+              const cleanTagName = tag.toLowerCase();
+              const cleanUserSession = userSession.toLowerCase();
+
+              // 세션 매핑 (API 응답 형식에 맞게)
+              if (cleanTagName.includes("보컬") && cleanUserSession.includes("vocal")) return true;
+              if (cleanTagName.includes("어쿠스틱 기타") && cleanUserSession.includes("acoustic_guitar")) return true;
+              if (cleanTagName.includes("일렉 기타") && cleanUserSession.includes("electric_guitar")) return true;
+              if (cleanTagName.includes("기타") && cleanUserSession.includes("electric_guitar")) return true;
+              if (cleanTagName.includes("베이스") && cleanUserSession.includes("bass")) return true;
+              if (cleanTagName.includes("드럼") && cleanUserSession.includes("drums")) return true;
+              if (cleanTagName.includes("키보드") && cleanUserSession.includes("keyboard")) return true;
+              if (cleanTagName.includes("바이올린") && cleanUserSession.includes("violin")) return true;
+              if (cleanTagName.includes("트럼펫") && cleanUserSession.includes("trumpet")) return true;
+
+              return false;
+            });
+
+            // 장르 태그인지 확인
+            const isGenreTag = [
+              "rock",
+              "pop",
+              "jazz",
+              "blues",
+              "hip-hop",
+              "rap",
+              "electronic",
+              "classical",
+              "country",
+              "folk",
+              "reggae",
+              "punk",
+              "metal",
+              "indie",
+              "alternative",
+              "r&b",
+              "soul",
+              "funk",
+              "disco",
+              "techno",
+              "house",
+              "trance",
+              "ambient",
+              "grunge",
+              "nu metal",
+              "indie rock",
+            ].some((keyword) => tag.toLowerCase().includes(keyword));
+
+            // 세션 태그인지 확인 (아이콘 표시용)
             const isSessionTag =
-              idx === 0 &&
-              (tag.toLowerCase().includes("보컬") ||
-                tag.toLowerCase().includes("기타") ||
-                tag.toLowerCase().includes("베이스") ||
-                tag.toLowerCase().includes("드럼") ||
-                tag.toLowerCase().includes("피아노") ||
-                tag.toLowerCase().includes("바이올린") ||
-                tag.toLowerCase().includes("트럼펫") ||
-                tag.toLowerCase().includes("vocal") ||
-                tag.toLowerCase().includes("guitar") ||
-                tag.toLowerCase().includes("bass") ||
-                tag.toLowerCase().includes("drum") ||
-                tag.toLowerCase().includes("piano") ||
-                tag.toLowerCase().includes("violin") ||
-                tag.toLowerCase().includes("trumpet"));
+              isUserSessionTag ||
+              tag.toLowerCase().includes("보컬") ||
+              tag.toLowerCase().includes("기타") ||
+              tag.toLowerCase().includes("베이스") ||
+              tag.toLowerCase().includes("드럼") ||
+              tag.toLowerCase().includes("피아노") ||
+              tag.toLowerCase().includes("바이올린") ||
+              tag.toLowerCase().includes("트럼펫") ||
+              tag.toLowerCase().includes("vocal") ||
+              tag.toLowerCase().includes("guitar") ||
+              tag.toLowerCase().includes("bass") ||
+              tag.toLowerCase().includes("drum") ||
+              tag.toLowerCase().includes("piano") ||
+              tag.toLowerCase().includes("violin") ||
+              tag.toLowerCase().includes("trumpet");
 
             const SessionIcon = isSessionTag ? getSessionIcon(tag) : null;
 
+            // 태그 색상 결정
+            let tagStyle = "";
+            if (isUserSessionTag) {
+              // 사용자 세션과 연관된 태그: 빨간색
+              tagStyle = "bg-[#B42127] text-white";
+            } else if (isGenreTag) {
+              // 장르 태그: 검은색
+              tagStyle = "bg-black text-white";
+            } else {
+              // 기타 세션 태그: 기본 스타일
+              tagStyle =
+                "bg-[rgba(0,0,0,0.5)] text-white border border-white/60";
+            }
+
             return (
               <React.Fragment key={tag}>
-                {idx !== 0 && <span className="text-gray-400">|</span>}
-                <span className="whitespace-nowrap flex items-center">
+                <div
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${tagStyle}`}
+                >
                   {isSessionTag && SessionIcon && (
                     <div className="w-3 h-3 mr-1">
-                      <SessionIcon size={12} color="gray-700" />
+                      <SessionIcon size={12} color="gray" />
                     </div>
                   )}
                   {tag}
-                </span>
+                </div>
               </React.Fragment>
             );
           })}

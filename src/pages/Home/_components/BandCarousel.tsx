@@ -18,7 +18,8 @@ const BandCarousel: React.FC<{
   bands: Band[];
   onJoinClick?: (band: Band) => void;
   onImageClick?: (band: Band) => void;
-}> = ({ bands, onJoinClick, onImageClick }) => {
+  userSessions?: string[]; // 사용자 세션 정보 추가
+}> = ({ bands, onJoinClick, onImageClick, userSessions = [] }) => {
   // 빈 배열 처리
   if (!bands || bands.length === 0) {
     return (
@@ -147,7 +148,7 @@ const BandCarousel: React.FC<{
             >
               {/* 태그도 함께 슬라이딩 */}
               <div className="w-full mb-4">
-                <HomeTagSection tags={band.tags} />
+                <HomeTagSection tags={band.tags} userSessions={userSessions} />
               </div>
 
               <img
