@@ -24,7 +24,10 @@ const BandCarousel: React.FC<{
     return (
       <div className="relative w-full max-w-[420px] flex items-center justify-center">
         <div className="text-white text-center">
-          <p>밴드 정보를 불러오는 중...</p>
+          <p>현재 모집중인 밴드가 없습니다.</p>
+          <p className="text-sm text-gray-400 mt-2">
+            새로운 밴드 모집을 기다려주세요!
+          </p>
         </div>
       </div>
     );

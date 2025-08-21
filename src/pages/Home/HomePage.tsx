@@ -18,13 +18,6 @@ import { API_ENDPOINTS } from "@/constants";
 
 // 이미지 import
 import homeAlbum3Img from "@/assets/images/home-album3.png";
-import homeAlbum1Img from "@/assets/images/home-album1.svg";
-import homeAlbum2Img from "@/assets/images/home-album2.svg";
-import oasisImg from "@/assets/images/oasis.png";
-import pierrotImg from "@/assets/images/pierrot.png";
-import profile1Img from "@/assets/images/profile1.png";
-import theCabsImg from "@/assets/images/the-cabs.svg";
-import guitarBoyImg from "@/assets/images/guitar-boy.svg";
 
 interface TrackDto {
   title: string;
@@ -104,115 +97,6 @@ const cleanSessionName = (sessionName: string): string => {
 //   return MicImg;
 // };
 
-// 임시 데이터 (API 연결 전까지 사용)
-const fallbackBandData: Band[] = [
-  {
-    id: 1,
-    image: homeAlbum3Img,
-    title: "그래요 저 왜색 짙어요",
-    subtitle: "혼또니 아리가또 고자이마스",
-    tags: ["기타 모집", "YOASOBI", "J-POP", "aiko"],
-  },
-  {
-    id: 2,
-    image: homeAlbum1Img,
-    title: "락 밴드 모집",
-    subtitle: "열정적인 락커들 모여라",
-    tags: ["드럼 모집", "락", "메탈", "하드락"],
-  },
-  {
-    id: 3,
-    image: homeAlbum2Img,
-    title: "재즈 트리오",
-    subtitle: "스윙하는 재즈의 세계로",
-    tags: ["베이스 모집", "재즈", "스윙", "피아노"],
-  },
-  {
-    id: 4,
-    image: oasisImg,
-    title: "인디 밴드",
-    subtitle: "독립적인 음악을 만들어요",
-    tags: ["보컬 모집", "인디", "얼터너티브", "포크"],
-  },
-  {
-    id: 5,
-    image: pierrotImg,
-    title: "K-POP 커버",
-    subtitle: "BTS, BLACKPINK 커버밴드",
-    tags: ["키보드 모집", "K-POP", "커버", "댄스"],
-  },
-  {
-    id: 6,
-    image: profile1Img,
-    title: "어쿠스틱 듀오",
-    subtitle: "따뜻한 어쿠스틱 사운드",
-    tags: ["기타 모집", "어쿠스틱", "포크", "발라드"],
-  },
-  {
-    id: 7,
-    image: theCabsImg,
-    title: "일렉트로닉 밴드",
-    subtitle: "디지털과 아날로그의 조화",
-    tags: ["신디사이저 모집", "일렉트로닉", "EDM", "신스팝"],
-  },
-  {
-    id: 8,
-    image: guitarBoyImg,
-    title: "블루스 밴드",
-    subtitle: "깊이 있는 블루스 사운드",
-    tags: ["하모니카 모집", "블루스", "로큰롤", "R&B"],
-  },
-  {
-    id: 9,
-    image: homeAlbum3Img,
-    title: "팝 밴드",
-    subtitle: "신나는 팝 음악",
-    tags: ["드럼 모집", "팝", "록", "펑크"],
-  },
-  {
-    id: 10,
-    image: homeAlbum1Img,
-    title: "클래식 앙상블",
-    subtitle: "고전의 아름다움",
-    tags: ["바이올린 모집", "클래식", "오케스트라", "실내악"],
-  },
-  {
-    id: 11,
-    image: homeAlbum2Img,
-    title: "힙합 크루",
-    subtitle: "비트와 라임의 세계",
-    tags: ["MC 모집", "힙합", "랩", "비트박스"],
-  },
-  {
-    id: 12,
-    image: oasisImg,
-    title: "컨트리 밴드",
-    subtitle: "미국 남부의 향기",
-    tags: ["스틸기타 모집", "컨트리", "웨스턴", "포크"],
-  },
-  {
-    id: 13,
-    image: pierrotImg,
-    title: "레게 밴드",
-    subtitle: "자유로운 레게 리듬",
-    tags: ["베이스 모집", "레게", "스카", "둠"],
-  },
-  {
-    id: 14,
-    image: profile1Img,
-    title: "펑크 밴드",
-    subtitle: "반항적인 펑크 정신",
-    tags: ["기타 모집", "펑크", "하드코어", "스카펑크"],
-  },
-  {
-    id: 15,
-    image: theCabsImg,
-    title: "소울 밴드",
-    subtitle: "깊이 있는 소울 음악",
-    tags: ["보컬 모집", "소울", "R&B", "모타운"],
-  },
-];
-
 const HomePage = () => {
   const navigate = useNavigate();
   const [myBands, setMyBands] = useState<Band[]>([]);
@@ -234,60 +118,37 @@ const HomePage = () => {
 
       // 사전테스트 중에는 기본 데이터만 사용하여 API 호출 최소화
       if (window.location.pathname.startsWith("/pre-test")) {
-        setMyBands(fallbackBandData);
+        setMyBands([]);
         return;
       }
 
-      // 홈은 추천 결과 우선, 없으면 유사 트랙/아티스트 기반으로 대체 구성
-      let profiles: BandProfileData[] =
-        recommended && recommended.length > 0
-          ? (recommended as BandProfileData[])
-          : [];
-      if (!profiles || profiles.length === 0) {
-        profiles = (await getRecommendedFromSimilar()) as BandProfileData[];
-      }
-
-      // 서버 리쿠르팅 목록을 직접 가져와 카드로 구성 (상세 다중 호출 제거)
-      // memberId별 보장 포함 ID 구성
-      let includeIds: number[] = [];
-      try {
-        const memberIdRaw = localStorage.getItem("memberId");
-        if (memberIdRaw === "36" || memberIdRaw === "37") includeIds.push(49);
-        // 73 사용자의 밴드 ID가 76으로 확인됨 → 모집중이면 최상단 포함
-        if (memberIdRaw === "73") includeIds.push(76);
-      } catch {}
-
+      // 1-200 범위에서 빠르게 조회하여 status가 'RECRUITING'인 밴드만 필터링
       const recruitingSummaries = await getRecruitingBandSummaries({
         page: 0,
-        size: 50,
+        size: 200,
         useCache: true,
         cacheMs: 60 * 1000,
-        includeBandIds: includeIds,
       });
 
-      // profiles가 빈 배열이거나 undefined인 경우 기본 데이터 사용
-      if (!profiles || profiles.length === 0) {
-        setMyBands(fallbackBandData);
+      if (!recruitingSummaries || recruitingSummaries.length === 0) {
+        // 모집중인 밴드가 없으면 빈 배열 설정
+        setMyBands([]);
         return;
       }
 
-      // API 응답이 있지만 유효하지 않은 경우도 fallback 사용
-      const validProfiles = profiles.filter((profile) =>
-        Boolean(
-          profile &&
-            ((profile as BandProfileData).goalTracks ||
-              (profile as BandProfileData).preferredArtists ||
-              (profile as BandProfileData).sessions)
-        )
-      ) as BandProfileData[];
+      // status가 'RECRUITING'인 밴드만 필터링
+      const recruitingBands = recruitingSummaries.filter(
+        (recruit: any) => recruit.status === "RECRUITING"
+      );
 
-      if (validProfiles.length === 0) {
-        setMyBands(fallbackBandData);
+      if (recruitingBands.length === 0) {
+        // 모집중인 밴드가 없으면 빈 배열 설정
+        setMyBands([]);
         return;
       }
 
-      // 모집 공고(RECRUITING) 요약만으로 캐러셀 구성
-      const bands: Band[] = recruitingSummaries.map((recruit: any, index) => {
+      // 모집중인 밴드들을 Band 인터페이스에 맞게 변환
+      const bands: Band[] = recruitingBands.map((recruit: any) => {
         const goalTracks = Array.isArray(recruit?.tracks)
           ? recruit.tracks.map((t: any) => ({
               title: String(t?.title || ""),
@@ -313,24 +174,23 @@ const HomePage = () => {
         const representativeTrack = goalTracks[0];
         const representativeArtist = preferredArtists[0];
 
-        const tags = (sessions.length > 0
-          ? sessions.map((session: string) => cleanSessionName(session))
-          : fallbackBandData[index]?.tags) || [
-          "기타 모집",
-          "YOASOBI",
-          "J-POP",
-          "aiko",
-        ];
+        const tags =
+          sessions.length > 0
+            ? sessions.map((session: string) => cleanSessionName(session))
+            : ["모집중"];
 
         return {
-          id: Number(recruit?.bandId),
+          id: Number(recruit?.bandId || recruit?.id),
           image:
             String(recruit?.profileImageUrl || "") ||
             representativeTrack?.imageUrl ||
             representativeArtist?.imageUrl ||
-            fallbackBandData[index]?.image ||
             homeAlbum3Img,
-          title: String(recruit?.name || `밴드 ${recruit?.bandId ?? ""}`),
+          title: String(
+            recruit?.name ||
+              recruit?.bandName ||
+              `밴드 ${recruit?.bandId || recruit?.id}`
+          ),
           subtitle: String(recruit?.description || ""),
           tags,
           profileData: {
@@ -341,106 +201,17 @@ const HomePage = () => {
             sessions,
             jobs: Array.isArray(recruit?.jobs) ? recruit.jobs : [],
           },
-          bandName: String(recruit?.name || ""),
+          bandName: String(recruit?.name || recruit?.bandName || ""),
           representativeSongFileUrl:
             String(recruit?.representativeSongFile?.fileUrl || "") || null,
         } as Band;
       });
 
-      // 특정 멤버에게 특정 밴드 보장 노출
-      try {
-        const memberId = localStorage.getItem("memberId");
-        // 36/37: bandId 49 고정, 73: 본인 밴드(모집중이면) 우선 노출
-        const ensureBands: number[] = [];
-        if (memberId === "36" || memberId === "37") ensureBands.push(49);
-        if (memberId === "73") ensureBands.push(76);
-
-        for (const mustId of ensureBands) {
-          const exists = bands.some((b) => b.id === mustId);
-          if (!exists) {
-            // 상세/모집 공고를 조회해 실제 정보로 카드 구성 (모집중이 아니어도 노출)
-            try {
-              const [detail, recruitRes] = await Promise.all([
-                getBandDetail(String(mustId)),
-                getBandRecruitDetail(String(mustId)),
-              ]);
-              const recruit = recruitRes?.result;
-              const goalTracks = Array.isArray(recruit?.tracks)
-                ? recruit.tracks.map((t: any) => ({
-                    title: String(t?.title || ""),
-                    artist: "",
-                    imageUrl: String(t?.imageUrl || ""),
-                  }))
-                : [];
-              const preferredArtists = Array.isArray(recruit?.artists)
-                ? recruit.artists.map((a: any) => ({
-                    name: String(a?.name || ""),
-                    imageUrl: String(a?.imageUrl || ""),
-                  }))
-                : [];
-              const composition = {
-                averageAge: String(recruit?.averageAge || ""),
-                maleCount: Number(recruit?.maleCount || 0),
-                femaleCount: Number(recruit?.femaleCount || 0),
-              };
-              const sessions = Array.isArray(recruit?.sessions)
-                ? recruit.sessions
-                : [];
-
-              const representativeTrack = goalTracks[0];
-              const representativeArtist = preferredArtists[0];
-
-              const tags =
-                sessions.length > 0
-                  ? sessions.map((session: string) => cleanSessionName(session))
-                  : ["추천", `bandId ${mustId}`];
-
-              bands.unshift({
-                id: mustId,
-                image:
-                  String(
-                    detail?.profileImageUrl || recruit?.profileImageUrl || ""
-                  ) ||
-                  representativeTrack?.imageUrl ||
-                  representativeArtist?.imageUrl ||
-                  homeAlbum3Img,
-                title:
-                  detail?.bandName || String(recruit?.name || `밴드 ${mustId}`),
-                subtitle: String(
-                  detail?.description || recruit?.description || ""
-                ),
-                tags,
-                profileData: {
-                  goalTracks,
-                  preferredArtists,
-                  composition,
-                  sns: [],
-                  sessions,
-                  jobs: Array.isArray(recruit?.jobs) ? recruit.jobs : [],
-                },
-                bandName: detail?.bandName || String(recruit?.name || ""),
-              });
-            } catch {
-              // 실패 시 최소 카드라도 노출
-              bands.unshift({
-                id: mustId,
-                image: homeAlbum3Img,
-                title: `밴드 ${mustId}`,
-                subtitle: "",
-                tags: ["추천", `bandId ${mustId}`],
-              });
-            }
-          }
-        }
-      } catch (error) {
-        console.error("error:", error);
-      }
-
       setMyBands(bands);
     } catch (error) {
-      console.error("추천 밴드 조회 실패:", error);
-      // 에러 시 기본 데이터 사용
-      setMyBands(fallbackBandData);
+      console.error("모집중인 밴드 조회 실패:", error);
+      // 에러 시 빈 배열 사용
+      setMyBands([]);
     } finally {
       setLoading(false);
     }
