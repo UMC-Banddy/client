@@ -116,7 +116,7 @@ export const useChat = () => {
         setIsLoadingMessages(false);
       }
     },
-    [isLoadingMessages, snap.messages]
+    [isLoadingMessages] // snap.messages 제거하여 무한 루프 방지
   );
 
   // 채팅방 입장 (loadMessages 선언 이후로 이동)

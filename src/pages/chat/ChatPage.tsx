@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ChatHeader from "./_components/ChatHeader";
 import ChatDateDivider from "./_components/ChatDateDivider";
@@ -21,6 +21,11 @@ export default function ChatPage() {
   const [headerAvatar, setHeaderAvatar] = useState<string>(profile1Img);
   const [hasShownBotMessage, setHasShownBotMessage] = useState(false);
 
+  // StrictMode 이중 마운트 방지
+  const mountedOnceRef = useRef(false);
+  const currentRoomIdRef = useRef<string | null>(null);
+  const currentRoomTypeRef = useRef<string | null>(null);
+
   // 실사용 훅 연결
   const {
     messages,
@@ -32,7 +37,7 @@ export default function ChatPage() {
     addBandBotMessage,
   } = useChat();
 
-  // Initialize current room and messages
+  // Initialize current room and messages - roomId/roomType 변경 시에만 실행
   useEffect(() => {
     const roomId = searchParams.get("roomId");
     const roomTypeParam = searchParams.get("roomType") as
@@ -41,9 +46,20 @@ export default function ChatPage() {
       | "BAND-APPLICANT"
       | "BAND-MANAGER"
       | null;
-    if (roomId && roomTypeParam) {
-      // REST join + WS subscribe + 메시지 로드
-      enterChatRoom(roomId, roomTypeParam);
+
+    // roomId나 roomType이 변경되었을 때만 실행
+    if (
+      roomId !== currentRoomIdRef.current ||
+      roomTypeParam !== currentRoomTypeRef.current
+    ) {
+      currentRoomIdRef.current = roomId;
+      currentRoomTypeRef.current = roomTypeParam;
+
+      if (roomId && roomTypeParam) {
+        console.log(`채팅방 변경 감지: ${roomId} (${roomTypeParam})`);
+        // REST join + WS subscribe + 메시지 로드
+        enterChatRoom(roomId, roomTypeParam);
+      }
     }
 
     // 컴포넌트 언마운트 시 정리 (더 안전하게)
@@ -56,10 +72,13 @@ export default function ChatPage() {
         console.warn("ChatPage cleanup 중 오류:", error);
       }
     };
-  }, [searchParams, enterChatRoom, exitChatRoom]);
+  }, [searchParams]); // searchParams만 의존성으로 사용
 
-  // 뒤로가기 이벤트 처리
+  // 뒤로가기 이벤트 처리 - 한 번만 등록
   useEffect(() => {
+    if (mountedOnceRef.current) return; // StrictMode 이중 마운트 방지
+    mountedOnceRef.current = true;
+
     const handleBeforeUnload = () => {
       console.log("페이지 새로고침/닫기, 채팅방 정리 중...");
       try {
@@ -85,15 +104,16 @@ export default function ChatPage() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [exitChatRoom]);
+  }, []); // 빈 의존성 배열
 
   // Header용 밴드 정보 로드 + 첫 방문 봇 메시지 (밴드 관련일 때만)
   useEffect(() => {
-    const roomTypeParam = (searchParams.get("roomType") || "GROUP") as
+    const roomTypeParam = searchParams.get("roomType") as
       | "PRIVATE"
       | "GROUP"
       | "BAND-APPLICANT"
-      | "BAND-MANAGER";
+      | "BAND-MANAGER"
+      | null;
     const roomId = searchParams.get("roomId");
 
     // 밴드 관련 채팅방이 아니면 무시
@@ -173,7 +193,7 @@ export default function ChatPage() {
         console.warn("밴드 정보 조회 실패:", error);
       }
     })();
-  }, [searchParams, messages, hasShownBotMessage, addBandBotMessage]);
+  }, [searchParams, hasShownBotMessage]); // messages, addBandBotMessage 제거
 
   const handleBack = useCallback(() => {
     exitChatRoom();

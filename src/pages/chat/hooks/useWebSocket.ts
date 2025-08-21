@@ -16,9 +16,12 @@ export const useWebSocket = () => {
   const snap = useSnapshot(chatStore);
   const authSnap = useVSnapshot(authStore);
   const [isConnecting, setIsConnecting] = useState(false);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isJoiningRef = useRef(false);
+  
+  // 핵심: ref로 상태 관리하여 불필요한 리렌더 방지
+  const mountedOnceRef = useRef(false);           // StrictMode 2회 실행 방지
+  const joinedRoomsRef = useRef<Set<string>>(new Set()); // join 한번만
   const subscribedRoomIdRef = useRef<string | null>(null);
+  const isJoiningRef = useRef(false);
   const connectionAttemptRef = useRef<number>(0);
   const lastConnectionAttemptRef = useRef<number>(0);
   const connectionCooldownRef = useRef<number>(5000); // 5초 쿨다운
@@ -41,8 +44,11 @@ export const useWebSocket = () => {
   const isConnected = snap.webSocketConnected;
   const currentRoomId = snap.currentRoomId;
 
-  // 자동 연결 관리 (토큰이 있을 때만 시도)
+  // 자동 연결 관리 (토큰이 있을 때만 시도) - StrictMode 이중 마운트 방지
   useEffect(() => {
+    if (mountedOnceRef.current) return; // dev StrictMode 이중 마운트 방지
+    mountedOnceRef.current = true;
+
     const connectWebSocket = async () => {
       if (!authSnap.accessToken) {
         return;
@@ -79,15 +85,13 @@ export const useWebSocket = () => {
 
     // 컴포넌트 언마운트 시 연결 해제
     return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
       // 컴포넌트 언마운트 시에는 연결을 완전히 해제하지 않고, 구독만 해제
       if (subscribedRoomIdRef.current) {
         webSocketService.unsubscribeFromRoom(subscribedRoomIdRef.current);
+        subscribedRoomIdRef.current = null;
       }
     };
-  }, [isConnected, isConnecting, authSnap.accessToken]);
+  }, []); // 절대 messages/connectionStatus 같은 값 넣지 않기
 
   // 연결 함수
   const connect = useCallback(async () => {
@@ -169,7 +173,7 @@ export const useWebSocket = () => {
     }
   }, [currentRoomId]);
 
-  // 채팅방 입장
+  // 채팅방 입장 - 핵심: idempotent join + 구독 1회 보장
   const joinRoom = useCallback(
     async (
       roomId: string,
@@ -214,8 +218,8 @@ export const useWebSocket = () => {
           console.log("WebSocket 연결 시도 중...");
           try {
             await connect();
-                      // 연결 후 더 긴 대기 시간
-          await new Promise((resolve) => setTimeout(resolve, 1500));
+            // 연결 후 더 긴 대기 시간
+            await new Promise((resolve) => setTimeout(resolve, 1500));
           } catch (error) {
             console.error("WebSocket 연결 실패:", error);
             return;
@@ -227,7 +231,14 @@ export const useWebSocket = () => {
           return;
         }
 
-        // 새로운 방 구독
+        // idempotent join: 방에 한 번만 join
+        if (!joinedRoomsRef.current.has(roomId)) {
+          joinedRoomsRef.current.add(roomId);
+          // HTTP join은 별도로 처리 (여기서는 WebSocket 구독만)
+          console.log(`방 ${roomId} join 완료 (idempotent)`);
+        }
+
+        // 새로운 방 구독 - 1회 보장
         if (
           roomType === "PRIVATE" ||
           roomType === "BAND-APPLICANT" ||

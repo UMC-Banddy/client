@@ -319,83 +319,86 @@ class WebSocketService {
     this.reconnectAttempts = 0;
   }
 
-  // 그룹 채팅방(topic) 구독
-  subscribeToGroupRoom(
-    roomId: string,
-    onMessage: (message: WebSocketMessage) => void
-  ): void {
+  // 그룹 채팅방 구독
+  subscribeToGroupRoom(roomId: string, onMessage: (message: WebSocketMessage) => void): void {
     if (!this.stompClient || !this.stompClient.connected) {
       console.error("WebSocket이 연결되지 않았습니다.");
       return;
     }
 
-    // 기존 구독이 있다면 해제
-    this.unsubscribeFromRoom(roomId);
-
-    const destination = API_ENDPOINTS.WEBSOCKET.SUBSCRIBE_GROUP(roomId);
-
-    const subscription = this.stompClient.subscribe(
-      destination,
-      (frame: StompFrame) => {
-        try {
-          const parsed = JSON.parse(frame.body || "");
-          
-          // 서버 스펙에 맞는 메시지 형식 파싱
-          if (parsed.type === "MESSAGE" && parsed.data) {
-            const messageData = parsed.data;
-            const payload: WebSocketMessage = {
-              messageId: messageData.messageId,
-              senderId: messageData.senderId,
-              senderName: messageData.senderName,
-              content: messageData.content,
-              type: messageData.type || "TEXT",
-              roomId: messageData.roomId,
-              timestamp: messageData.timestamp
-            };
-            
-            if (!payload.messageId) {
-              console.warn("유효하지 않은 메시지 payload:", parsed);
-              return;
-            }
-            
-            console.log("실시간 메시지 수신:", payload);
-            onMessage(payload);
-          } else {
-            console.warn("알 수 없는 메시지 형식:", parsed);
-          }
-        } catch (error) {
-          console.error("메시지 파싱 에러:", error);
-        }
-      }
-    );
-
-    this.subscriptions.set(roomId, subscription);
-    console.log(`그룹 채팅방 ${roomId} 구독 완료 (${destination})`);
-  }
-
-  // 개인 채팅방(queue) 구독 (밴드 지원자/관리자 포함)
-  subscribeToPrivateRoom(
-    roomId: string,
-    onMessage: (message: WebSocketMessage) => void
-  ): void {
-    if (!this.stompClient || !this.stompClient.connected) {
-      console.error("WebSocket이 연결되지 않았습니다.");
+    // 이미 구독 중인 방이면 무시 (idempotent)
+    if (this.subscriptions.has(roomId)) {
+      console.log(`이미 ${roomId} 방에 구독 중입니다.`);
       return;
     }
-
-    // 기존 구독이 있다면 해제
-    this.unsubscribeFromRoom(roomId);
-
-    const destination = API_ENDPOINTS.WEBSOCKET.SUBSCRIBE_PRIVATE(roomId);
 
     try {
+      const destination = API_ENDPOINTS.WEBSOCKET.SUBSCRIBE_GROUP(roomId);
       const subscription = this.stompClient.subscribe(
         destination,
         (frame: StompFrame) => {
           try {
             const parsed = JSON.parse(frame.body || "");
             
-            // 서버 스펙에 맞는 메시지 형식 파싱
+            // MESSAGE 타입이고 data가 있는 경우만 처리
+            if (parsed.type === "MESSAGE" && parsed.data) {
+              const messageData = parsed.data;
+              const payload: WebSocketMessage = {
+                messageId: messageData.messageId,
+                senderId: messageData.senderId,
+                senderName: messageData.senderName,
+                content: messageData.content,
+                type: messageData.type || "TEXT",
+                roomId: messageData.roomId,
+                timestamp: messageData.timestamp
+              };
+              
+              if (!payload.messageId) {
+                console.warn("유효하지 않은 메시지 payload:", parsed);
+                return;
+              }
+              
+              console.log("실시간 메시지 수신:", payload);
+              onMessage(payload);
+            } else {
+              console.warn("알 수 없는 메시지 형식:", parsed);
+            }
+          } catch (error) {
+            console.error("메시지 파싱 에러:", error);
+          }
+        }
+      );
+
+      this.subscriptions.set(roomId, subscription);
+      console.log(`그룹 채팅방 ${roomId} 구독 완료 (${destination})`);
+    } catch (error) {
+      console.error(`그룹 채팅방 ${roomId} 구독 실패:`, error);
+      throw error;
+    }
+  }
+
+  // 개인 채팅방 구독
+  subscribeToPrivateRoom(roomId: string, onMessage: (message: WebSocketMessage) => void): void {
+    if (!this.stompClient || !this.stompClient.connected) {
+      console.error("WebSocket이 연결되지 않았습니다.");
+      return;
+    }
+
+    // 이미 구독 중인 방이면 무시 (idempotent)
+    if (this.subscriptions.has(roomId)) {
+      console.log(`이미 ${roomId} 방에 구독 중입니다.`);
+      return;
+    }
+
+    try {
+      const destination = API_ENDPOINTS.WEBSOCKET.SUBSCRIBE_PRIVATE(roomId);
+      const subscription = this.stompClient.subscribe(
+        destination,
+        (frame: StompFrame) => {
+          try {
+            const parsed = JSON.parse(frame.body || "");
+            
+            // MESSAGE 타입이고 data가 있는 경우만 처리
             if (parsed.type === "MESSAGE" && parsed.data) {
               const messageData = parsed.data;
               const payload: WebSocketMessage = {
@@ -439,10 +442,10 @@ class WebSocketService {
       return;
     }
 
-    // 기존 구독이 있다면 해제
+    // 이미 구독 중이면 무시 (idempotent)
     if (this.unreadSubscription) {
-      this.unreadSubscription.unsubscribe();
-      this.unreadSubscription = null;
+      console.log("이미 UNREAD 구독 중입니다.");
+      return;
     }
 
     const destination = API_ENDPOINTS.WEBSOCKET.SUBSCRIBE_UNREAD;
@@ -464,9 +467,14 @@ class WebSocketService {
   // 안읽음 구독 해제
   unsubscribeUnread(): void {
     if (this.unreadSubscription) {
-      this.unreadSubscription.unsubscribe();
-      this.unreadSubscription = null;
-      console.log("안읽음 구독 해제 완료");
+      try {
+        this.unreadSubscription.unsubscribe();
+        this.unreadSubscription = null;
+        console.log("안읽음 구독 해제 완료");
+      } catch (error) {
+        console.warn("안읽음 구독 해제 중 오류:", error);
+        this.unreadSubscription = null;
+      }
     }
   }
 
@@ -492,8 +500,8 @@ class WebSocketService {
     this.subscriptions.forEach((subscription, key) => {
       try {
         subscription.unsubscribe();
-      } catch {
-        // ignore
+      } catch (error) {
+        console.warn(`채팅방 ${key} 구독 해제 중 오류:`, error);
       }
       console.log(`채팅방 ${key} 구독 해제 완료`);
     });
