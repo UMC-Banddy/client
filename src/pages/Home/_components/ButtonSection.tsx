@@ -14,6 +14,7 @@ import {
 import SessionSelectModal from "@/features/bandJoin/components/SessionSelectModal";
 import { postBandJoin } from "@/features/bandJoin/api";
 import type { SessionEmoji } from "@/features/bandJoin/types";
+import { getChatRooms } from "@/store/chatApi";
 
 interface ButtonSectionProps {
   setToast: (open: boolean, text?: string) => void;
@@ -155,6 +156,22 @@ const ButtonSection = ({
         onConfirm={async (session: SessionEmoji) => {
           try {
             setOpenSession(false);
+            // 1) 먼저 기존에 이 밴드에 대한 채팅방이 있는지 확인 후 있으면 해당 방으로 이동
+            try {
+              const rooms = await getChatRooms();
+              const existed = rooms?.result?.appliedRoomInfos?.find(
+                (r) => Number(r.bandId) === Number(bandId)
+              );
+              if (existed?.roomId) {
+                navigate(
+                  `/home/chat?roomId=${existed.roomId}&roomType=BAND-APPLICANT`
+                );
+                return;
+              }
+            } catch {
+              // 조회 실패 시에는 신규 조인 플로우로 진행
+            }
+
             const res = await postBandJoin(bandId, session);
             const roomId =
               res?.result?.roomId ?? (res as { roomId?: number })?.roomId;
