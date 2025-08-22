@@ -48,7 +48,7 @@ const CreateBandGenre = () => {
               toggled={toggledGenre.includes(genre.text)}
               onClick={() => handleToggle(genre.text)}
             >
-              {genre.content}
+              {genre.content === "⚡" ? "⚡Metal" : genre.content}
             </GenreToggleBtn>
           ))}
         </section>
