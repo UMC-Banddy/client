@@ -347,23 +347,33 @@ export const getRecruitingBandSummaries = async (options?: {
       ) {
         // 새로운 API 구조: { result: { bandInquiryList: [...] } }
         list = res.data.result.bandInquiryList;
-        console.log("새로운 API 구조로 ID 목록 로드:", list.length, "개 밴드");
+        console.log("새로운 API 구조로 밴드 목록 로드:", list.length, "개 밴드");
       } else if (Array.isArray(res?.data)) {
         // 기존 구조: { data: [...] }
         list = res.data;
-        console.log("기존 API 구조로 ID 목록 로드:", list.length, "개 밴드");
+        console.log("기존 구조로 밴드 목록 로드:", list.length, "개 밴드");
       } else if (Array.isArray(res?.data?.result)) {
         // 기존 구조: { data: { result: [...] } }
         list = res.data.result;
-        console.log("기존 API 구조로 ID 목록 로드:", list.length, "개 밴드");
+        console.log("기존 구조로 밴드 목록 로드:", list.length, "개 밴드");
       }
 
-      const ids = list
-        .map((r: Record<string, unknown>) => Number(r?.bandId ?? r?.id))
-        .filter((n: number) => Number.isFinite(n));
-      if (ids.length > 0) {
-        console.log("서버에서 모집중인 밴드 목록 조회 성공:", ids);
-        return Array.from(new Set(ids)).map(id => ({ bandId: id }));
+      if (list.length > 0) {
+        console.log("서버에서 모집중인 밴드 목록 조회 성공:", list.length, "개");
+        
+        // 받은 데이터를 바로 정규화하여 반환
+        const normalized = list.map(normalize).filter(item => 
+          item.status === "RECRUITING" || !item.status
+        );
+        
+        if (useCache) {
+          recruitingListCache = {
+            expiresAt: Date.now() + cacheMs,
+            data: normalized,
+          };
+        }
+        
+        return normalized;
       }
     } catch (error: unknown) {
       const errorResponse = error as {

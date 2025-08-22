@@ -127,12 +127,12 @@ const HomePage = () => {
         return;
       }
 
-      // 1-200 범위에서 빠르게 조회하여 status가 'RECRUITING'인 밴드만 필터링
+      // /api/recruitments/recruiting 엔드포인트에서 모집중인 밴드 목록 조회
       const recruitingSummaries = await getRecruitingBandSummaries({
         page: 0,
         size: 200,
         useCache: true,
-        cacheMs: 5 * 60 * 1000, // 5분으로 증가 (기존 1분)
+        cacheMs: 5 * 60 * 1000, // 5분 캐시
       });
 
       console.log("API 응답 원본:", recruitingSummaries);
@@ -143,10 +143,8 @@ const HomePage = () => {
         return;
       }
 
-      // status가 'RECRUITING'인 밴드만 필터링
-      const recruitingBands = recruitingSummaries.filter(
-        (recruit: Record<string, unknown>) => recruit.status === "RECRUITING"
-      );
+      // 이미 필터링된 데이터이므로 바로 사용
+      const recruitingBands = recruitingSummaries;
 
       console.log(
         "RECRUITING 상태 필터링 후:",
