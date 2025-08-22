@@ -110,8 +110,8 @@ const HomePage = () => {
   const [chatRoomInfosCache, setChatRoomInfosCache] = useState<ChatRoomInfo[]>(
     []
   );
-  // 밴드별 매칭된 roomId 매핑
-  const [bandRoomMap, setBandRoomMap] = useState<Record<number, number>>({});
+  // 밴드별 매칭된 roomId와 roomType 매핑
+  const [bandRoomMap, setBandRoomMap] = useState<Record<number, { roomId: number; roomType: string }>>({});
 
   // WebSocket 연결 관리 - 앱 전체 생명주기 동안 유지
   useWebSocketConnection();
@@ -286,7 +286,7 @@ const HomePage = () => {
         .trim()
         .toLowerCase();
 
-    const roomMap: Record<number, number> = {};
+    const roomMap: Record<number, { roomId: number; roomType: string }> = {};
     for (const band of myBands) {
       const bandName = normalize(band.title);
       const candidate = chatRoomInfosCache.find((r: ChatRoomInfo) => {
@@ -301,7 +301,10 @@ const HomePage = () => {
         );
       });
       if (candidate?.roomId) {
-        roomMap[band.id] = Number(candidate.roomId);
+        roomMap[band.id] = {
+          roomId: Number(candidate.roomId),
+          roomType: candidate.roomType || "GROUP"
+        };
       }
     }
     if (Object.keys(roomMap).length) {
@@ -318,9 +321,9 @@ const HomePage = () => {
       }
 
       // 2) 밴드에 대응되는 기존 채팅방 매핑이 있으면 바로 이동
-      const mappedRoomId = bandRoomMap[band.id];
-      if (mappedRoomId) {
-        navigate(`/home/chat?roomId=${mappedRoomId}&roomType=GROUP`);
+      const mappedRoom = bandRoomMap[band.id];
+      if (mappedRoom) {
+        navigate(`/home/private-chat?roomId=${mappedRoom.roomId}&roomType=${mappedRoom.roomType}`);
         return;
       }
 
@@ -338,8 +341,9 @@ const HomePage = () => {
             (r?.bandId === band.id || r?.bandName === band.title)
         );
         const fallbackRoomId = bandRoom?.roomId;
+        const fallbackRoomType = bandRoom?.roomType || "GROUP";
         if (fallbackRoomId) {
-          navigate(`/home/chat?roomId=${fallbackRoomId}&roomType=GROUP`);
+          navigate(`/home/chat?roomId=${fallbackRoomId}&roomType=${fallbackRoomType}`);
           return;
         }
       } catch {
