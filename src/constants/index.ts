@@ -71,6 +71,7 @@ export const API_ENDPOINTS = {
     EDIT: "/api/recruitments", // PUT: 밴드 모집 공고 수정
     DETAIL: (bandId: string) => `/api/recruitments/${bandId}`, // GET: 특정 모집 공고 상세 조회
     PROCESS: (bandId: string) => `/api/recruitments/${bandId}`, // PUT: 모집 공고 처리 (지원/거절 등)
+    RECRUITING: "/api/recruitments/recruiting", // GET: 모집중인 밴드만 조회
   },
 
   CHAT: {

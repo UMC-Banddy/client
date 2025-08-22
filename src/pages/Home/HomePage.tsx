@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import BandCarousel from "./_components/BandCarousel";
 import HomeSkeleton from "./_components/HomeSkeleton";
 import MuiDialog from "@/shared/components/MuiDialog";
 import BandInfoModal from "./_components/BandInfoModal";
-import {
-  getRecruitingBandSummaries,
-} from "@/store/userStore";
+import { getRecruitingBandSummaries } from "@/store/userStore";
 import { useRecommendedBands } from "@/features/band/hooks/useBandData";
+import { useProfile } from "@/features/my/hooks/useProfile";
 import type {} from "@/types/band";
 import { createGroupChat } from "@/store/chatApi";
 import { API } from "@/api/API";
@@ -104,7 +103,9 @@ const HomePage = () => {
   const [open, setOpen] = useState(false);
   const [selectedBand, setSelectedBand] = useState<Band | null>(null);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: recommended = [], isFetching } = useRecommendedBands();
+  const { data: userProfile } = useProfile();
   // 홈 진입 시 채팅방 목록 선조회(캐시 용도)
   const [chatRoomInfosCache, setChatRoomInfosCache] = useState<ChatRoomInfo[]>(
     []
@@ -131,8 +132,10 @@ const HomePage = () => {
         page: 0,
         size: 200,
         useCache: true,
-        cacheMs: 60 * 1000,
+        cacheMs: 5 * 60 * 1000, // 5분으로 증가 (기존 1분)
       });
+
+      console.log("API 응답 원본:", recruitingSummaries);
 
       if (!recruitingSummaries || recruitingSummaries.length === 0) {
         // 모집중인 밴드가 없으면 빈 배열 설정
@@ -145,6 +148,12 @@ const HomePage = () => {
         (recruit: Record<string, unknown>) => recruit.status === "RECRUITING"
       );
 
+      console.log(
+        "RECRUITING 상태 필터링 후:",
+        recruitingBands.length,
+        "개 밴드"
+      );
+
       if (recruitingBands.length === 0) {
         // 모집중인 밴드가 없으면 빈 배열 설정
         setMyBands([]);
@@ -152,64 +161,99 @@ const HomePage = () => {
       }
 
       // 모집중인 밴드들을 Band 인터페이스에 맞게 변환
-      const bands: Band[] = recruitingBands.map((recruit: Record<string, unknown>) => {
-        const goalTracks = Array.isArray(recruit?.tracks)
-          ? recruit.tracks.map((t: Record<string, unknown>) => ({
-              title: String(t?.title || ""),
-              artist: "",
-              imageUrl: String(t?.imageUrl || ""),
-            }))
-          : [];
-        const preferredArtists = Array.isArray(recruit?.artists)
-          ? recruit.artists.map((a: Record<string, unknown>) => ({
-              name: String(a?.name || ""),
-              imageUrl: String(a?.imageUrl || ""),
-            }))
-          : [];
-        const composition = {
-          averageAge: String(recruit?.averageAge || ""),
-          maleCount: Number(recruit?.maleCount || 0),
-          femaleCount: Number(recruit?.femaleCount || 0),
-        };
-        const sessions = Array.isArray(recruit?.sessions)
-          ? recruit.sessions
-          : [];
+      const bands: Band[] = recruitingBands.map(
+        (recruit: Record<string, unknown>) => {
+          const goalTracks = Array.isArray(recruit?.tracks)
+            ? recruit.tracks.map((t: Record<string, unknown>) => ({
+                title: String(t?.title || ""),
+                artist: String(t?.artist || ""),
+                imageUrl: String(t?.imageUrl || ""),
+              }))
+            : [];
+          const preferredArtists = Array.isArray(recruit?.artists)
+            ? recruit.artists.map((a: Record<string, unknown>) => ({
+                name: String(a?.name || ""),
+                imageUrl: String(a?.imageUrl || ""),
+              }))
+            : [];
+          const composition = {
+            averageAge: String(recruit?.averageAge || ""),
+            maleCount: Number(recruit?.maleCount || 0),
+            femaleCount: Number(recruit?.femaleCount || 0),
+          };
 
-        const representativeTrack = goalTracks[0];
-        const representativeArtist = preferredArtists[0];
+          // 모집하는 세션 (sessions)과 현재 구성원 세션 (currentSessions) 구분
+          const recruitingSessions = Array.isArray(recruit?.sessions)
+            ? recruit.sessions
+            : [];
+          const currentMemberSessions = Array.isArray(recruit?.currentSessions)
+            ? recruit.currentSessions
+            : [];
 
-        const tags =
-          sessions.length > 0
-            ? sessions.map((session: string) => cleanSessionName(session))
-            : ["모집중"];
+          const representativeTrack = goalTracks[0];
+          const representativeArtist = preferredArtists[0];
 
-        return {
-          id: Number(recruit?.bandId || recruit?.id),
-          image:
-            String(recruit?.profileImageUrl || "") ||
-            representativeTrack?.imageUrl ||
-            representativeArtist?.imageUrl ||
-            homeAlbum3Img,
-          title: String(
-            recruit?.name ||
-              recruit?.bandName ||
-              `밴드 ${recruit?.bandId || recruit?.id}`
-          ),
-          subtitle: String(recruit?.description || ""),
-          tags,
-          profileData: {
-            goalTracks,
-            preferredArtists,
-            composition,
-            sns: [],
-            sessions,
-            jobs: Array.isArray(recruit?.jobs) ? recruit.jobs : [],
-          },
-          bandName: String(recruit?.name || recruit?.bandName || ""),
-          representativeSongFileUrl:
-            String((recruit?.representativeSongFile as Record<string, unknown>)?.fileUrl || "") || null,
-        } as Band;
-      });
+          // 태그 구성: 모집 세션 + 장르
+          const tags = [];
+
+          // 1. 모집하는 세션 태그들 (사용자와 연관성에 따라 색상 결정)
+          if (recruitingSessions.length > 0) {
+            tags.push(
+              ...recruitingSessions.map((session: string) =>
+                cleanSessionName(session)
+              )
+            );
+          }
+
+          // 2. 장르 태그들 (검은색으로 표시)
+          if (Array.isArray(recruit?.genres) && recruit.genres.length > 0) {
+            tags.push(...recruit.genres);
+          }
+
+          // 3. 태그가 없으면 기본값
+          if (tags.length === 0) {
+            tags.push("모집중");
+          }
+
+          console.log(`밴드 ${recruit?.name || recruit?.bandName} 태그:`, {
+            recruitingSessions,
+            genres: recruit?.genres,
+            finalTags: tags,
+          });
+
+          return {
+            id: Number(recruit?.bandId || recruit?.id),
+            image:
+              String(recruit?.profileImageUrl || "") ||
+              representativeTrack?.imageUrl ||
+              representativeArtist?.imageUrl ||
+              homeAlbum3Img,
+            title: String(
+              recruit?.name ||
+                recruit?.bandName ||
+                `밴드 ${recruit?.bandId || recruit?.id}`
+            ),
+            subtitle: String(recruit?.description || ""),
+            tags,
+            profileData: {
+              goalTracks,
+              preferredArtists,
+              composition,
+              sns: [],
+              sessions: recruitingSessions, // 모집하는 세션
+              currentSessions: currentMemberSessions, // 현재 구성원 세션
+              jobs: Array.isArray(recruit?.jobs) ? recruit.jobs : [],
+              genres: Array.isArray(recruit?.genres) ? recruit.genres : [],
+            },
+            bandName: String(recruit?.name || recruit?.bandName || ""),
+            representativeSongFileUrl:
+              String(
+                (recruit?.representativeSongFile as Record<string, unknown>)
+                  ?.fileUrl || ""
+              ) || null,
+          } as Band;
+        }
+      );
 
       setMyBands(bands);
     } catch (error) {
@@ -353,30 +397,68 @@ const HomePage = () => {
     if (!window.location.pathname.startsWith("/pre-test")) {
       fetchRecommendedBands();
     }
-    // 훅 데이터가 갱신되면 다시 바인딩
-  }, [recommended]);
+    // 훅 데이터가 갱신되면 다시 바인딩 (의존성 배열 최적화)
+  }, []); // recommended 의존성 제거하여 불필요한 재실행 방지
 
   // 홈에서는 WS 자동 연결을 수행하지 않음 (전역 AuthProvider에서 1회만 연결)
 
   // 개발 모드에서 밴드 상세정보 조회 테스트
   useEffect(() => {
-    if (import.meta.env.DEV && myBands.length > 0) {
-      console.log("=== 밴드 상세정보 조회 테스트 시작 ===");
-      console.log(
-        "현재 설정된 밴드들:",
-        myBands.map((b) => ({ id: b.id, title: b.title }))
-      );
-
-      // 첫 번째 밴드의 상세정보 조회 테스트
-      const testBandId = myBands[0]?.id;
-      if (testBandId) {
-        console.log(`테스트: 밴드 ${testBandId} 상세정보 조회 시도`);
-        // API 호출은 이미 probeSomeBandDetails에서 수행됨
-      }
+    if (import.meta.env.DEV && myBands.length > 0 && myBands.length <= 3) {
+      // 로그를 줄여서 성능 향상
+      console.log("=== 밴드 정보 로드 완료 ===");
+      console.log("로드된 밴드 수:", myBands.length);
     }
   }, [myBands]);
 
+  // 사용자 세션 정보 추출
+  const userSessions = useMemo(() => {
+    return (
+      userProfile?.availableSessions?.map(
+        (session: { sessionType: string }) => session.sessionType
+      ) || []
+    );
+  }, [userProfile]);
+
   if (loading || isFetching) {
+    // 개발 모드에서는 더 빠른 로딩 처리
+    if (import.meta.env.DEV && myBands.length > 0) {
+      // 이미 데이터가 있으면 로딩 스켈레톤을 보여주지 않음
+      return (
+        <>
+          <main className="flex-1 flex flex-col items-center justify-center w-full max-w-[420px] mx-auto">
+            <div className="w-full flex flex-col items-center overflow-hidden">
+              {/* 캐러셀 */}
+              <div className="w-full overflow-hidden">
+                <BandCarousel
+                  bands={myBands}
+                  onJoinClick={handleJoinClick}
+                  onImageClick={handleImageClick}
+                  userSessions={userSessions}
+                />
+              </div>
+            </div>
+          </main>
+          <MuiDialog open={open} setOpen={setOpen}>
+            <BandInfoModal
+              imageUrl={
+                selectedBand?.profileData?.goalTracks?.[0]?.imageUrl ||
+                selectedBand?.profileData?.preferredArtists?.[0]?.imageUrl ||
+                selectedBand?.image
+              }
+              bandName={selectedBand?.title || ""}
+              title={selectedBand?.title || ""}
+              subtitle={selectedBand?.subtitle || ""}
+              onClose={() => setOpen(false)}
+              tags={selectedBand?.tags || []}
+              description={selectedBand?.subtitle || ""}
+              deadline={new Date().toISOString()}
+              userSessions={userSessions}
+            />
+          </MuiDialog>
+        </>
+      );
+    }
     return <HomeSkeleton />;
   }
 
@@ -390,6 +472,7 @@ const HomePage = () => {
               bands={myBands}
               onJoinClick={handleJoinClick}
               onImageClick={handleImageClick}
+              userSessions={userSessions}
             />
           </div>
         </div>
@@ -398,48 +481,17 @@ const HomePage = () => {
         <BandInfoModal
           imageUrl={
             selectedBand?.profileData?.goalTracks?.[0]?.imageUrl ||
+            selectedBand?.profileData?.preferredArtists?.[0]?.imageUrl ||
             selectedBand?.image
           }
-          title={selectedBand?.bandName || "--"}
-          subtitle={
-            selectedBand?.profileData?.goalTracks?.[0]?.artist ||
-            selectedBand?.subtitle ||
-            "베이스만 넷이에요 살려주세요"
-          }
+          bandName={selectedBand?.title || ""}
+          title={selectedBand?.title || ""}
+          subtitle={selectedBand?.subtitle || ""}
           onClose={() => setOpen(false)}
-          tags={
-            selectedBand?.profileData?.sessions?.map((session: string) =>
-              cleanSessionName(session)
-            ) ||
-            selectedBand?.tags || [
-              "20대 이상",
-              "성별 무관",
-              "서울 홍대",
-              "부산 진구",
-            ]
-          }
-          description={
-            `목표 곡: ${selectedBand?.profileData?.goalTracks
-              ?.map((track) => `${track.title} - ${track.artist}`)
-              .join(", ")}\n\n` +
-            `선호 아티스트: ${selectedBand?.profileData?.preferredArtists
-              ?.map((artist) => artist.name)
-              .join(", ")}\n\n` +
-            `구성: 남성 ${selectedBand?.profileData?.composition?.maleCount}명, 여성 ${selectedBand?.profileData?.composition?.femaleCount}명\n` +
-            `평균 나이: ${selectedBand?.profileData?.composition?.averageAge}`
-          }
-          deadline="25.07.08"
-          youtubeUrl={
-            selectedBand?.profileData?.sns?.find(
-              (s) => s.platform === "youtube"
-            )?.url || "https://www.youtube.com/@Banddy79"
-          }
-          instagramUrl={
-            selectedBand?.profileData?.sns?.find(
-              (s) => s.platform === "instagram"
-            )?.url || "https://www.instagram.com/banddy79/"
-          }
-          bandId={selectedBand?.id?.toString()} // 추가
+          tags={selectedBand?.tags || []}
+          description={selectedBand?.subtitle || ""}
+          deadline={new Date().toISOString()}
+          userSessions={userSessions}
         />
       </MuiDialog>
     </>
