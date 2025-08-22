@@ -204,7 +204,7 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
         >
           <polygon points="0,0 10,5 0,10" fill="#B42127" />
         </svg>
-        <div className="flex items-center gap-3 flex-nowrap min-w-0">
+        <div className="flex items-center gap-3 flex-nowrap min-w-0 whitespace-nowrap">
           {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
           {tags.map((tag, idx) => {
             // 사용자 세션과 연관된 세션 태그인지 확인
@@ -213,15 +213,51 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
               const cleanUserSession = userSession.toLowerCase();
 
               // 세션 매핑 (API 응답 형식에 맞게)
-              if (cleanTagName.includes("보컬") && cleanUserSession.includes("vocal")) return true;
-              if (cleanTagName.includes("어쿠스틱 기타") && cleanUserSession.includes("acoustic_guitar")) return true;
-              if (cleanTagName.includes("일렉 기타") && cleanUserSession.includes("electric_guitar")) return true;
-              if (cleanTagName.includes("기타") && cleanUserSession.includes("electric_guitar")) return true;
-              if (cleanTagName.includes("베이스") && cleanUserSession.includes("bass")) return true;
-              if (cleanTagName.includes("드럼") && cleanUserSession.includes("drums")) return true;
-              if (cleanTagName.includes("키보드") && cleanUserSession.includes("keyboard")) return true;
-              if (cleanTagName.includes("바이올린") && cleanUserSession.includes("violin")) return true;
-              if (cleanTagName.includes("트럼펫") && cleanUserSession.includes("trumpet")) return true;
+              if (
+                cleanTagName.includes("보컬") &&
+                cleanUserSession.includes("vocal")
+              )
+                return true;
+              if (
+                cleanTagName.includes("어쿠스틱 기타") &&
+                cleanUserSession.includes("acoustic_guitar")
+              )
+                return true;
+              if (
+                cleanTagName.includes("일렉 기타") &&
+                cleanUserSession.includes("electric_guitar")
+              )
+                return true;
+              if (
+                cleanTagName.includes("기타") &&
+                cleanUserSession.includes("electric_guitar")
+              )
+                return true;
+              if (
+                cleanTagName.includes("베이스") &&
+                cleanUserSession.includes("bass")
+              )
+                return true;
+              if (
+                cleanTagName.includes("드럼") &&
+                cleanUserSession.includes("drums")
+              )
+                return true;
+              if (
+                cleanTagName.includes("키보드") &&
+                cleanUserSession.includes("keyboard")
+              )
+                return true;
+              if (
+                cleanTagName.includes("바이올린") &&
+                cleanUserSession.includes("violin")
+              )
+                return true;
+              if (
+                cleanTagName.includes("트럼펫") &&
+                cleanUserSession.includes("trumpet")
+              )
+                return true;
 
               return false;
             });
