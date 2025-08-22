@@ -30,11 +30,10 @@ const CreateBandGenre = () => {
           {toggledGenre.length > 0 && (
             <div className="flex flex-nowrap gap-[12px] overflow-x-auto">
               {toggledGenre.map((genre) => (
-                <GenreStatusBtn
-                  key={genre}
-                  onClick={() => handleToggle(genre)}
-                >
-                  {genres.find((g) => g.text === genre)?.content}
+                <GenreStatusBtn key={genre} onClick={() => handleToggle(genre)}>
+                  {genres.find((g) => g.text === genre)?.content === "⚡"
+                    ? "⚡Metal"
+                    : genres.find((g) => g.text === genre)?.content}
                 </GenreStatusBtn>
               ))}
             </div>
