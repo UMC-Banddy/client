@@ -8,7 +8,7 @@ import BasicInfoSection from "./_components/BasicInfoSection";
 import LocationSection from "./_components/LocationSection";
 // import SessionSection from "./_components/SessionSection";
 import GenreSection from "./_components/GenreSection";
-// import KeywordSection from "./_components/KeywordSection";
+import KeywordSection from "./_components/KeywordSection";
 import IntroductionSection from "./_components/IntroductionSection";
 import { useProfileData, useUploadProfileMedia, useUpdateProfile } from "@/features/my/hooks/useProfileEdit";
 
@@ -72,7 +72,7 @@ const MyEditPage: React.FC = () => {
   const [profileImageUrl, setProfileImageUrl] = useState(profileImage);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  // const [isEditingArtists, setIsEditingArtists] = useState(false);
+  const [isEditingArtists, setIsEditingArtists] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -667,12 +667,11 @@ const MyEditPage: React.FC = () => {
   };
   */
 
-  /*
+
   const handleEditArtist = () => {
     // 아티스트 편집 모드 토글
     setIsEditingArtists(!isEditingArtists);
   };
-  */
 
   const handleRemoveGenre = (genreId: string) => {
     // 장르 제거 로직
@@ -682,7 +681,6 @@ const MyEditPage: React.FC = () => {
     );
   };
 
-  /*
   const handleRemoveArtist = async (artistId: string) => {
     try {
       // API에서 아티스트 제거
@@ -704,13 +702,11 @@ const MyEditPage: React.FC = () => {
       setError("아티스트 제거에 실패했습니다.");
     }
   };
-  */
 
-  /*
   const handleKeywordsChange = (newKeywords: Array<{ id: string; text: string; category: string }>) => {
     setKeywords(newKeywords);
   };
-  */
+
   return (
     <div className="w-full h-full flex flex-col text-white">
       {/* 숨겨진 파일 입력 */}
@@ -827,6 +823,7 @@ const MyEditPage: React.FC = () => {
               />
               */}
 
+
               {/* 관심 장르 */}
               <GenreSection
                 genres={genres}
@@ -837,7 +834,6 @@ const MyEditPage: React.FC = () => {
               />
 
               {/* 관심 아티스트 */}
-              {/*
               <div className="mb-6 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-16">
                 <div className="flex items-center justify-between mb-4 sm:mb-5 md:mb-6 lg:mb-7 xl:mb-8 2xl:mb-9">
                   <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-medium text-white">
@@ -891,15 +887,12 @@ const MyEditPage: React.FC = () => {
                   ))}
                 </div>
               </div>
-              */}
               
               {/* 키워드 */}
-              {/*
               <KeywordSection
                 keywords={keywords}
                 onKeywordsChange={handleKeywordsChange}
               />
-              */}
               {/* 소개글 */}
               <IntroductionSection
                 introduction={introduction}
