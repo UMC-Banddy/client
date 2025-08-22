@@ -303,7 +303,7 @@ const HomePage = () => {
       if (candidate?.roomId) {
         roomMap[band.id] = {
           roomId: Number(candidate.roomId),
-          roomType: candidate.roomType || "GROUP"
+          roomType: candidate.roomType || "BAND-APPLICANT"
         };
       }
     }
@@ -316,7 +316,7 @@ const HomePage = () => {
     try {
       // 1) 사전 지정된 룸 바로 입장(데모 계정용 예외 유지)
       if (band.id === 49) {
-        navigate("/home/chat?roomId=52&roomType=GROUP");
+        navigate("/home/chat?roomId=52&roomType=BAND-APPLICANT");
         return;
       }
 
@@ -341,7 +341,7 @@ const HomePage = () => {
             (r?.bandId === band.id || r?.bandName === band.title)
         );
         const fallbackRoomId = bandRoom?.roomId;
-        const fallbackRoomType = bandRoom?.roomType || "GROUP";
+        const fallbackRoomType = bandRoom?.roomType || "BAND-APPLICANT";
         if (fallbackRoomId) {
           navigate(`/home/chat?roomId=${fallbackRoomId}&roomType=${fallbackRoomType}`);
           return;
@@ -368,7 +368,7 @@ const HomePage = () => {
         if (newRoomId) {
           console.log(`그룹 채팅방 생성 성공: ${newRoomId}`);
           // 채팅방 생성 성공 시 바로 이동
-          navigate(`/home/chat?roomId=${newRoomId}&roomType=GROUP`);
+          navigate(`/home/chat?roomId=${newRoomId}&roomType=BAND-APPLICANT`);
           return;
         } else {
           console.warn("채팅방 생성 응답에 roomId가 없음:", createRes);
