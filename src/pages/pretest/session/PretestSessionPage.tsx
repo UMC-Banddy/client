@@ -8,19 +8,6 @@ import { SESSIONS } from "./_components/sessionData";
 import { useSurveySessions } from "@/features/pretest/hooks/useSurveyData";
 import toast from "react-hot-toast";
 
-// 임시로 만들었습니다.. (타입 정의)
-interface ProfileData {
-  gender: string;
-  nickname: string;
-  age: number;
-  region: string;
-  district: string;
-  bio: string;
-  profileImageUrl: string;
-  availableSessions: Array<{ sessionType: string; level: string }>;
-  tags: string[];
-  savedTracks: Array<{ title: string; imageUrl?: string }>;
-}
 
 const PretestSessionPage = () => {
   const navigate = useNavigate();
@@ -100,9 +87,10 @@ const PretestSessionPage = () => {
             const level = levelMap[rawLevel] ?? "BEGINNER";
 
             // 세션 타입을 백엔드 enum(SessionType)으로 정규화
-            const sessionObj = sessions.find(
-              (s) => Number((s as any).id) === numericId
-            );
+            const sessionObj = sessions.find((s) => {
+              const sid = (s as unknown as { id?: string | number }).id;
+              return Number(sid) === numericId;
+            });
             const rawName = (sessionObj?.name || "").trim();
             // 이모지/특수문자 제거, 연속 공백 축소 후 소문자화
             const normalized = rawName

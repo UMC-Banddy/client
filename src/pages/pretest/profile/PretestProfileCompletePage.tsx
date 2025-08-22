@@ -13,12 +13,68 @@ import {
   trumpet as trumpetIcon,
   violin as violinIcon,
 } from "@/assets/icons/join/band_recruit";
+
+// 타입: 관심 아티스트 렌더링에 사용하는 최소 형태
+type ArtistLike = {
+  title: string;
+  imageUrl: string;
+};
+
+// 세션 렌더링에서 사용하는 최소 형태
+type SessionCandidate = { sessionType?: string; type?: string; name?: string } | Record<string, unknown>;
+
+// 안전한 타입 가드/헬퍼들
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
+const getStr = (o: Record<string, unknown>, key: string): string | undefined => {
+  const v = o[key];
+  return typeof v === "string" ? v : undefined;
+};
+const getFirstImageUrl = (o: Record<string, unknown>): string | undefined => {
+  const images = o["images"];
+  if (Array.isArray(images) && images.length > 0 && isObj(images[0])) {
+    const url = images[0]["url"];
+    if (typeof url === "string") return url;
+  }
+  return undefined;
+};
+const getAlbumFirstImageUrl = (o: Record<string, unknown>): string | undefined => {
+  const album = o["album"];
+  if (isObj(album)) return getFirstImageUrl(album);
+  return undefined;
+};
+const getFirstArtistName = (o: Record<string, unknown>): string | undefined => {
+  const artists = o["artists"];
+  if (Array.isArray(artists) && artists.length > 0 && isObj(artists[0])) {
+    const a0 = artists[0];
+    return getStr(a0, "name") ?? getStr(a0, "artistName");
+  }
+  return undefined;
+};
+
 import { profileAPI } from "@/api/API";
 
 const PretestProfileCompletePage: React.FC = () => {
   const navigate = useNavigate();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [profileData, setProfileData] = useState<any>(null);
+  // 프로필 응답에서 사용하는 필드 최소 정의
+  interface ProfileResultPartial {
+    profileImageUrl?: string | null;
+    nickname?: string;
+    age?: number;
+    gender?: string;
+    region?: string;
+    savedArtists?: unknown;
+    favoriteArtists?: unknown;
+    likedArtists?: unknown;
+    artists?: unknown;
+    artistList?: unknown;
+    savedTracks?: unknown;
+    favoriteArtistList?: unknown;
+    pretest?: { artists?: unknown } | null;
+    sessions?: unknown;
+    availableSessions?: unknown;
+    selectedSessions?: unknown;
+  }
+  const [profileData, setProfileData] = useState<ProfileResultPartial | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,12 +96,12 @@ const PretestProfileCompletePage: React.FC = () => {
             setProfileData(null);
           }
           setError(null);
-        } catch (profileError) {
+        } catch (profileError: unknown) {
           console.error("프로필 데이터 로드 실패:", profileError);
           // 프로필 로드 실패해도 에러로 표시하지 않음 (아이디 기반 저장은 성공했을 수 있음)
           setProfileData(null);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("데이터 로드 실패:", err);
         setError("데이터를 불러오는데 실패했습니다.");
         setProfileData(null);
@@ -158,7 +214,7 @@ const PretestProfileCompletePage: React.FC = () => {
                         profileData?.sessions ||
                         profileData?.selectedSessions ||
                         []
-                      ) as Array<any>;
+                      ) as SessionCandidate[];
 
                       const normalize = (input: string): string => {
                         const cleaned = input
@@ -187,9 +243,12 @@ const PretestProfileCompletePage: React.FC = () => {
                       };
 
                       const sessionTypes = raw
-                        .map((s) => s?.sessionType || s?.type || s?.name)
-                        .filter(Boolean)
-                        .map((v: string) => normalize(v.toString()))
+                        .map((s: SessionCandidate) => {
+                          const o = s as Record<string, unknown>;
+                          return getStr(o, "sessionType") ?? getStr(o, "type") ?? getStr(o, "name");
+                        })
+                        .filter((v): v is string => typeof v === "string" && v.length > 0)
+                        .map((v) => normalize(v))
                         // 중복 제거
                         .filter((val, idx, arr) => arr.indexOf(val) === idx);
 
@@ -229,37 +288,38 @@ const PretestProfileCompletePage: React.FC = () => {
                 <div className="flex gap-6 sm:gap-7 md:gap-8 lg:gap-9 xl:gap-10 2xl:gap-11 overflow-x-auto scrollbar-hide">
                   {(() => {
                     // 아티스트 소스 후보: savedArtists | favoriteArtists | likedArtists | artists | artistList | savedTracks | favoriteArtistList | pretest.artists (obj.items 지원)
-                    const pickArray = (val: any): any[] => {
-                      if (!val) return [];
-                      if (Array.isArray(val)) return val;
-                      if (Array.isArray(val?.items)) return val.items;
-                      return [];
+                    const pickArray = (val: unknown): Record<string, unknown>[] => {
+                      const arr = Array.isArray(val)
+                        ? val
+                        : isObj(val) && Array.isArray((val as Record<string, unknown>)["items"]) 
+                        ? ((val as Record<string, unknown>)["items"] as unknown[])
+                        : [];
+                      return arr.filter(isObj) as Record<string, unknown>[];
                     };
-                    const candidateSources: any[] = [
-                      ...pickArray(profileData?.savedArtists),
-                      ...pickArray(profileData?.favoriteArtists),
-                      ...pickArray(profileData?.likedArtists),
-                      ...pickArray(profileData?.artists),
-                      ...pickArray(profileData?.artistList),
-                      ...pickArray(profileData?.savedTracks),
-                      ...pickArray(profileData?.favoriteArtistList),
-                      ...pickArray(profileData?.pretest && profileData?.pretest?.artists),
+                    const candidateSources: Record<string, unknown>[] = [
+                      ...pickArray(profileData?.savedArtists ?? null),
+                      ...pickArray(profileData?.favoriteArtists ?? null),
+                      ...pickArray(profileData?.likedArtists ?? null),
+                      ...pickArray(profileData?.artists ?? null),
+                      ...pickArray(profileData?.artistList ?? null),
+                      ...pickArray(profileData?.savedTracks ?? null),
+                      ...pickArray(profileData?.favoriteArtistList ?? null),
+                      ...pickArray(profileData?.pretest?.artists ?? null),
                     ];
 
                     // 최후의 보루: profileData 전체를 순회하여 아티스트처럼 보이는 항목 추출
-                    const deepCollect = (root: any, limit = 20): any[] => {
-                      const out: any[] = [];
-                      const seen = new Set<any>();
-                      const pushIfArtistLike = (obj: any) => {
-                        if (!obj || typeof obj !== "object") return;
-                        const name = obj.name || obj.title || obj.artistName;
+                    const deepCollect = (root: unknown, limit = 20): ArtistLike[] => {
+                      const out: ArtistLike[] = [];
+                      const seen = new Set<string>();
+                      const pushIfArtistLike = (obj: Record<string, unknown>) => {
+                        const name = getStr(obj, "name") ?? getStr(obj, "title") ?? getStr(obj, "artistName");
                         const image =
-                          obj.imageUrl ||
-                          (Array.isArray(obj.images) && obj.images[0]?.url) ||
-                          obj.profileImageUrl ||
-                          obj.image ||
-                          obj.thumbnailUrl ||
-                          obj.coverUrl;
+                          getStr(obj, "imageUrl") ??
+                          getFirstImageUrl(obj) ??
+                          getStr(obj, "profileImageUrl") ??
+                          getStr(obj, "image") ??
+                          getStr(obj, "thumbnailUrl") ??
+                          getStr(obj, "coverUrl");
                         if (name && image) {
                           const key = `${name}__${image}`;
                           if (!seen.has(key)) {
@@ -268,24 +328,25 @@ const PretestProfileCompletePage: React.FC = () => {
                           }
                         }
                       };
-                      const walk = (node: any) => {
+                      const walk = (node: unknown) => {
                         if (!node || out.length >= limit) return;
                         if (Array.isArray(node)) {
                           for (const el of node) {
                             if (out.length >= limit) break;
-                            if (el && typeof el === "object") {
+                            if (isObj(el)) {
                               pushIfArtistLike(el);
                               walk(el);
                             }
                           }
-                        } else if (typeof node === "object") {
+                        } else if (isObj(node)) {
+                          const n = node as Record<string, unknown>;
                           // items 배열을 우선으로 본다
-                          if (Array.isArray(node.items)) walk(node.items);
-                          for (const k of Object.keys(node)) {
+                          if (Array.isArray(n.items)) walk(n.items);
+                          for (const k of Object.keys(n)) {
                             if (out.length >= limit) break;
-                            const v = (node as any)[k];
-                            if (Array.isArray(v) || (v && typeof v === "object")) {
-                              pushIfArtistLike(v);
+                            const v = n[k];
+                            if (Array.isArray(v) || isObj(v)) {
+                              if (isObj(v)) pushIfArtistLike(v);
                               walk(v);
                             }
                           }
@@ -295,34 +356,33 @@ const PretestProfileCompletePage: React.FC = () => {
                       return out;
                     };
 
-                    let items = candidateSources
-                      .map((a) => {
-                        // Spotify-like track 구조 대응: a.track.album.images[0].url / a.track.artists[0].name
-                        const trackObj = a.track || a;
-                        const album = trackObj.album || a.album;
-                        const artistsArr = trackObj.artists || a.artists;
-                        const firstArtistName = Array.isArray(artistsArr) && artistsArr.length > 0 ? (artistsArr[0].name || artistsArr[0].artistName) : undefined;
+                    let items: ArtistLike[] = candidateSources
+                      .map((o) => {
+                        const base = o;
+                        const track = isObj(base["track"]) ? (base["track"] as Record<string, unknown>) : base;
+                        const firstArtistName = getFirstArtistName(track) ?? getFirstArtistName(base);
+                        const artistObj = isObj(base["artist"]) ? (base["artist"] as Record<string, unknown>) : undefined;
 
                         const img =
-                          a.imageUrl ||
-                          (Array.isArray(a.images) && a.images[0]?.url) ||
-                          (album && Array.isArray(album.images) && album.images[0]?.url) ||
-                          a.profileImageUrl ||
-                          a.image ||
-                          a.thumbnailUrl ||
-                          a.coverUrl ||
-                          (a.artist && (a.artist.imageUrl || (Array.isArray(a.artist.images) && a.artist.images[0]?.url) || a.artist.profileImageUrl)) ||
+                          getStr(base, "imageUrl") ??
+                          getFirstImageUrl(base) ??
+                          getAlbumFirstImageUrl(track) ??
+                          getStr(base, "profileImageUrl") ??
+                          getStr(base, "image") ??
+                          getStr(base, "thumbnailUrl") ??
+                          getStr(base, "coverUrl") ??
+                          (artistObj && (getStr(artistObj, "imageUrl") ?? getFirstImageUrl(artistObj) ?? getStr(artistObj, "profileImageUrl"))) ??
                           profileImage;
                         const name =
-                          a.name ||
-                          a.title ||
-                          firstArtistName ||
-                          a.artistName ||
-                          (a.artist && (a.artist.name || a.artist.artistName)) ||
+                          getStr(base, "name") ??
+                          getStr(base, "title") ??
+                          firstArtistName ??
+                          getStr(base, "artistName") ??
+                          (artistObj && (getStr(artistObj, "name") ?? getStr(artistObj, "artistName"))) ??
                           "";
-                        return { imageUrl: img, title: name };
+                        return { imageUrl: img, title: name } as ArtistLike;
                       })
-                      .filter((x) => x.title)
+                      .filter((x) => !!x.title)
                       // 중복 이름 제거
                       .filter((item, idx, arr) => arr.findIndex((t) => t.title === item.title) === idx);
 
@@ -337,7 +397,7 @@ const PretestProfileCompletePage: React.FC = () => {
                     }
 
                     return items.length > 0 ? (
-                      items.map((track: any, index: number) => (
+                      items.map((track, index: number) => (
                         <div key={index} className="flex-shrink-0 text-center">
                           <div className="relative inline-block">
                             <img
