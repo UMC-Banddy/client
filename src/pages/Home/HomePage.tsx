@@ -103,6 +103,7 @@ const HomePage = () => {
   const [open, setOpen] = useState(false);
   const [selectedBand, setSelectedBand] = useState<Band | null>(null);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: recommended = [], isFetching } = useRecommendedBands();
   const { data: userProfile } = useProfile();
   // 홈 진입 시 채팅방 목록 선조회(캐시 용도)

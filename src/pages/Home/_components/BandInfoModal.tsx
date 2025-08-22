@@ -205,6 +205,7 @@ const BandInfoModal: React.FC<BandInfoModalProps> = ({
           <polygon points="0,0 10,5 0,10" fill="#B42127" />
         </svg>
         <div className="flex items-center gap-3 flex-nowrap min-w-0">
+          {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
           {tags.map((tag, idx) => {
             // 사용자 세션과 연관된 세션 태그인지 확인
             const isUserSessionTag = userSessions.some((userSession) => {

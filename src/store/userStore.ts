@@ -363,7 +363,7 @@ export const getRecruitingBandSummaries = async (options?: {
         .filter((n: number) => Number.isFinite(n));
       if (ids.length > 0) {
         console.log("서버에서 모집중인 밴드 목록 조회 성공:", ids);
-        return Array.from(new Set(ids));
+        return Array.from(new Set(ids)).map(id => ({ bandId: id }));
       }
     } catch (error: unknown) {
       const errorResponse = error as {
