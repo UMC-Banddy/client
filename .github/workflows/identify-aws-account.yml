@@ -1,15 +1,15 @@
-name: Identify AWS account (read only)
+name: Inspect AWS service costs (read only)
 on:
   push:
     branches: ["diagnostic/aws-account-id-20261031"]
     paths: [".github/workflows/identify-aws-account.yml"]
 permissions: {}
 jobs:
-  identify:
+  inspect-costs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Query account number only
+      - name: Verify account and query service costs
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -17,4 +17,9 @@ jobs:
           AWS_EC2_METADATA_DISABLED: "true"
           AWS_PAGER: ""
         shell: bash
-        run: aws sts get-caller-identity --query Account --output text --no-cli-pager
+        run: |
+          set -euo pipefail
+          account_id="$(aws sts get-caller-identity --query Account --output text)"
+          test "$account_id" = "670516425058"
+          printf 'Verified AWS account: %s\n' "$account_id"
+          aws ce get-cost-and-usage --region us-east-1 --time-period Start=2026-09-01,End=2026-11-01 --granularity MONTHLY --metrics UnblendedCost --group-by Type=DIMENSION,Key=SERVICE Type=DIMENSION,Key=USAGE_TYPE --filter '{"Not":{"Dimensions":{"Key":"RECORD_TYPE","Values":["Credit","Refund"]}}}' --output json
