@@ -1,0 +1,20 @@
+name: Identify AWS account (read only)
+on:
+  push:
+    branches: ["diagnostic/aws-account-id-20261031"]
+    paths: [".github/workflows/identify-aws-account.yml"]
+permissions: {}
+jobs:
+  identify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Query account number only
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-southeast-2
+          AWS_EC2_METADATA_DISABLED: "true"
+          AWS_PAGER: ""
+        shell: bash
+        run: aws sts get-caller-identity --query Account --output text --no-cli-pager
