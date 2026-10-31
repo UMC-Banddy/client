@@ -1,25 +1,35 @@
-name: Inspect AWS service costs (read only)
+name: Inspect AWS deployment resources (read only)
 on:
   push:
     branches: ["diagnostic/aws-account-id-20261031"]
     paths: [".github/workflows/identify-aws-account.yml"]
 permissions: {}
 jobs:
-  inspect-costs:
+  inspect-resources:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
-      - name: Verify account and query service costs
+      - name: Read resource metadata only
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S3_BUCKET: ${{ secrets.AWS_S3_BUCKET_NAME }}
+          CF_ID: ${{ secrets.AWS_CLOUDFRONT_ID }}
           AWS_DEFAULT_REGION: ap-southeast-2
           AWS_EC2_METADATA_DISABLED: "true"
           AWS_PAGER: ""
         shell: bash
         run: |
-          set -euo pipefail
-          account_id="$(aws sts get-caller-identity --query Account --output text)"
-          test "$account_id" = "670516425058"
-          printf 'Verified AWS account: %s\n' "$account_id"
-          aws ce get-cost-and-usage --region us-east-1 --time-period Start=2026-09-01,End=2026-11-01 --granularity MONTHLY --metrics UnblendedCost --group-by Type=DIMENSION,Key=SERVICE Type=DIMENSION,Key=USAGE_TYPE --filter '{"Not":{"Dimensions":{"Key":"RECORD_TYPE","Values":["Credit","Refund"]}}}' --output json
+          set -uo pipefail
+          account_id="$(aws sts get-caller-identity --query Account --output text)" || exit 1
+          test "$account_id" = "670516425058" || exit 1
+          inspect() { printf '\n=== %s ===\n' "$1"; shift; "$@" || true; }
+          inspect 'CloudFront deployment status' aws cloudfront get-distribution --id "$CF_ID" --query 'Distribution.{Status:Status,Enabled:DistributionConfig.Enabled,Aliases:DistributionConfig.Aliases.Items,PriceClass:DistributionConfig.PriceClass,Origins:DistributionConfig.Origins.Items[].DomainName}' --output json
+          inspect 'S3 bucket location' aws s3api get-bucket-location --bucket "$S3_BUCKET" --output json
+          printf '\n=== S3 current object count and bytes (no content read) ===\n'
+          if aws s3api list-objects-v2 --bucket "$S3_BUCKET" --query 'Contents[].Size' --output json > /tmp/banddy-object-sizes.json; then
+            jq '{ObjectCount:length,TotalBytes:(add // 0)}' /tmp/banddy-object-sizes.json
+          fi
+          inspect 'Route53 hosted zones' aws route53 list-hosted-zones --query 'HostedZones[].{Name:Name,ResourceRecordSetCount:ResourceRecordSetCount}' --output json
+          inspect 'Route53 health checks' aws route53 list-health-checks --query 'length(HealthChecks)' --output json
+          inspect 'Route53 registered domains' aws route53domains list-domains --region us-east-1 --query 'Domains[].{DomainName:DomainName,AutoRenew:AutoRenew,Expiry:Expiry}' --output json
