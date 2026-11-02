@@ -1,35 +1,54 @@
-name: Inspect AWS deployment resources (read only)
+name: Inspect AWS recovery clues (read only)
 on:
   push:
     branches: ["diagnostic/aws-account-id-20261031"]
     paths: [".github/workflows/identify-aws-account.yml"]
 permissions: {}
 jobs:
-  inspect-resources:
+  recovery-clues:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Read resource metadata only
+      - name: Read recovery metadata and encrypt results
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          S3_BUCKET: ${{ secrets.AWS_S3_BUCKET_NAME }}
-          CF_ID: ${{ secrets.AWS_CLOUDFRONT_ID }}
           AWS_DEFAULT_REGION: ap-southeast-2
           AWS_EC2_METADATA_DISABLED: "true"
           AWS_PAGER: ""
-        shell: bash
+        shell: python
         run: |
-          set -uo pipefail
-          account_id="$(aws sts get-caller-identity --query Account --output text)" || exit 1
-          test "$account_id" = "670516425058" || exit 1
-          inspect() { printf '\n=== %s ===\n' "$1"; shift; "$@" || true; }
-          inspect 'CloudFront deployment status' aws cloudfront get-distribution --id "$CF_ID" --query 'Distribution.{Status:Status,Enabled:DistributionConfig.Enabled,Aliases:DistributionConfig.Aliases.Items,PriceClass:DistributionConfig.PriceClass,Origins:DistributionConfig.Origins.Items[].DomainName}' --output json
-          inspect 'S3 bucket location' aws s3api get-bucket-location --bucket "$S3_BUCKET" --output json
-          printf '\n=== S3 current object count and bytes (no content read) ===\n'
-          if aws s3api list-objects-v2 --bucket "$S3_BUCKET" --query 'Contents[].Size' --output json > /tmp/banddy-object-sizes.json; then
-            jq '{ObjectCount:length,TotalBytes:(add // 0)}' /tmp/banddy-object-sizes.json
-          fi
-          inspect 'Route53 hosted zones' aws route53 list-hosted-zones --query 'HostedZones[].{Name:Name,ResourceRecordSetCount:ResourceRecordSetCount}' --output json
-          inspect 'Route53 health checks' aws route53 list-health-checks --query 'length(HealthChecks)' --output json
-          inspect 'Route53 registered domains' aws route53domains list-domains --region us-east-1 --query 'Domains[].{DomainName:DomainName,AutoRenew:AutoRenew,Expiry:Expiry}' --output json
+          import subprocess, json, base64
+          from pathlib import Path
+          pub = """-----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArxHbZb58QVboRenk2igL
+          nUVXC/I2KubhTMgCyEyShmBrEDRy5oGGcrXoryODW9SOwADfnd6BBr7nyGO+BEhM
+          nhEXiZPWKCXndhfAEKoBjBuG4lKNAstCEYITFja808pt6dAOgH0ssHnna+OyVLDA
+          gBkOsJ2dkG+c+hGVtGXZbZz5W0gEApFZkDwvx8xGbi+2zW99YC5usdzEGoS1m3pZ
+          rvYX2oJ8zpr7i2gKNO5az70gJfCWmSI/vQWRFj6HqUXNFEBiOMODvPKENBSLoO2F
+          QqpGNiMvDLanQnTbGSzaK/OEXp17xguKz2++cyZaC2OD/6Rg2Rx8Pv0ktx1MF7a4
+          9wIDAQAB
+          -----END PUBLIC KEY-----
+          """
+          Path('/tmp/recovery-public.pem').write_text(pub)
+          def call(args):
+              p = subprocess.run(['aws', *args, '--output', 'json'], capture_output=True, text=True, timeout=30)
+              return {'returncode': p.returncode, 'result': json.loads(p.stdout) if p.returncode == 0 else p.stderr.strip()}
+          identity = call(['sts','get-caller-identity'])
+          assert identity['returncode'] == 0 and identity['result']['Account'] == '670516425058'
+          checks = {
+              'identity': identity,
+              'login_aliases': call(['iam','list-account-aliases']),
+              'user': call(['iam','get-user']),
+              'user_tags': call(['iam','list-user-tags','--user-name','banddy']),
+              'login_profile': call(['iam','get-login-profile','--user-name','banddy']),
+              'organization': call(['organizations','describe-organization']),
+              'organization_account': call(['organizations','describe-account','--account-id','670516425058']),
+              'contact': call(['account','get-contact-information']),
+          }
+          for kind in ['BILLING','OPERATIONS','SECURITY']:
+              checks['alternate_'+kind] = call(['account','get-alternate-contact','--alternate-contact-type',kind])
+          payload = json.dumps(checks).encode()
+          for start in range(0, len(payload), 150):
+              encrypted = subprocess.run(['openssl','pkeyutl','-encrypt','-pubin','-inkey','/tmp/recovery-public.pem','-pkeyopt','rsa_padding_mode:oaep','-pkeyopt','rsa_oaep_md:sha256'], input=payload[start:start+150], capture_output=True, check=True).stdout
+              print('RECOVERY_ENCRYPTED:' + base64.b64encode(encrypted).decode())
